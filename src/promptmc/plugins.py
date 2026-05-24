@@ -14,10 +14,10 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -156,7 +156,7 @@ class PluginRegistry:
         if plugin in self._post_processors:
             self._post_processors.remove(plugin)
 
-    def get(self, name: str) -> Optional[Plugin]:
+    def get(self, name: str) -> Plugin | None:
         """Get a registered plugin by name."""
         return self._plugins.get(name)
 
@@ -164,7 +164,7 @@ class PluginRegistry:
         """List all registered plugins."""
         return [p.metadata for p in self._plugins.values()]
 
-    def fire_hook(self, event: HookEvent, context: Optional[dict] = None) -> None:
+    def fire_hook(self, event: HookEvent, context: dict | None = None) -> None:
         """Fire a lifecycle event to all subscribed hooks.
 
         Errors in individual hooks are logged but do not propagate.
@@ -202,15 +202,16 @@ class PluginRegistry:
             from importlib.metadata import entry_points
 
             try:
-                eps = entry_points(group=group)
+                eps: Any = entry_points(group=group)
             except TypeError:
                 # Python 3.9 returns a dict-like
-                eps = entry_points().get(group, [])
+                eps_dict: Any = entry_points()
+                eps = eps_dict.get(group, [])
 
             for ep in eps:
                 try:
-                    plugin_class = ep.load()
-                    plugin = plugin_class()
+                    plugin_class: Any = ep.load()
+                    plugin: Plugin = plugin_class()
                     self.register(plugin)
                     loaded += 1
                 except Exception:

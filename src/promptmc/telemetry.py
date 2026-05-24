@@ -8,7 +8,7 @@ import os
 import sys
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager, suppress
-from typing import Any, Optional, TypeVar
+from typing import Any, TypeVar
 
 from opentelemetry import metrics, trace
 from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
@@ -33,7 +33,7 @@ from opentelemetry.trace import Span
 T = TypeVar("T")
 
 # Module-level singleton (None until first access)
-_telemetry_manager: Optional[TelemetryManager] = None
+_telemetry_manager: TelemetryManager | None = None
 
 
 class _SafeConsoleMetricExporter(ConsoleMetricExporter):
@@ -73,7 +73,7 @@ class TelemetryManager:
         self,
         service_name: str = "promptmc",
         enable_console: bool = True,
-        otlp_endpoint: Optional[str] = None,
+        otlp_endpoint: str | None = None,
     ) -> None:
         """Initialize the telemetry manager.
 

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.console import Console
@@ -23,7 +22,7 @@ from promptmc.openmc_integration import (
 )
 from promptmc.parallel import ParallelConfig, ParallelMode
 from promptmc.performance import OptimizationAdvisor, SystemProfiler
-from promptmc.plugins import get_plugin_registry
+from promptmc.plugins import HookEvent, get_plugin_registry
 from promptmc.schema import SchemaValidator, format_validation_report
 from promptmc.telemetry import get_telemetry_manager
 from promptmc.templates import TemplateType, get_template, list_templates
@@ -47,7 +46,7 @@ def version_callback(value: bool) -> None:
 
 @app.callback()
 def main(
-    version: Optional[bool] = typer.Option(
+    version: bool | None = typer.Option(
         None,
         "--version",
         "-v",
@@ -60,7 +59,7 @@ def main(
         "--verbose",
         help="Enable verbose output",
     ),
-    config: Optional[Path] = typer.Option(
+    config: Path | None = typer.Option(
         None,
         "--config",
         "-c",
@@ -96,7 +95,7 @@ def run(
         help="Number of threads to use",
         min=1,
     ),
-    output: Optional[Path] = typer.Option(
+    output: Path | None = typer.Option(
         None,
         "--output",
         "-o",
@@ -139,7 +138,7 @@ def run(
         )
 
         registry = get_plugin_registry()
-        registry.fire_hook("before_run", {"input_file": str(input_file), "threads": threads})
+        registry.fire_hook(HookEvent.BEFORE_RUN, {"input_file": str(input_file), "threads": threads})
 
         telemetry.record_simulation_start(simulation_id)
 
@@ -155,7 +154,7 @@ def run(
                 output_path=output,
             )
 
-        registry.fire_hook("after_run", {"returncode": result.returncode})
+        registry.fire_hook(HookEvent.AFTER_RUN, {"returncode": result.returncode})
 
         if result.returncode == 0:
             console.print("[green]✓[/green] Simulation completed successfully")
@@ -369,9 +368,9 @@ def template(
         "-o",
         help="Output file path",
     ),
-    particles: Optional[int] = typer.Option(None, "--particles", "-p", help="Override particles"),
-    batches: Optional[int] = typer.Option(None, "--batches", "-b", help="Override batches"),
-    inactive: Optional[int] = typer.Option(None, "--inactive", "-i", help="Override inactive"),
+    particles: int | None = typer.Option(None, "--particles", "-p", help="Override particles"),
+    batches: int | None = typer.Option(None, "--batches", "-b", help="Override batches"),
+    inactive: int | None = typer.Option(None, "--inactive", "-i", help="Override inactive"),
 ) -> None:
     """Generate a settings.xml from a named template."""
     try:
@@ -463,12 +462,12 @@ def ask(
         "--llm",
         help="Use an OpenAI-compatible LLM if OPENAI_API_KEY or PROMPTMC_LLM_API_KEY is set",
     ),
-    model: Optional[str] = typer.Option(
+    model: str | None = typer.Option(
         None,
         "--model",
         help="LLM model name when --llm is used",
     ),
-    endpoint: Optional[str] = typer.Option(
+    endpoint: str | None = typer.Option(
         None,
         "--endpoint",
         help="OpenAI-compatible chat completions endpoint when --llm is used",
@@ -511,8 +510,7 @@ def ask(
             result_path = plan.render(output)
             console.print(f"[green]✓[/green] Wrote settings file: [cyan]{result_path}[/cyan]")
             console.print(
-                "[dim]Next: validate with `promptmc validate "
-                f"{result_path} --schema`[/dim]"
+                f"[dim]Next: validate with `promptmc validate {result_path} --schema`[/dim]"
             )
 
     except Exception as e:
@@ -538,7 +536,7 @@ def batch(
         "-P",
         help="Parallel mode: threads, processes, or mpi",
     ),
-    max_workers: Optional[int] = typer.Option(
+    max_workers: int | None = typer.Option(
         None,
         "--workers",
         "-w",
@@ -609,7 +607,7 @@ def analyze(
         help="Path to OpenMC output directory",
         exists=True,
     ),
-    export_json: Optional[Path] = typer.Option(
+    export_json: Path | None = typer.Option(
         None,
         "--json",
         "-j",

@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import os
 import shutil
-import subprocess
-import xml.etree.ElementTree as ET
+import subprocess  # nosec B404
+from defusedxml import ElementTree as ET
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any
 
 # OpenMC required input files for a directory-based simulation
 REQUIRED_INPUT_FILES = ("geometry.xml", "materials.xml", "settings.xml")
@@ -59,7 +59,7 @@ class OpenMCIntegration:
             execution_mode: Mode of execution (API, subprocess, or auto-detect).
         """
         self.execution_mode = execution_mode
-        self._openmc_info: Optional[OpenMCInfo] = None
+        self._openmc_info: OpenMCInfo | None = None
         self._openmc_module: Any = None
 
     def check_installation(self) -> OpenMCInfo:
@@ -86,7 +86,7 @@ class OpenMCIntegration:
             python_available = True
             version = getattr(openmc_module, "__version__", "unknown")
         except ImportError:
-            if subprocess_available:
+            if subprocess_available and executable_path is not None:
                 version = self._query_executable_version(executable_path) or "unknown"
 
         if not subprocess_available and not python_available:
@@ -105,10 +105,10 @@ class OpenMCIntegration:
         return self._openmc_info
 
     @staticmethod
-    def _query_executable_version(executable_path: str) -> Optional[str]:
+    def _query_executable_version(executable_path: str) -> str | None:
         """Query OpenMC executable for its version string."""
         try:
-            result = subprocess.run(
+            result = subprocess.run(  # nosec B603
                 [executable_path, "--version"],
                 capture_output=True,
                 text=True,
@@ -120,7 +120,7 @@ class OpenMCIntegration:
         except (subprocess.SubprocessError, FileNotFoundError, OSError):
             return None
 
-    def validate_input_file(self, input_path: Union[str, Path]) -> bool:
+    def validate_input_file(self, input_path: str | Path) -> bool:
         """Validate an OpenMC input file or directory.
 
         Args:
@@ -165,10 +165,10 @@ class OpenMCIntegration:
 
     def run_simulation(
         self,
-        input_path: Union[str, Path],
+        input_path: str | Path,
         threads: int = 1,
-        output_path: Optional[Union[str, Path]] = None,
-        cwd: Optional[Union[str, Path]] = None,
+        output_path: str | Path | None = None,
+        cwd: str | Path | None = None,
     ) -> subprocess.CompletedProcess:
         """Run an OpenMC simulation.
 
@@ -229,15 +229,15 @@ class OpenMCIntegration:
                 # Re-import to satisfy type checkers; cached import is fine
                 import openmc
 
-                openmc.run(output_path=str(output_path))
-                return subprocess.CompletedProcess(
+                openmc.run(output_path=str(output_path))  # type: ignore[attr-defined]
+                return subprocess.CompletedProcess[str](
                     args=["openmc", str(input_path)],
                     returncode=0,
                     stdout="Simulation completed successfully via API",
                     stderr="",
                 )
             except Exception as e:  # noqa: BLE001 - convert to CompletedProcess result
-                return subprocess.CompletedProcess(
+                return subprocess.CompletedProcess[str](
                     args=["openmc", str(input_path)],
                     returncode=1,
                     stdout="",
@@ -269,7 +269,7 @@ class OpenMCIntegration:
         output_path.mkdir(parents=True, exist_ok=True)
 
         try:
-            return subprocess.run(
+            return subprocess.run(  # nosec B603
                 cmd,
                 cwd=cwd,
                 capture_output=True,
@@ -284,7 +284,7 @@ class OpenMCIntegration:
 
     def generate_configuration(
         self,
-        output_path: Union[str, Path],
+        output_path: str | Path,
         particles: int = 10000,
         batches: int = 10,
         inactive: int = 5,
@@ -318,7 +318,7 @@ class OpenMCIntegration:
 
         return output_path
 
-    def parse_output(self, output_path: Union[str, Path]) -> dict:
+    def parse_output(self, output_path: str | Path) -> dict:
         """Parse OpenMC simulation output files.
 
         Args:
@@ -354,7 +354,7 @@ class OpenMCIntegration:
     def _extract_summary_metrics(summary_file: Path, results: dict) -> None:
         """Extract summary metrics from summary.h5 if h5py is available."""
         try:
-            import h5py
+            import h5py  # type: ignore[import-untyped]
         except ImportError:
             return
 

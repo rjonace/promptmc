@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-import xml.etree.ElementTree as ET
+from typing import Any
+
+from defusedxml import ElementTree as ET
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -48,7 +50,7 @@ class ConfigurationTemplate:
         particles: int | None = None,
         batches: int | None = None,
         inactive: int | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> Path:
         """Render template to output path.
 
@@ -85,7 +87,7 @@ class ConfigurationTemplate:
         particles: int,
         batches: int,
         inactive: int,
-        **kwargs,
+        **kwargs: Any,
     ) -> ET.Element:
         """Build the XML structure. Override in subclasses.
 
@@ -120,7 +122,7 @@ class CriticalityTemplate(ConfigurationTemplate):
         particles: int,
         batches: int,
         inactive: int,
-        **kwargs,
+        **kwargs: Any,
     ) -> ET.Element:
         root = ET.Element("settings")
 
@@ -164,7 +166,7 @@ class FixedSourceTemplate(ConfigurationTemplate):
         particles: int,
         batches: int,
         inactive: int,
-        **kwargs,
+        **kwargs: Any,
     ) -> ET.Element:
         root = ET.Element("settings")
 
@@ -210,7 +212,7 @@ class ShieldingTemplate(ConfigurationTemplate):
         particles: int,
         batches: int,
         inactive: int,
-        **kwargs,
+        **kwargs: Any,
     ) -> ET.Element:
         root = ET.Element("settings")
 
@@ -261,7 +263,7 @@ class ReactorPinTemplate(ConfigurationTemplate):
         particles: int,
         batches: int,
         inactive: int,
-        **kwargs,
+        **kwargs: Any,
     ) -> ET.Element:
         root = ET.Element("settings")
 
@@ -284,7 +286,7 @@ class ReactorPinTemplate(ConfigurationTemplate):
         source = ET.SubElement(root, "source")
         space = ET.SubElement(source, "space", type="cylindrical")
         params = ET.SubElement(space, "parameters")
-        params.text = f"0 0 -{pin_height/2} 0 0 {pin_height/2} 0 {pin_radius}"
+        params.text = f"0 0 -{pin_height / 2} 0 0 {pin_height / 2} 0 {pin_radius}"
 
         return root
 

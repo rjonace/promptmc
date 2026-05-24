@@ -9,7 +9,7 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from promptmc.templates import TemplateType, get_template
 
@@ -64,21 +64,14 @@ class NaturalLanguagePlan:
 class OpenAICompatibleLLMClient:
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        model: Optional[str] = None,
-        endpoint: Optional[str] = None,
+        api_key: str | None = None,
+        model: str | None = None,
+        endpoint: str | None = None,
         timeout_seconds: int = 30,
     ) -> None:
-        self.api_key = (
-            api_key
-            or os.getenv("PROMPTMC_LLM_API_KEY")
-            or os.getenv("OPENAI_API_KEY")
-        )
-        self.model = model or os.getenv("PROMPTMC_LLM_MODEL") or "gpt-4o-mini"
-        self.endpoint = endpoint or os.getenv(
-            "PROMPTMC_LLM_ENDPOINT",
-            "https://api.openai.com/v1/chat/completions",
-        )
+        self.api_key: str | None = api_key or os.getenv("PROMPTMC_LLM_API_KEY") or os.getenv("OPENAI_API_KEY")
+        self.model: str = model or os.getenv("PROMPTMC_LLM_MODEL") or "gpt-4o-mini"
+        self.endpoint: str = endpoint or os.getenv("PROMPTMC_LLM_ENDPOINT") or "https://api.openai.com/v1/chat/completions"
         self.timeout_seconds = timeout_seconds
 
     @property
@@ -89,6 +82,7 @@ class OpenAICompatibleLLMClient:
         if not self.api_key:
             raise RuntimeError("LLM API key is not configured")
 
+        api_key_str: str = self.api_key
         payload = {
             "model": self.model,
             "messages": [
@@ -103,32 +97,34 @@ class OpenAICompatibleLLMClient:
             self.endpoint,
             data=body,
             headers={
-                "Authorization": f"Bearer {self.api_key}",
+                "Authorization": f"Bearer {api_key_str}",
                 "Content-Type": "application/json",
             },
             method="POST",
         )
 
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout_seconds) as response:
+            with urllib.request.urlopen(request, timeout=self.timeout_seconds) as response:  # nosec B310
                 data = json.loads(response.read().decode("utf-8"))
         except urllib.error.URLError as e:
             raise RuntimeError(f"LLM request failed: {e}") from e
 
+        from typing import cast
+
         content = data["choices"][0]["message"]["content"]
-        return json.loads(content)
+        return cast(dict[str, Any], json.loads(content))
 
 
 class NaturalLanguageAssistant:
-    def __init__(self, llm_client: Optional[OpenAICompatibleLLMClient] = None) -> None:
+    def __init__(self, llm_client: OpenAICompatibleLLMClient | None = None) -> None:
         self.llm_client = llm_client or OpenAICompatibleLLMClient()
 
     def plan(
         self,
         prompt: str,
         use_llm: bool = False,
-        model: Optional[str] = None,
-        endpoint: Optional[str] = None,
+        model: str | None = None,
+        endpoint: str | None = None,
     ) -> NaturalLanguagePlan:
         local_plan = self._local_plan(prompt)
         if not use_llm:

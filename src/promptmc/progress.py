@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import contextlib
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Optional
+from typing import Any
 
 from rich.console import Console
 from rich.progress import (
@@ -111,17 +111,17 @@ class RichProgressDisplay:
     for batches, particles, and the overall stage indicator.
     """
 
-    def __init__(self, console: Optional[Console] = None) -> None:
+    def __init__(self, console: Console | None = None) -> None:
         self.console = console or Console()
-        self._progress: Optional[Progress] = None
-        self._main_task: Optional[TaskID] = None
-        self._subtask: Optional[TaskID] = None
+        self._progress: Progress | None = None
+        self._main_task: TaskID | None = None
+        self._subtask: TaskID | None = None
 
     @contextmanager
     def display(
         self,
         title: str = "OpenMC Simulation",
-        total_steps: Optional[int] = None,
+        total_steps: int | None = None,
     ) -> Iterator[RichProgressDisplay]:
         """Context manager that shows a live progress display."""
         self._progress = Progress(
@@ -150,9 +150,9 @@ class RichProgressDisplay:
 
     def update_main(
         self,
-        description: Optional[str] = None,
+        description: str | None = None,
         advance: float = 0.0,
-        completed: Optional[float] = None,
+        completed: float | None = None,
     ) -> None:
         """Update the main progress task."""
         if self._progress is None or self._main_task is None:
@@ -166,7 +166,7 @@ class RichProgressDisplay:
             kwargs["advance"] = advance
         self._progress.update(self._main_task, **kwargs)
 
-    def add_subtask(self, description: str, total: Optional[int] = None) -> TaskID:
+    def add_subtask(self, description: str, total: int | None = None) -> TaskID:
         """Add a subtask under the main task."""
         if self._progress is None:
             raise RuntimeError("Progress display not active. Use within display() context.")
@@ -177,9 +177,9 @@ class RichProgressDisplay:
     def update_subtask(
         self,
         task_id: TaskID,
-        description: Optional[str] = None,
+        description: str | None = None,
         advance: float = 0.0,
-        completed: Optional[float] = None,
+        completed: float | None = None,
     ) -> None:
         """Update a subtask."""
         if self._progress is None:
@@ -250,7 +250,7 @@ class SimulationProgress:
         return min(1.0, self.completed_particles / self.total_particles)
 
 
-def parse_openmc_output_progress(line: str) -> Optional[SimulationProgress]:
+def parse_openmc_output_progress(line: str) -> SimulationProgress | None:
     """Parse an OpenMC stdout line for progress information.
 
     OpenMC prints lines like ``Batch  10`` and ``=== K_eff ===`` that we can

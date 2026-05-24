@@ -5,6 +5,7 @@ from __future__ import annotations
 import multiprocessing
 import os
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 
@@ -138,7 +139,7 @@ class PerformanceMonitor:
         self._monitoring = False
 
     @contextmanager
-    def monitor(self):
+    def monitor(self) -> Iterator[PerformanceMonitor]:
         """Context manager for monitoring a code block.
 
         Yields:
@@ -189,7 +190,7 @@ class PerformanceMonitor:
                         }
                     )
                 except Exception:
-                    pass
+                    continue  # nosec B112
 
                 time.sleep(self.sample_interval)
         except ImportError:

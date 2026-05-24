@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 
 @dataclass
@@ -66,7 +67,7 @@ class ResultParser:
             result: Result object to populate
         """
         try:
-            import h5py
+            import h5py  # type: ignore[import-untyped]
 
             with h5py.File(statepoint_path, "r") as f:
                 # Extract k-effective if available
@@ -250,7 +251,7 @@ class ResultVisualizer:
 
         return "\n".join(lines)
 
-    def _make_json_serializable(self, obj):
+    def _make_json_serializable(self, obj: object) -> Any:
         """Recursively convert non-JSON-serializable objects.
 
         Args:
@@ -263,7 +264,7 @@ class ResultVisualizer:
             return {k: self._make_json_serializable(v) for k, v in obj.items()}
         elif isinstance(obj, list):
             return [self._make_json_serializable(item) for item in obj]
-        elif isinstance(obj, (str, int, float, bool)) or obj is None:
+        elif isinstance(obj, str | int | float | bool) or obj is None:
             return obj
         elif hasattr(obj, "tolist"):  # numpy arrays
             return obj.tolist()

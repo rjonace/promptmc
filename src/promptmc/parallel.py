@@ -247,7 +247,7 @@ class ParallelExecutor:
         Returns:
             Job result
         """
-        import subprocess
+        import subprocess  # nosec B404
         import time
 
         start_time = time.time()
@@ -265,7 +265,7 @@ class ParallelExecutor:
         try:
             cwd = job.input_path.parent if job.input_path.is_file() else job.input_path
 
-            result = subprocess.run(
+            result = subprocess.run(  # nosec B603
                 cmd,
                 cwd=cwd,
                 capture_output=True,

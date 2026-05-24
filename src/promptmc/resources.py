@@ -9,7 +9,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
+from typing import Any
 
 from promptmc.errors import ResourceError
 
@@ -25,10 +25,10 @@ class ResourceLimits:
         max_runtime_seconds: Maximum execution time.
     """
 
-    max_memory_mb: Optional[float] = None
-    max_threads: Optional[int] = None
-    max_disk_mb: Optional[float] = None
-    max_runtime_seconds: Optional[float] = None
+    max_memory_mb: float | None = None
+    max_threads: int | None = None
+    max_disk_mb: float | None = None
+    max_runtime_seconds: float | None = None
 
 
 @dataclass
@@ -45,7 +45,7 @@ class ResourceUsage:
 class ResourceMonitor:
     """Monitors and enforces resource limits during simulation."""
 
-    def __init__(self, limits: Optional[ResourceLimits] = None) -> None:
+    def __init__(self, limits: ResourceLimits | None = None) -> None:
         """Initialize the monitor.
 
         Args:
@@ -55,7 +55,7 @@ class ResourceMonitor:
         self._process = self._get_process()
 
     @staticmethod
-    def _get_process() -> Optional[object]:
+    def _get_process() -> Any | None:
         """Get a psutil Process if psutil is available."""
         try:
             import psutil
@@ -90,7 +90,7 @@ class ResourceMonitor:
         except Exception:
             return ResourceUsage()
 
-    def check_limits(self) -> Optional[str]:
+    def check_limits(self) -> str | None:
         """Check whether any limits are exceeded.
 
         Returns:
@@ -105,7 +105,7 @@ class ResourceMonitor:
             )
 
         if self.limits.max_threads is not None and usage.threads > self.limits.max_threads:
-            return f"Thread limit exceeded: {usage.threads} > " f"{self.limits.max_threads}"
+            return f"Thread limit exceeded: {usage.threads} > {self.limits.max_threads}"
 
         return None
 
@@ -123,12 +123,12 @@ class TempDirectoryManager:
         self,
         prefix: str = "openmc-",
         keep_on_error: bool = True,
-        base_dir: Optional[Path] = None,
+        base_dir: Path | None = None,
     ) -> None:
         self.prefix = prefix
         self.keep_on_error = keep_on_error
         self.base_dir = base_dir
-        self.path: Optional[Path] = None
+        self.path: Path | None = None
         self._error_occurred = False
 
     def __enter__(self) -> Path:
@@ -137,7 +137,7 @@ class TempDirectoryManager:
         )
         return self.path
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         if exc_type is not None:
             self._error_occurred = True
 
@@ -220,9 +220,9 @@ class SimulationWorkspace:
 
 @contextmanager
 def simulation_workspace(
-    root: Optional[Path] = None,
+    root: Path | None = None,
     keep_on_error: bool = True,
-    required_disk_mb: Optional[float] = None,
+    required_disk_mb: float | None = None,
 ) -> Iterator[SimulationWorkspace]:
     """Context manager for a simulation workspace.
 

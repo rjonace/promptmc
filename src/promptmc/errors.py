@@ -9,7 +9,7 @@ import traceback
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional, TypeVar
+from typing import Any, TypeVar
 
 logger = logging.getLogger(__name__)
 
@@ -49,9 +49,9 @@ class ErrorContext:
     operation: str
     category: ErrorCategory = ErrorCategory.UNKNOWN
     severity: ErrorSeverity = ErrorSeverity.ERROR
-    correlation_id: Optional[str] = None
+    correlation_id: str | None = None
     metadata: dict = field(default_factory=dict)
-    traceback_str: Optional[str] = None
+    traceback_str: str | None = None
 
     def to_dict(self) -> dict:
         """Serialize the context for logging or telemetry."""
@@ -71,8 +71,8 @@ class PromptMCError(Exception):
     def __init__(
         self,
         message: str,
-        context: Optional[ErrorContext] = None,
-        cause: Optional[Exception] = None,
+        context: ErrorContext | None = None,
+        cause: Exception | None = None,
     ) -> None:
         super().__init__(message)
         self.message = message
@@ -126,8 +126,8 @@ class RetryPolicy:
 
 
 def retry(
-    policy: Optional[RetryPolicy] = None,
-    on_retry: Optional[Callable[[int, Exception, float], None]] = None,
+    policy: RetryPolicy | None = None,
+    on_retry: Callable[[int, Exception, float], None] | None = None,
 ) -> Callable[[Callable[..., T]], Callable[..., T]]:
     """Decorator that retries a function on configured exceptions.
 
@@ -144,7 +144,7 @@ def retry(
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> T:
-            last_exc: Optional[Exception] = None
+            last_exc: Exception | None = None
             for attempt in range(1, actual_policy.max_attempts + 1):
                 try:
                     return func(*args, **kwargs)
@@ -165,7 +165,7 @@ def retry(
                         on_retry(attempt, e, delay)
                     time.sleep(delay)
 
-            assert last_exc is not None
+            assert last_exc is not None  # nosec B101
             raise last_exc
 
         return wrapper
@@ -239,7 +239,7 @@ class ErrorReporter:
 
 def configure_logging(
     level: int = logging.INFO,
-    format_string: Optional[str] = None,
+    format_string: str | None = None,
 ) -> None:
     """Configure structured logging for PromptMC.
 

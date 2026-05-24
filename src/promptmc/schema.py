@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import contextlib
-import xml.etree.ElementTree as ET
+from defusedxml import ElementTree as ET
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Literal, Optional, Union
+from typing import Literal
 
 from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
 
@@ -29,10 +29,10 @@ class SettingsSchema(BaseModel):
     batches: int = Field(default=10, ge=1, le=1_000_000)
     inactive: int = Field(default=5, ge=0)
     particles: int = Field(default=10_000, ge=1, le=1_000_000_000)
-    output_path: Optional[str] = None
-    seed: Optional[int] = Field(default=None, ge=1)
-    survival_biasing: Optional[bool] = None
-    weight_cutoff: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    output_path: str | None = None
+    seed: int | None = Field(default=None, ge=1)
+    survival_biasing: bool | None = None
+    weight_cutoff: float | None = Field(default=None, ge=0.0, le=1.0)
 
     @model_validator(mode="after")
     def _check_inactive_below_batches(self) -> SettingsSchema:
@@ -53,8 +53,8 @@ class MaterialSchema(BaseModel):
     """Schema for an OpenMC material element."""
 
     id: int = Field(ge=1)
-    name: Optional[str] = None
-    density_value: Optional[float] = Field(default=None, gt=0)
+    name: str | None = None
+    density_value: float | None = Field(default=None, gt=0)
     density_units: Literal["g/cm3", "kg/m3", "atom/b-cm", "sum"] = "g/cm3"
     nuclides: list[str] = Field(default_factory=list)
 
@@ -78,11 +78,11 @@ class CellSchema(BaseModel):
     """Schema for an OpenMC cell element."""
 
     id: int = Field(ge=1)
-    name: Optional[str] = None
-    material: Optional[Union[int, str]] = None
-    region: Optional[str] = None
-    universe: Optional[int] = None
-    fill: Optional[int] = None
+    name: str | None = None
+    material: int | str | None = None
+    region: str | None = None
+    universe: int | None = None
+    fill: int | None = None
 
 
 class GeometrySchema(BaseModel):
@@ -115,7 +115,7 @@ class SchemaIssue:
     severity: SchemaSeverity
     field: str
     message: str
-    file_path: Optional[str] = None
+    file_path: str | None = None
 
 
 @dataclass
@@ -137,7 +137,7 @@ class SchemaValidationResult:
 class SchemaValidator:
     """Validates OpenMC XML files against Pydantic schemas."""
 
-    def validate_settings(self, xml_path: Union[str, Path]) -> SchemaValidationResult:
+    def validate_settings(self, xml_path: str | Path) -> SchemaValidationResult:
         """Validate a settings.xml file."""
         xml_path = Path(xml_path)
         issues: list[SchemaIssue] = []
@@ -173,7 +173,7 @@ class SchemaValidator:
 
         return SchemaValidationResult(is_valid=not issues, issues=issues)
 
-    def validate_materials(self, xml_path: Union[str, Path]) -> SchemaValidationResult:
+    def validate_materials(self, xml_path: str | Path) -> SchemaValidationResult:
         """Validate a materials.xml file."""
         xml_path = Path(xml_path)
         issues: list[SchemaIssue] = []
@@ -216,12 +216,12 @@ class SchemaValidator:
                 mat_dict["density_units"] = units
 
             mat_dict["nuclides"] = [
-                n.get("name", "") for n in material_elem.findall("nuclide") if n.get("name")
+                str(n.get("name", "")) for n in material_elem.findall("nuclide") if n.get("name")
             ]
             materials_data.append(mat_dict)
 
         try:
-            MaterialsSchema(materials=materials_data)
+            MaterialsSchema(materials=[MaterialSchema(**m) for m in materials_data])
         except ValidationError as e:
             for err in e.errors():
                 issues.append(
@@ -235,7 +235,7 @@ class SchemaValidator:
 
         return SchemaValidationResult(is_valid=not issues, issues=issues)
 
-    def validate_geometry(self, xml_path: Union[str, Path]) -> SchemaValidationResult:
+    def validate_geometry(self, xml_path: str | Path) -> SchemaValidationResult:
         """Validate a geometry.xml file."""
         xml_path = Path(xml_path)
         issues: list[SchemaIssue] = []
@@ -257,19 +257,19 @@ class SchemaValidator:
         for cell_elem in tree.getroot().findall("cell"):
             cells_data.append(
                 {
-                    "id": int(cell_elem.get("id", "0") or 0),
+                    "id": int(str(cell_elem.get("id", "0") or "0")),
                     "name": cell_elem.get("name"),
                     "material": cell_elem.get("material"),
                     "region": cell_elem.get("region"),
-                    "universe": int(cell_elem.get("universe"))
+                    "universe": int(str(cell_elem.get("universe")))
                     if cell_elem.get("universe")
                     else None,
-                    "fill": int(cell_elem.get("fill")) if cell_elem.get("fill") else None,
+                    "fill": int(str(cell_elem.get("fill"))) if cell_elem.get("fill") else None,
                 }
             )
 
         try:
-            GeometrySchema(cells=cells_data)
+            GeometrySchema(cells=[CellSchema(**c) for c in cells_data])
         except ValidationError as e:
             for err in e.errors():
                 issues.append(
@@ -283,7 +283,7 @@ class SchemaValidator:
 
         return SchemaValidationResult(is_valid=not issues, issues=issues)
 
-    def validate_directory(self, directory: Union[str, Path]) -> SchemaValidationResult:
+    def validate_directory(self, directory: str | Path) -> SchemaValidationResult:
         """Validate all OpenMC input files in a directory."""
         directory = Path(directory)
         all_issues: list[SchemaIssue] = []
@@ -322,7 +322,7 @@ class SchemaValidator:
         for tag in ("run_mode", "batches", "inactive", "particles", "seed"):
             elem = root.find(tag)
             if elem is not None and elem.text is not None:
-                value: Union[str, int] = elem.text.strip()
+                value: str | int = elem.text.strip()
                 if tag in ("batches", "inactive", "particles", "seed"):
                     with contextlib.suppress(ValueError):
                         value = int(value)
