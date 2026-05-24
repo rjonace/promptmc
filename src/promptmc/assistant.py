@@ -70,11 +70,13 @@ class OpenAICompatibleLLMClient:
         timeout_seconds: int = 30,
     ) -> None:
         self.api_key = (
-            api_key or os.getenv("OPENMC_WRAPPER_LLM_API_KEY") or os.getenv("OPENAI_API_KEY")
+            api_key
+            or os.getenv("PROMPTMC_LLM_API_KEY")
+            or os.getenv("OPENAI_API_KEY")
         )
-        self.model = model or os.getenv("OPENMC_WRAPPER_LLM_MODEL", "gpt-4o-mini")
+        self.model = model or os.getenv("PROMPTMC_LLM_MODEL") or "gpt-4o-mini"
         self.endpoint = endpoint or os.getenv(
-            "OPENMC_WRAPPER_LLM_ENDPOINT",
+            "PROMPTMC_LLM_ENDPOINT",
             "https://api.openai.com/v1/chat/completions",
         )
         self.timeout_seconds = timeout_seconds
@@ -139,7 +141,7 @@ class NaturalLanguageAssistant:
         if not client.configured:
             local_plan.warnings.append(
                 "LLM mode requested, but no API key is configured. Set OPENAI_API_KEY or "
-                "OPENMC_WRAPPER_LLM_API_KEY. Returned the local planner result instead."
+                "PROMPTMC_LLM_API_KEY. Returned the local planner result instead."
             )
             return local_plan
 

@@ -43,7 +43,7 @@ def test_version():
     """Test --version flag."""
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert "openmc-wrapper" in result.stdout
+    assert "promptmc" in result.stdout
 
 
 def test_verbose_flag():
@@ -77,7 +77,7 @@ def test_run_invalid_mode():
     assert result.exit_code == 1
 
 
-@patch("openmc_wrapper.cli.OpenMCIntegration")
+@patch("promptmc.cli.OpenMCIntegration")
 def test_run_success(mock_cls):
     mock_integration = MagicMock()
     mock_integration.validate_input_file.return_value = True
@@ -95,7 +95,7 @@ def test_run_success(mock_cls):
     assert result.exit_code == 0
 
 
-@patch("openmc_wrapper.cli.OpenMCIntegration")
+@patch("promptmc.cli.OpenMCIntegration")
 def test_run_simulation_failure(mock_cls):
     mock_integration = MagicMock()
     mock_integration.validate_input_file.return_value = True
@@ -113,7 +113,7 @@ def test_run_simulation_failure(mock_cls):
     assert result.exit_code == 1
 
 
-@patch("openmc_wrapper.cli.OpenMCIntegration")
+@patch("promptmc.cli.OpenMCIntegration")
 def test_run_validation_error(mock_cls):
     from promptmc.openmc_integration import OpenMCValidationError
 
@@ -129,7 +129,7 @@ def test_run_validation_error(mock_cls):
     assert "Validation error" in result.stdout
 
 
-@patch("openmc_wrapper.cli.OpenMCIntegration")
+@patch("promptmc.cli.OpenMCIntegration")
 def test_run_not_found_error(mock_cls):
     from promptmc.openmc_integration import OpenMCNotFoundError
 
@@ -155,7 +155,7 @@ def test_configure_help():
     assert result.exit_code == 0
 
 
-@patch("openmc_wrapper.cli.OpenMCIntegration")
+@patch("promptmc.cli.OpenMCIntegration")
 def test_configure_success(mock_cls):
     mock_integration = MagicMock()
     mock_integration.generate_configuration.return_value = Path("openmc_config.xml")
@@ -169,7 +169,7 @@ def test_configure_success(mock_cls):
     assert "Configuration generated" in result.stdout
 
 
-@patch("openmc_wrapper.cli.OpenMCIntegration")
+@patch("promptmc.cli.OpenMCIntegration")
 def test_configure_error(mock_cls):
     mock_integration = MagicMock()
     mock_integration.generate_configuration.side_effect = RuntimeError("disk full")
@@ -189,7 +189,7 @@ def test_validate_help():
     assert result.exit_code == 0
 
 
-@patch("openmc_wrapper.cli.OpenMCIntegration")
+@patch("promptmc.cli.OpenMCIntegration")
 def test_validate_success(mock_cls):
     mock_integration = MagicMock()
     mock_integration.validate_input_file.return_value = True
@@ -203,7 +203,7 @@ def test_validate_success(mock_cls):
     assert "passed" in result.stdout
 
 
-@patch("openmc_wrapper.cli.OpenMCIntegration")
+@patch("promptmc.cli.OpenMCIntegration")
 def test_validate_fail(mock_cls):
     mock_integration = MagicMock()
     mock_integration.validate_input_file.return_value = False
@@ -216,7 +216,7 @@ def test_validate_fail(mock_cls):
     assert result.exit_code == 1
 
 
-@patch("openmc_wrapper.cli.OpenMCIntegration")
+@patch("promptmc.cli.OpenMCIntegration")
 def test_validate_with_schema(mock_cls):
     mock_integration = MagicMock()
     mock_integration.validate_input_file.return_value = True
@@ -245,7 +245,7 @@ def test_info_command():
     assert result.exit_code in [0, 1]
 
 
-@patch("openmc_wrapper.cli.OpenMCIntegration")
+@patch("promptmc.cli.OpenMCIntegration")
 def test_info_success(mock_cls):
     mock_info = MagicMock()
     mock_info.version = "0.14.0"
@@ -261,7 +261,7 @@ def test_info_success(mock_cls):
     assert "0.14.0" in result.stdout
 
 
-@patch("openmc_wrapper.cli.OpenMCIntegration")
+@patch("promptmc.cli.OpenMCIntegration")
 def test_info_not_found(mock_cls):
     from promptmc.openmc_integration import OpenMCNotFoundError
 
@@ -368,8 +368,8 @@ def test_batch_invalid_parallel_mode(tmp_path):
     assert result.exit_code == 1
 
 
-@patch("openmc_wrapper.cli.BatchRunner")
-@patch("openmc_wrapper.cli.load_batch_spec")
+@patch("promptmc.cli.BatchRunner")
+@patch("promptmc.cli.load_batch_spec")
 def test_batch_success(mock_load, mock_runner_cls, tmp_path):
     spec = tmp_path / "batch.yaml"
     spec.write_text("name: test\nbase_input: sim\noutput_root: out\n")
@@ -398,8 +398,8 @@ def test_batch_success(mock_load, mock_runner_cls, tmp_path):
     assert "Batch Complete" in result.stdout
 
 
-@patch("openmc_wrapper.cli.BatchRunner")
-@patch("openmc_wrapper.cli.load_batch_spec")
+@patch("promptmc.cli.BatchRunner")
+@patch("promptmc.cli.load_batch_spec")
 def test_batch_with_failures(mock_load, mock_runner_cls, tmp_path):
     spec = tmp_path / "batch.yaml"
     spec.write_text("name: test\nbase_input: sim\noutput_root: out\n")
@@ -437,8 +437,8 @@ def test_analyze_help():
     assert result.exit_code == 0
 
 
-@patch("openmc_wrapper.cli.ResultParser")
-@patch("openmc_wrapper.cli.ResultVisualizer")
+@patch("promptmc.cli.ResultParser")
+@patch("promptmc.cli.ResultVisualizer")
 def test_analyze_success(mock_viz_cls, mock_parser_cls, tmp_path):
     mock_result = MagicMock()
     mock_parser = MagicMock()
@@ -453,8 +453,8 @@ def test_analyze_success(mock_viz_cls, mock_parser_cls, tmp_path):
     assert result.exit_code == 0
 
 
-@patch("openmc_wrapper.cli.ResultParser")
-@patch("openmc_wrapper.cli.ResultVisualizer")
+@patch("promptmc.cli.ResultParser")
+@patch("promptmc.cli.ResultVisualizer")
 def test_analyze_with_json_export(mock_viz_cls, mock_parser_cls, tmp_path):
     mock_result = MagicMock()
     mock_parser = MagicMock()

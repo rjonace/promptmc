@@ -71,7 +71,7 @@ class TelemetryManager:
 
     def __init__(
         self,
-        service_name: str = "openmc-wrapper",
+        service_name: str = "promptmc",
         enable_console: bool = True,
         otlp_endpoint: Optional[str] = None,
     ) -> None:
@@ -244,7 +244,7 @@ def get_telemetry_manager() -> TelemetryManager:
     enable_console = os.getenv("OTEL_CONSOLE_EXPORT", "true").lower() == "true"
 
     _telemetry_manager = TelemetryManager(
-        service_name="openmc-wrapper",
+        service_name="promptmc",
         enable_console=enable_console,
         otlp_endpoint=otlp_endpoint,
     )

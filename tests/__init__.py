@@ -1,1 +1,1 @@
-"""Tests for openmc-wrapper."""
+"""Tests for promptmc."""

@@ -10,7 +10,7 @@ from promptmc.errors import (
     ErrorReporter,
     ErrorSeverity,
     ExecutionError,
-    OpenMCWrapperError,
+    PromptMCError,
     RetryPolicy,
     ValidationError,
     retry,
@@ -40,17 +40,17 @@ def test_error_context_to_dict():
     assert data["severity"] == "error"
 
 
-def test_openmc_wrapper_error():
-    """Test OpenMCWrapperError creation."""
-    err = OpenMCWrapperError("Test error")
+def test_promptmc_error():
+    """Test PromptMCError creation."""
+    err = PromptMCError("Test error")
     assert err.message == "Test error"
     assert err.context.operation == "unknown"
 
 
-def test_openmc_wrapper_error_with_cause():
+def test_promptmc_error_with_cause():
     """Test error with underlying cause."""
     cause = ValueError("Original error")
-    err = OpenMCWrapperError("Wrapper error", cause=cause)
+    err = PromptMCError("Wrapper error", cause=cause)
     assert err.cause is cause
 
 
@@ -69,13 +69,13 @@ def test_error_to_dict():
 def test_validation_error():
     """Test ValidationError."""
     err = ValidationError("Bad input")
-    assert isinstance(err, OpenMCWrapperError)
+    assert isinstance(err, PromptMCError)
 
 
 def test_execution_error():
     """Test ExecutionError."""
     err = ExecutionError("Run failed")
-    assert isinstance(err, OpenMCWrapperError)
+    assert isinstance(err, PromptMCError)
 
 
 def test_retry_policy_compute_delay():

@@ -1,4 +1,4 @@
-"""Command-line interface for OpenMC Wrapper."""
+"""Command-line interface for PromptMC."""
 
 from __future__ import annotations
 
@@ -460,7 +460,7 @@ def ask(
     llm: bool = typer.Option(
         False,
         "--llm",
-        help="Use an OpenAI-compatible LLM if OPENAI_API_KEY or OPENMC_WRAPPER_LLM_API_KEY is set",
+        help="Use an OpenAI-compatible LLM if OPENAI_API_KEY or PROMPTMC_LLM_API_KEY is set",
     ),
     model: Optional[str] = typer.Option(
         None,

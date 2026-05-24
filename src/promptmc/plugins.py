@@ -1,4 +1,4 @@
-"""Plugin system for extending openmc-wrapper functionality.
+"""Plugin system for extending PromptMC functionality.
 
 Plugins can provide:
 - Custom configuration templates
@@ -7,7 +7,7 @@ Plugins can provide:
 - Custom CLI commands
 
 Plugins are discovered via Python entry points under the
-``openmc_wrapper.plugins`` group, or registered programmatically.
+``promptmc.plugins`` group, or registered programmatically.
 """
 
 from __future__ import annotations
@@ -191,7 +191,7 @@ class PluginRegistry:
                 logger.exception("Post-processor %s failed", processor.metadata.name)
         return current
 
-    def discover_entry_points(self, group: str = "openmc_wrapper.plugins") -> int:
+    def discover_entry_points(self, group: str = "promptmc.plugins") -> int:
         """Discover and load plugins via Python entry points.
 
         Returns:

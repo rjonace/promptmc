@@ -12,10 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - New `assistant.py` module with deterministic offline planning from plain-English requests
   - Optional OpenAI-compatible LLM planning via `--llm`
   - New `ask` CLI command to produce a reviewed plan or write `settings.xml`
-  - Environment configuration: `OPENAI_API_KEY`, `OPENMC_WRAPPER_LLM_API_KEY`, `OPENMC_WRAPPER_LLM_MODEL`, `OPENMC_WRAPPER_LLM_ENDPOINT`
+  - Environment configuration: `OPENAI_API_KEY`, `PROMPTMC_LLM_API_KEY`, `PROMPTMC_LLM_MODEL`, `PROMPTMC_LLM_ENDPOINT`
 - Phase 4: Production Features
   - **Schema validation** (`schema.py`) – Pydantic models for `settings.xml`, `materials.xml`, and `geometry.xml`; `SchemaValidator` with per-file and directory validation; severity levels and formatted reports
-  - **Advanced error handling** (`errors.py`) – Structured exception hierarchy (`OpenMCWrapperError`, `ConfigurationError`, `ValidationError`, `ExecutionError`, `ResourceError`); `ErrorContext` dataclass; `retry` decorator with exponential back-off; `ErrorReporter` with JSON export
+  - **Advanced error handling** (`errors.py`) – Structured exception hierarchy (`PromptMCError`, `ConfigurationError`, `ValidationError`, `ExecutionError`, `ResourceError`); `ErrorContext` dataclass; `retry` decorator with exponential back-off; `ErrorReporter` with JSON export
   - **Progress reporting** (`progress.py`) – `ProgressReporter` with subscriber callbacks; `RichProgressDisplay` for CLI progress bars; `ProgressStage` enum; `SimulationProgress` for real-time OpenMC log parsing
   - **Resource management** (`resources.py`) – `ResourceLimits` and `ResourceMonitor` with CPU/memory enforcement; `TempDirectoryManager`; `DiskSpace` utilities; `simulation_workspace` context manager
   - **Plugin system** (`plugins.py`) – `Plugin` ABC with lifecycle hooks; `PostProcessorPlugin` and `HookPlugin`; `PluginRegistry` singleton with entry-point discovery; `hook` decorator

@@ -107,9 +107,9 @@ promptmc ask "I need a high-statistics shielding model for a 14 MeV source" --ll
 plain-English domain language to built-in templates and safe defaults. With `--llm`, it can call an
 OpenAI-compatible chat completions endpoint configured by:
 
-- **`OPENAI_API_KEY` or `OPENMC_WRAPPER_LLM_API_KEY`**: API key
-- **`OPENMC_WRAPPER_LLM_MODEL`**: model name, defaults to `gpt-4o-mini`
-- **`OPENMC_WRAPPER_LLM_ENDPOINT`**: OpenAI-compatible endpoint
+- **`OPENAI_API_KEY` or `PROMPTMC_LLM_API_KEY`**: API key
+- **`PROMPTMC_LLM_MODEL`**: model name, defaults to `gpt-4o-mini`
+- **`PROMPTMC_LLM_ENDPOINT`**: OpenAI-compatible endpoint
 
 This makes OpenMC approachable for new users while still producing explicit, reviewable commands and
 validated XML files for production workflows.
@@ -209,8 +209,8 @@ promptmc --verbose run input.xml
 ### Python API Usage
 
 ```python
-from openmc_wrapper import TelemetryManager
-from openmc_wrapper.openmc_integration import OpenMCIntegration, ExecutionMode
+from promptmc import TelemetryManager
+from promptmc.openmc_integration import OpenMCIntegration, ExecutionMode
 
 # Initialize OpenMC integration
 integration = OpenMCIntegration(execution_mode=ExecutionMode.AUTO)
@@ -283,7 +283,7 @@ mypy src/
 
 ```
 promptmc/
-├── src/openmc_wrapper/
+├── src/promptmc/
 │   ├── __init__.py              # Package initialization
 │   ├── cli.py                   # CLI (13 commands)
 │   ├── assistant.py             # Natural-language and optional LLM planning

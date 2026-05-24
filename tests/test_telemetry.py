@@ -6,7 +6,7 @@ from promptmc.telemetry import TelemetryManager
 def test_telemetry_manager_initialization():
     """Test TelemetryManager initialization."""
     manager = TelemetryManager(enable_console=False, otlp_endpoint=None)
-    assert manager.service_name == "openmc-wrapper"
+    assert manager.service_name == "promptmc"
     assert manager.enable_console is False
     assert manager.otlp_endpoint is None
 

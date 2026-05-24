@@ -65,8 +65,8 @@ class ErrorContext:
         }
 
 
-class OpenMCWrapperError(Exception):
-    """Base exception for all openmc-wrapper errors with structured context."""
+class PromptMCError(Exception):
+    """Base exception for all PromptMC errors with structured context."""
 
     def __init__(
         self,
@@ -93,19 +93,19 @@ class OpenMCWrapperError(Exception):
         }
 
 
-class ConfigurationError(OpenMCWrapperError):
+class ConfigurationError(PromptMCError):
     """Raised when configuration is invalid or missing."""
 
 
-class ValidationError(OpenMCWrapperError):
+class ValidationError(PromptMCError):
     """Raised when validation fails."""
 
 
-class ExecutionError(OpenMCWrapperError):
+class ExecutionError(PromptMCError):
     """Raised when execution fails."""
 
 
-class ResourceError(OpenMCWrapperError):
+class ResourceError(PromptMCError):
     """Raised when resource limits are exceeded or resources unavailable."""
 
 
@@ -177,9 +177,9 @@ class ErrorReporter:
     """Aggregates and reports errors that occur during a session."""
 
     def __init__(self) -> None:
-        self._errors: list[OpenMCWrapperError] = []
+        self._errors: list[PromptMCError] = []
 
-    def record(self, error: OpenMCWrapperError) -> None:
+    def record(self, error: PromptMCError) -> None:
         """Record an error for later reporting."""
         self._errors.append(error)
         logger.error(
@@ -190,7 +190,7 @@ class ErrorReporter:
         )
 
     @property
-    def errors(self) -> list[OpenMCWrapperError]:
+    def errors(self) -> list[PromptMCError]:
         return list(self._errors)
 
     def has_errors(self) -> bool:
@@ -241,7 +241,7 @@ def configure_logging(
     level: int = logging.INFO,
     format_string: Optional[str] = None,
 ) -> None:
-    """Configure structured logging for openmc-wrapper.
+    """Configure structured logging for PromptMC.
 
     Args:
         level: Logging level (e.g. ``logging.INFO``).
@@ -253,7 +253,7 @@ def configure_logging(
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter(format_string))
 
-    root_logger = logging.getLogger("openmc_wrapper")
+    root_logger = logging.getLogger("promptmc")
     root_logger.setLevel(level)
     root_logger.addHandler(handler)
     root_logger.propagate = False
