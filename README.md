@@ -389,7 +389,17 @@ openmc-wrapper run input.xml
 - [x] Natural-language assistant command (`ask`) with optional OpenAI-compatible LLM mode
 - [x] 218 tests, 82% coverage, and zero lint warnings
 
-## Contributing
+## About the Author / Motivation
+
+I studied nuclear engineering at MIT over 20 years ago and used MCNP 4 for my senior thesis project. I left during my senior year without graduating. Since then, I've been a software engineer at Google for the past 10 years.
+
+This project is a personal exploration of agentic programming — using AI agents to build software. OpenMC Wrapper seemed like the perfect test case: it combines my background in nuclear physics with modern software engineering practices. The goal was to see how much of a production-grade tool could be built through agentic coding, from architecture design to implementation, testing, and documentation.
+
+The result is a fully functional, well-tested tool that I hope will be useful to the OpenMC community — whether you're a student learning Monte Carlo methods or a researcher running production simulations.
+
+## Agentic Coding Disclaimer
+
+This project was developed using agentic programming techniques with Cascade (an AI coding assistant). While the code was generated through AI-human collaboration, it has been reviewed, tested, and validated for production use. The project demonstrates the potential of agentic workflows while maintaining software engineering best practices: comprehensive testing, linting, type checking, and documentation.
 
 We welcome contributions! Please follow these guidelines:
 
