@@ -4,7 +4,17 @@ Production-grade Python wrapper for OpenMC Monte Carlo particle transport simula
 
 ## Overview
 
-OpenMC Wrapper makes OpenMC dramatically easier to use by turning common simulation workflows into plain-English, template-driven, validated commands. It provides a natural-language assistant, modern CLI tooling, built-in observability, strict data validation, and production-grade execution utilities. Designed as a tier-one software product, it prioritizes exceptional developer experience and deep system observability.
+OpenMC is powerful, but getting started can be challenging: you need to write XML configuration files, understand dozens of parameters, and manage simulation workflows manually.
+
+**OpenMC Wrapper solves this by:**
+
+- **Describing simulations in plain English** — Tell it what you want (`"make a shielding calculation with 1M particles"`) and get a validated plan
+- **Generating production-ready XML** — Automatically creates `settings.xml` with sensible defaults based on your description
+- **Validating before you run** — Schema validation catches errors before OpenMC even starts
+- **Managing workflows** — Batch runs, parallel execution, progress tracking, and resource limits
+- **Observability built-in** — Distributed tracing and metrics via OpenTelemetry
+
+Whether you're new to Monte Carlo or an experienced researcher, OpenMC Wrapper reduces friction and lets you focus on physics, not configuration.
 
 ### Architecture
 
@@ -103,6 +113,42 @@ OpenAI-compatible chat completions endpoint configured by:
 
 This makes OpenMC approachable for new users while still producing explicit, reviewable commands and
 validated XML files for production workflows.
+
+#### Example Output
+
+```bash
+$ openmc-wrapper ask "make a concrete shielding calculation with 1 million particles"
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃               Natural-Language OpenMC Plan                      ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ Field          │ Value                                          │
+├────────────────┼────────────────────────────────────────────────┤
+│ Source         │ local                                          │
+│ Template       │ shielding                                      │
+│ Particles      │ 1,000,000                                      │
+│ Batches        │ 10                                             │
+│ Inactive       │ 0                                              │
+│ Confidence     │ 85%                                            │
+│ Command        │ openmc-wrapper template shielding --output     │
+│                │ settings.xml --particles 1000000 --batches 10  │
+└────────────────┴────────────────────────────────────────────────┘
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Summary                                                       ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ Use the shielding template with 1,000,000 particles and 10   │
+│ batches.                                                      │
+└────────────────────────────────────────────────────────────────┘
+
+Why this plan
+- Shielding/dose keywords suggest a shielding calculation.
+
+Next steps
+- Generate settings.xml from the recommended template.
+- Add or verify materials.xml and geometry.xml for the physical model.
+- Run schema validation before launching OpenMC.
+```
 
 ### CLI Usage
 
