@@ -52,7 +52,7 @@ Whether you're new to Monte Carlo or an experienced researcher, PromptMC reduces
 - **Input Validation**: XML structure validation for OpenMC input files
 - **Modern CLI**: Extensible command-line interface built with Typer (13 commands)
 - **Built-in Observability**: OpenTelemetry integration for distributed tracing and metrics
-- **Type Safety**: Full type hints, `from __future__ import annotations`, Python 3.9+
+- **Type Safety**: Full type hints, `from __future__ import annotations`, Python 3.10+
 - **Quality Assurance**: 218 tests, 82% coverage, and zero ruff warnings
 - **Zero-Config Telemetry**: Console export by default with OTLP support
 - **Production-Ready**: Strict dependency management with Poetry
@@ -61,7 +61,7 @@ Whether you're new to Monte Carlo or an experienced researcher, PromptMC reduces
 
 ### Prerequisites
 
-- Python 3.9 or higher
+- Python 3.10 or higher (required for OpenMC Python API compatibility)
 - OpenMC (built from source or executable in PATH)
 - Nuclear cross-section data (for running simulations)
 

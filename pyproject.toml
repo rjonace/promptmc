@@ -8,7 +8,7 @@ readme = "README.md"
 packages = [{include = "promptmc", from = "src"}]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 typer = {extras = ["all"], version = "^0.12.0"}
 opentelemetry-api = "^1.26.0"
 opentelemetry-sdk = "^1.26.0"
@@ -35,7 +35,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 line-length = 100
 
 [tool.ruff.lint]
@@ -52,8 +52,6 @@ select = [
 ]
 ignore = [
     "B008",  # Function calls in argument defaults (Typer pattern)
-    "UP007", # X | Y type union (we target Python 3.9)
-    "UP038", # isinstance with X | Y (we target Python 3.9)
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -69,7 +67,7 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
