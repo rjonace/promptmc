@@ -2,7 +2,7 @@
 
 Production-grade, AI-enabled Python wrapper for OpenMC Monte Carlo particle transport simulations.
 
-> **Project Vision (v2.x / v3.x):** We are building `PromptMC` to be an advanced web-based SaaS platform that wraps the `OpenMC` nuclear physics engine. It translates natural language into complex Monte Carlo simulations, visualizes them, optimizes them autonomously, and orchestrates the heavy compute on the cloud.
+> **Project Vision:** We are building `PromptMC` to be an advanced web-based SaaS platform that wraps the `OpenMC` nuclear physics engine. It translates natural language into complex Monte Carlo simulations, visualizes them, optimizes them autonomously, and orchestrates the heavy compute on the cloud.
 
 ## Overview
 

@@ -1,6 +1,6 @@
 # Development Roadmap
 
-**Project Vision (v2.x / v3.x):** We are building `PromptMC`, an advanced web-based SaaS platform that wraps the `OpenMC` nuclear physics engine. It translates natural language into complex Monte Carlo simulations, visualizes them, optimizes them autonomously, and orchestrates the heavy compute on the cloud.
+**Project Vision:** We are building `PromptMC`, an advanced web-based SaaS platform that wraps the `OpenMC` nuclear physics engine. It translates natural language into complex Monte Carlo simulations, visualizes them, optimizes them autonomously, and orchestrates the heavy compute on the cloud.
 
 ### Phase 1: Core Functionality (Current)
 - [x] Project scaffolding with Poetry
@@ -39,3 +39,12 @@
 - [ ] **Cloud-Native Orchestration**: Deploy parallel/batch workloads to cloud environments (GCP/Kubernetes) for large-scale parameter sweeps.
 - [ ] **Expanded Agentic Capabilities**: LLM analysis of simulation outputs to autonomously suggest geometry, material, or optimization tweaks.
 - [ ] **Pre-Run Visualizations**: Lightweight terminal-based visual feedback of geometry and materials prior to execution.
+
+## Version 3.0 (Future)
+
+### Phase 6: The SaaS Web Platform
+- [ ] **Interactive Web Interface**: A modern frontend (Next.js/React) for chatting with the PromptMC agent and viewing live 3D geometry rendering (WebGL/VTK.js).
+- [ ] **REST/GraphQL API Layer**: A robust backend bridging natural language requests to the Python wrapper and queuing cloud jobs.
+- [ ] **Multi-Tenant Architecture**: User accounts, project workspaces, secure authentication, and cloud compute billing/credits.
+- [ ] **Real-Time Telemetry Dashboard**: Web-based exposure of OpenTelemetry data to watch batches run in real-time, track particles, and monitor usage.
+- [ ] **Collaborative Hub**: Publish and share "PromptMC Recipes" (validated reactor/shielding setups) for others to fork and run.
