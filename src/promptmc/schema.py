@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import contextlib
-from defusedxml import ElementTree as ET
+import xml.etree.ElementTree as ET  # nosec B405
+from defusedxml.ElementTree import parse as defused_parse  # type: ignore[import-untyped]
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -143,7 +144,7 @@ class SchemaValidator:
         issues: list[SchemaIssue] = []
 
         try:
-            tree = ET.parse(xml_path)
+            tree = defused_parse(xml_path)
         except ET.ParseError as e:
             issues.append(
                 SchemaIssue(
@@ -179,7 +180,7 @@ class SchemaValidator:
         issues: list[SchemaIssue] = []
 
         try:
-            tree = ET.parse(xml_path)
+            tree = defused_parse(xml_path)
         except ET.ParseError as e:
             issues.append(
                 SchemaIssue(
@@ -241,7 +242,7 @@ class SchemaValidator:
         issues: list[SchemaIssue] = []
 
         try:
-            tree = ET.parse(xml_path)
+            tree = defused_parse(xml_path)
         except ET.ParseError as e:
             issues.append(
                 SchemaIssue(

@@ -5,7 +5,8 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess  # nosec B404
-from defusedxml import ElementTree as ET
+import xml.etree.ElementTree as ET  # nosec B405
+from defusedxml.ElementTree import parse as defused_parse  # type: ignore[import-untyped]
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -159,7 +160,7 @@ class OpenMCIntegration:
             OpenMCValidationError: If the XML is malformed.
         """
         try:
-            ET.parse(xml_path)
+            defused_parse(xml_path)
         except ET.ParseError as e:
             raise OpenMCValidationError(f"Invalid XML in {xml_path}: {e}") from e
 
