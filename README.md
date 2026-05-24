@@ -433,6 +433,8 @@ The result is a fully functional, well-tested tool that I hope will be useful to
 
 This project was developed using agentic programming techniques with Cascade (an AI coding assistant). While the code was generated through AI-human collaboration, it has been reviewed, tested, and validated for production use. The project demonstrates the potential of agentic workflows while maintaining software engineering best practices: comprehensive testing, linting, type checking, and documentation.
 
+## Contributions
+
 We welcome contributions! Please follow these guidelines:
 
 1. Fork the repository
