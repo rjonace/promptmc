@@ -69,9 +69,13 @@ class OpenAICompatibleLLMClient:
         endpoint: str | None = None,
         timeout_seconds: int = 30,
     ) -> None:
-        self.api_key: str | None = api_key or os.getenv("PROMPTMC_LLM_API_KEY") or os.getenv("OPENAI_API_KEY")
+        self.api_key: str | None = (
+            api_key or os.getenv("PROMPTMC_LLM_API_KEY") or os.getenv("OPENAI_API_KEY")
+        )
         self.model: str = model or os.getenv("PROMPTMC_LLM_MODEL") or "gpt-4o-mini"
-        self.endpoint: str = endpoint or os.getenv("PROMPTMC_LLM_ENDPOINT") or "https://api.openai.com/v1/chat/completions"
+        self.endpoint: str = (
+            endpoint or os.getenv("PROMPTMC_LLM_ENDPOINT") or "https://api.openai.com/v1/chat/completions"
+        )
         self.timeout_seconds = timeout_seconds
 
     @property

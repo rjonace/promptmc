@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import contextlib
 import xml.etree.ElementTree as ET  # nosec B405
-from defusedxml.ElementTree import parse as defused_parse
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Literal
 
+from defusedxml.ElementTree import parse as defused_parse
 from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
 
 
@@ -157,6 +157,17 @@ class SchemaValidator:
             return SchemaValidationResult(is_valid=False, issues=issues)
 
         root = tree.getroot()
+        if root is None:
+            issues.append(
+                SchemaIssue(
+                    severity=SchemaSeverity.ERROR,
+                    field="<root>",
+                    message="XML document has no root element",
+                    file_path=str(xml_path),
+                )
+            )
+            return SchemaValidationResult(is_valid=False, issues=issues)
+
         data = self._settings_xml_to_dict(root)
 
         try:
@@ -192,8 +203,20 @@ class SchemaValidator:
             )
             return SchemaValidationResult(is_valid=False, issues=issues)
 
+        root = tree.getroot()
+        if root is None:
+            issues.append(
+                SchemaIssue(
+                    severity=SchemaSeverity.ERROR,
+                    field="<root>",
+                    message="XML document has no root element",
+                    file_path=str(xml_path),
+                )
+            )
+            return SchemaValidationResult(is_valid=False, issues=issues)
+
         materials_data: list[dict] = []
-        for material_elem in tree.getroot().findall("material"):
+        for material_elem in root.findall("material"):
             mat_dict: dict = {
                 "id": int(material_elem.get("id", "0") or 0),
                 "name": material_elem.get("name"),
@@ -254,8 +277,20 @@ class SchemaValidator:
             )
             return SchemaValidationResult(is_valid=False, issues=issues)
 
+        root = tree.getroot()
+        if root is None:
+            issues.append(
+                SchemaIssue(
+                    severity=SchemaSeverity.ERROR,
+                    field="<root>",
+                    message="XML document has no root element",
+                    file_path=str(xml_path),
+                )
+            )
+            return SchemaValidationResult(is_valid=False, issues=issues)
+
         cells_data: list[dict] = []
-        for cell_elem in tree.getroot().findall("cell"):
+        for cell_elem in root.findall("cell"):
             cells_data.append(
                 {
                     "id": int(str(cell_elem.get("id", "0") or "0")),

@@ -138,7 +138,10 @@ def run(
         )
 
         registry = get_plugin_registry()
-        registry.fire_hook(HookEvent.BEFORE_RUN, {"input_file": str(input_file), "threads": threads})
+        registry.fire_hook(
+            HookEvent.BEFORE_RUN,
+            {"input_file": str(input_file), "threads": threads}
+        )
 
         telemetry.record_simulation_start(simulation_id)
 

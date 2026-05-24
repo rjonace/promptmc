@@ -1,6 +1,6 @@
-import shutil
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 from promptmc.openmc_integration import (
@@ -11,8 +11,6 @@ from promptmc.openmc_integration import (
     OpenMCValidationError,
 )
 
-
-from unittest.mock import patch
 
 def test_run_simulation_without_openmc():
     """Test that running simulation without OpenMC raises error."""

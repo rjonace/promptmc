@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import xml.etree.ElementTree as ET  # nosec B405
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
+from typing import Any
 
 
 class TemplateType(Enum):

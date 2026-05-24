@@ -6,11 +6,12 @@ import os
 import shutil
 import subprocess  # nosec B404
 import xml.etree.ElementTree as ET  # nosec B405
-from defusedxml.ElementTree import parse as defused_parse
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Any
+
+from defusedxml.ElementTree import parse as defused_parse
 
 # OpenMC required input files for a directory-based simulation
 REQUIRED_INPUT_FILES = ("geometry.xml", "materials.xml", "settings.xml")
@@ -228,8 +229,9 @@ class OpenMCIntegration:
         try:
             try:
                 # Re-import to satisfy type checkers; cached import is fine
-                import openmc
                 from typing import Any, cast
+
+                import openmc
 
                 cast(Any, openmc).run(output_path=str(output_path))
                 return subprocess.CompletedProcess[str](
