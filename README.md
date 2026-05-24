@@ -108,7 +108,7 @@ source .venv/bin/activate
 pip install -e .
 
 # Install development dependencies (optional)
-pip install pytest pytest-cov mypy ruff pre-commit bandit
+pip install pytest pytest-cov mypy ruff pre-commit bandit types-PyYAML types-psutil types-defusedxml
 ```
 
 ### Install as a Package (when published)
