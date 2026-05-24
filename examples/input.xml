@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<settings>
+  <!-- Run control -->
+  <run_mode>eigenvalue</run_mode>
+  <batches>100</batches>
+  <inactive>10</inactive>
+  <particles>10000</particles>
+  
+  <!-- Energy mode -->
+  <energy_mode>
+    <type>MG</type>
+    <method>CE</method>
+  </energy_mode>
+  
+  <!-- Source definition -->
+  <source>
+    <type>point</type>
+    <space>
+      <type>point</type>
+      <parameters>0 0 0</parameters>
+    </space>
+  </source>
+  
+  <!-- Output settings -->
+  <output>
+    <path>results</path>
+    <tallies>true</tallies>
+    <summary>true</summary>
+  </output>
+</settings>
