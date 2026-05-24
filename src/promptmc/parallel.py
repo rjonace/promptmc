@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 
-from openmc_wrapper.openmc_integration import OpenMCIntegration
+from promptmc.openmc_integration import OpenMCIntegration
 
 
 class ParallelMode(Enum):

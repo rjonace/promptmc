@@ -4,13 +4,13 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from openmc_wrapper.batch import (
+from promptmc.batch import (
     BatchRunner,
     BatchSpec,
     load_batch_spec,
     save_batch_spec,
 )
-from openmc_wrapper.parallel import ParallelConfig, ParallelMode
+from promptmc.parallel import ParallelConfig, ParallelMode
 
 
 def test_batch_spec_creation():

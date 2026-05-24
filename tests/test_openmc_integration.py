@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from openmc_wrapper.openmc_integration import (
+from promptmc.openmc_integration import (
     ExecutionMode,
     OpenMCIntegration,
     OpenMCIntegrationError,

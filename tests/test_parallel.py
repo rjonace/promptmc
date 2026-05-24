@@ -4,7 +4,7 @@ import multiprocessing
 import tempfile
 from pathlib import Path
 
-from openmc_wrapper.parallel import (
+from promptmc.parallel import (
     JobResult,
     ParallelConfig,
     ParallelExecutor,

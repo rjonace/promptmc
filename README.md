@@ -1,4 +1,4 @@
-# OpenMC Wrapper
+# PromptMC
 
 Production-grade Python wrapper for OpenMC Monte Carlo particle transport simulations.
 
@@ -6,7 +6,7 @@ Production-grade Python wrapper for OpenMC Monte Carlo particle transport simula
 
 OpenMC is powerful, but getting started can be challenging: you need to write XML configuration files, understand dozens of parameters, and manage simulation workflows manually.
 
-**OpenMC Wrapper solves this by:**
+**PromptMC solves this by:**
 
 - **Describing simulations in plain English** — Tell it what you want (`"make a shielding calculation with 1M particles"`) and get a validated plan
 - **Generating production-ready XML** — Automatically creates `settings.xml` with sensible defaults based on your description
@@ -14,7 +14,7 @@ OpenMC is powerful, but getting started can be challenging: you need to write XM
 - **Managing workflows** — Batch runs, parallel execution, progress tracking, and resource limits
 - **Observability built-in** — Distributed tracing and metrics via OpenTelemetry
 
-Whether you're new to Monte Carlo or an experienced researcher, OpenMC Wrapper reduces friction and lets you focus on physics, not configuration.
+Whether you're new to Monte Carlo or an experienced researcher, PromptMC reduces friction and lets you focus on physics, not configuration.
 
 ### Architecture
 
@@ -37,7 +37,7 @@ Whether you're new to Monte Carlo or an experienced researcher, OpenMC Wrapper r
 ### Key Features
 
 - **OpenMC Integration**: Python API wrapper and subprocess invocation support
-- **Natural-Language Interface**: `openmc-wrapper ask` turns plain-English requests into OpenMC plans and settings files
+- **Natural-Language Interface**: `promptmc ask` turns plain-English requests into OpenMC plans and settings files
 - **Optional LLM Planning**: Use OpenAI-compatible models via `--llm` for richer natural-language interpretation
 - **Parallel Execution**: Thread, process, and MPI-based parallel simulation execution
 - **Batch Runner**: Run parameter sweeps from YAML/JSON specifications
@@ -69,8 +69,8 @@ Whether you're new to Monte Carlo or an experienced researcher, OpenMC Wrapper r
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/openmc-wrapper.git
-cd openmc-wrapper
+git clone https://github.com/your-org/promptmc.git
+cd promptmc
 
 # Install with Poetry
 poetry install
@@ -82,7 +82,7 @@ poetry shell
 ### Install as a Package (when published)
 
 ```bash
-pip install openmc-wrapper
+pip install promptmc
 ```
 
 ## Quick Start
@@ -93,14 +93,14 @@ The easiest way to start is to describe what you want in plain English:
 
 ```bash
 # Ask for a plan without writing files
-openmc-wrapper ask "make a concrete shielding calculation with 1 million particles"
+promptmc ask "make a concrete shielding calculation with 1 million particles"
 
 # Generate settings.xml directly from natural language
-openmc-wrapper ask "set up a reactor pin cell criticality run with 50k particles" --write
+promptmc ask "set up a reactor pin cell criticality run with 50k particles" --write
 
 # Use an OpenAI-compatible LLM for richer interpretation
 export OPENAI_API_KEY="..."
-openmc-wrapper ask "I need a high-statistics shielding model for a 14 MeV source" --llm --write
+promptmc ask "I need a high-statistics shielding model for a 14 MeV source" --llm --write
 ```
 
 `ask` is offline-first. Without an API key, it uses a deterministic local planner that maps
@@ -117,7 +117,7 @@ validated XML files for production workflows.
 #### Example Output
 
 ```bash
-$ openmc-wrapper ask "make a concrete shielding calculation with 1 million particles"
+$ promptmc ask "make a concrete shielding calculation with 1 million particles"
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃               Natural-Language OpenMC Plan                      ┃
@@ -130,7 +130,7 @@ $ openmc-wrapper ask "make a concrete shielding calculation with 1 million parti
 │ Batches        │ 10                                             │
 │ Inactive       │ 0                                              │
 │ Confidence     │ 85%                                            │
-│ Command        │ openmc-wrapper template shielding --output     │
+│ Command        │ promptmc template shielding --output     │
 │                │ settings.xml --particles 1000000 --batches 10  │
 └────────────────┴────────────────────────────────────────────────┘
 
@@ -154,56 +154,56 @@ Next steps
 
 ```bash
 # Natural-language planning
-openmc-wrapper ask "criticality run for a small reactor with 100k particles"
+promptmc ask "criticality run for a small reactor with 100k particles"
 
 # Natural-language generation
-openmc-wrapper ask "make a shielding calculation with 1M particles" --write --output settings.xml
+promptmc ask "make a shielding calculation with 1M particles" --write --output settings.xml
 
 # Check OpenMC installation
-openmc-wrapper info
+promptmc info
 
 # Get system info and tuning recommendations
-openmc-wrapper system-info
+promptmc system-info
 
 # List available configuration templates
-openmc-wrapper list-templates
+promptmc list-templates
 
 # Generate settings.xml from a template
-openmc-wrapper template criticality --output settings.xml --particles 10000
-openmc-wrapper template fixed_source --output settings.xml --particles 50000
+promptmc template criticality --output settings.xml --particles 10000
+promptmc template fixed_source --output settings.xml --particles 50000
 
 # Generate a configuration file (basic)
-openmc-wrapper configure --output config.xml --particles 10000 --batches 10
+promptmc configure --output config.xml --particles 10000 --batches 10
 
 # Validate XML structure
-openmc-wrapper validate input.xml
+promptmc validate input.xml
 
 # Validate XML structure + schema (Pydantic)
-openmc-wrapper validate input.xml --schema
+promptmc validate input.xml --schema
 
 # Run schema-only check
-openmc-wrapper schema-check settings.xml
-openmc-wrapper schema-check ./input_dir/
+promptmc schema-check settings.xml
+promptmc schema-check ./input_dir/
 
 # Run a simulation (auto-detects API or subprocess)
-openmc-wrapper run input.xml --threads 4
-openmc-wrapper run input.xml --mode api
-openmc-wrapper run input.xml --mode subprocess
+promptmc run input.xml --threads 4
+promptmc run input.xml --mode api
+promptmc run input.xml --mode subprocess
 
 # Run a batch of simulations from a YAML spec
-openmc-wrapper batch examples/batch_spec.yaml --parallel threads --workers 4
+promptmc batch examples/batch_spec.yaml --parallel threads --workers 4
 
 # Analyze simulation results
-openmc-wrapper analyze ./output --json results.json
+promptmc analyze ./output --json results.json
 
 # Get optimization recommendations
-openmc-wrapper optimize --threads 4 --particles 10000 --batches 100
+promptmc optimize --threads 4 --particles 10000 --batches 100
 
 # List loaded plugins
-openmc-wrapper list-plugins
+promptmc list-plugins
 
 # Enable verbose output
-openmc-wrapper --verbose run input.xml
+promptmc --verbose run input.xml
 ```
 
 ### Python API Usage
@@ -282,7 +282,7 @@ mypy src/
 ### Project Structure
 
 ```
-openmc-wrapper/
+promptmc/
 ├── src/openmc_wrapper/
 │   ├── __init__.py              # Package initialization
 │   ├── cli.py                   # CLI (13 commands)
@@ -336,7 +336,7 @@ openmc-wrapper/
 Telemetry is exported to console by default with no configuration required:
 
 ```bash
-openmc-wrapper run input.xml
+promptmc run input.xml
 # Telemetry output appears in console
 ```
 
@@ -346,14 +346,14 @@ Set the `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable to export to an OTLP-
 
 ```bash
 export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4317"
-openmc-wrapper run input.xml
+promptmc run input.xml
 ```
 
 ### Disable Console Export
 
 ```bash
 export OTEL_CONSOLE_EXPORT="false"
-openmc-wrapper run input.xml
+promptmc run input.xml
 ```
 
 ## Roadmap to v1.0
@@ -393,7 +393,7 @@ openmc-wrapper run input.xml
 
 I studied nuclear engineering at MIT over 20 years ago and used MCNP 4 for my senior thesis project. I left during my senior year without graduating. Since then, I've been a software engineer at Google for the past 10 years.
 
-This project is a personal exploration of agentic programming — using AI agents to build software. OpenMC Wrapper seemed like the perfect test case: it combines my background in nuclear physics with modern software engineering practices. The goal was to see how much of a production-grade tool could be built through agentic coding, from architecture design to implementation, testing, and documentation.
+This project is a personal exploration of agentic programming — using AI agents to build software. PromptMC seemed like the perfect test case: it combines my background in nuclear physics with modern software engineering practices. The goal was to see how much of a production-grade tool could be built through agentic coding, from architecture design to implementation, testing, and documentation.
 
 The result is a fully functional, well-tested tool that I hope will be useful to the OpenMC community — whether you're a student learning Monte Carlo methods or a researcher running production simulations.
 
@@ -430,6 +430,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- Documentation: [GitHub Repository](https://github.com/rjonace/openmc-wrapper)
-- Issues: [GitHub Issues](https://github.com/rjonace/openmc-wrapper/issues)
-- Discussions: [GitHub Discussions](https://github.com/rjonace/openmc-wrapper/discussions)
+- Documentation: [GitHub Repository](https://github.com/rjonace/promptmc)
+- Issues: [GitHub Issues](https://github.com/rjonace/promptmc/issues)
+- Discussions: [GitHub Discussions](https://github.com/rjonace/promptmc/discussions)

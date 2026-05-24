@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 import xml.etree.ElementTree as ET
 
-from openmc_wrapper.assistant import NaturalLanguageAssistant, OpenAICompatibleLLMClient
-from openmc_wrapper.templates import TemplateType
+from promptmc.assistant import NaturalLanguageAssistant, OpenAICompatibleLLMClient
+from promptmc.templates import TemplateType
 
 
 class FakeLLMClient(OpenAICompatibleLLMClient):

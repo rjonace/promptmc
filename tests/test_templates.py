@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pytest
-from openmc_wrapper.templates import (
+from promptmc.templates import (
     CriticalityTemplate,
     FixedSourceTemplate,
     ReactorPinTemplate,

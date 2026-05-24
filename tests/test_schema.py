@@ -6,7 +6,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from openmc_wrapper.schema import (
+from promptmc.schema import (
     GeometrySchema,
     MaterialsSchema,
     RunMode,
@@ -47,7 +47,7 @@ def test_settings_schema_excessive_particles():
 
 def test_materials_schema_unique_ids():
     """Test that material IDs must be unique."""
-    from openmc_wrapper.schema import MaterialSchema
+    from promptmc.schema import MaterialSchema
 
     with pytest.raises(ValidationError):
         MaterialsSchema(
@@ -60,7 +60,7 @@ def test_materials_schema_unique_ids():
 
 def test_geometry_schema_unique_ids():
     """Test that cell IDs must be unique."""
-    from openmc_wrapper.schema import CellSchema
+    from promptmc.schema import CellSchema
 
     with pytest.raises(ValidationError):
         GeometrySchema(
@@ -187,7 +187,7 @@ def test_validator_directory_missing_files():
 
 def test_format_validation_report():
     """Test formatting a validation report."""
-    from openmc_wrapper.schema import SchemaIssue, SchemaValidationResult
+    from promptmc.schema import SchemaIssue, SchemaValidationResult
 
     result = SchemaValidationResult(
         is_valid=False,

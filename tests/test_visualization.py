@@ -4,7 +4,7 @@ import json
 import tempfile
 from pathlib import Path
 
-from openmc_wrapper.visualization import (
+from promptmc.visualization import (
     ResultParser,
     ResultVisualizer,
     SimulationResult,

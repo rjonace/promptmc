@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from openmc_wrapper.plugins import (
+from promptmc.plugins import (
     HookEvent,
     HookPlugin,
     Plugin,
@@ -216,7 +216,7 @@ def test_failing_post_processor_does_not_break():
 
 def test_global_plugin_registry():
     """Test global plugin registry singleton."""
-    from openmc_wrapper.plugins import get_plugin_registry
+    from promptmc.plugins import get_plugin_registry
 
     registry1 = get_plugin_registry()
     registry2 = get_plugin_registry()

@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
 
-from openmc_wrapper.templates import TemplateType, get_template
+from promptmc.templates import TemplateType, get_template
 
 SUPPORTED_TEMPLATE_TYPES = {
     TemplateType.CRITICALITY,
@@ -37,7 +37,7 @@ class NaturalLanguagePlan:
 
     def command(self, output_path: str | Path = "settings.xml") -> str:
         parts = [
-            "openmc-wrapper",
+            "promptmc",
             "template",
             self.template_type.value,
             "--output",

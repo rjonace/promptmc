@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from openmc_wrapper.progress import (
+from promptmc.progress import (
     ProgressEvent,
     ProgressReporter,
     ProgressStage,

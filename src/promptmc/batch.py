@@ -10,7 +10,7 @@ from pathlib import Path
 
 import yaml
 
-from openmc_wrapper.parallel import (
+from promptmc.parallel import (
     JobResult,
     ParallelConfig,
     ParallelExecutor,

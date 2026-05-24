@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from openmc_wrapper.errors import (
+from promptmc.errors import (
     ConfigurationError,
     ErrorCategory,
     ErrorContext,

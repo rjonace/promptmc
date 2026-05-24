@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-from openmc_wrapper.errors import ResourceError
+from promptmc.errors import ResourceError
 
 
 @dataclass

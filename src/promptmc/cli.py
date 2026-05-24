@@ -11,26 +11,26 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from openmc_wrapper import __version__
-from openmc_wrapper.assistant import NaturalLanguageAssistant
-from openmc_wrapper.batch import BatchRunner, load_batch_spec
-from openmc_wrapper.errors import configure_logging
-from openmc_wrapper.openmc_integration import (
+from promptmc import __version__
+from promptmc.assistant import NaturalLanguageAssistant
+from promptmc.batch import BatchRunner, load_batch_spec
+from promptmc.errors import configure_logging
+from promptmc.openmc_integration import (
     ExecutionMode,
     OpenMCIntegration,
     OpenMCNotFoundError,
     OpenMCValidationError,
 )
-from openmc_wrapper.parallel import ParallelConfig, ParallelMode
-from openmc_wrapper.performance import OptimizationAdvisor, SystemProfiler
-from openmc_wrapper.plugins import get_plugin_registry
-from openmc_wrapper.schema import SchemaValidator, format_validation_report
-from openmc_wrapper.telemetry import get_telemetry_manager
-from openmc_wrapper.templates import TemplateType, get_template, list_templates
-from openmc_wrapper.visualization import ResultParser, ResultVisualizer
+from promptmc.parallel import ParallelConfig, ParallelMode
+from promptmc.performance import OptimizationAdvisor, SystemProfiler
+from promptmc.plugins import get_plugin_registry
+from promptmc.schema import SchemaValidator, format_validation_report
+from promptmc.telemetry import get_telemetry_manager
+from promptmc.templates import TemplateType, get_template, list_templates
+from promptmc.visualization import ResultParser, ResultVisualizer
 
 app = typer.Typer(
-    name="openmc-wrapper",
+    name="promptmc",
     help="Production-grade Python wrapper for OpenMC Monte Carlo simulations",
     add_completion=False,
 )
@@ -41,7 +41,7 @@ console = Console()
 def version_callback(value: bool) -> None:
     """Show version and exit."""
     if value:
-        console.print(f"[bold green]openmc-wrapper[/bold green] version [cyan]{__version__}[/cyan]")
+        console.print(f"[bold green]promptmc[/bold green] version [cyan]{__version__}[/cyan]")
         raise typer.Exit()
 
 
@@ -67,7 +67,7 @@ def main(
         exists=True,
     ),
 ) -> None:
-    """OpenMC Wrapper – production-grade Python wrapper for OpenMC Monte Carlo simulations."""
+    """PromptMC – production-grade Python wrapper for OpenMC Monte Carlo simulations."""
     if verbose:
         configure_logging()
         console.print("[dim]Verbose mode enabled[/dim]")
@@ -510,7 +510,7 @@ def ask(
             result_path = plan.render(output)
             console.print(f"[green]✓[/green] Wrote settings file: [cyan]{result_path}[/cyan]")
             console.print(
-                "[dim]Next: validate with `openmc-wrapper validate "
+                "[dim]Next: validate with `promptmc validate "
                 f"{result_path} --schema`[/dim]"
             )
 

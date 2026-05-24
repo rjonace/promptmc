@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-from openmc_wrapper.cli import app
+from promptmc.cli import app
 from typer.testing import CliRunner
 
 runner = CliRunner()
@@ -115,7 +115,7 @@ def test_run_simulation_failure(mock_cls):
 
 @patch("openmc_wrapper.cli.OpenMCIntegration")
 def test_run_validation_error(mock_cls):
-    from openmc_wrapper.openmc_integration import OpenMCValidationError
+    from promptmc.openmc_integration import OpenMCValidationError
 
     mock_integration = MagicMock()
     mock_integration.validate_input_file.side_effect = OpenMCValidationError("bad xml")
@@ -131,7 +131,7 @@ def test_run_validation_error(mock_cls):
 
 @patch("openmc_wrapper.cli.OpenMCIntegration")
 def test_run_not_found_error(mock_cls):
-    from openmc_wrapper.openmc_integration import OpenMCNotFoundError
+    from promptmc.openmc_integration import OpenMCNotFoundError
 
     mock_integration = MagicMock()
     mock_integration.validate_input_file.side_effect = OpenMCNotFoundError("not found")
@@ -263,7 +263,7 @@ def test_info_success(mock_cls):
 
 @patch("openmc_wrapper.cli.OpenMCIntegration")
 def test_info_not_found(mock_cls):
-    from openmc_wrapper.openmc_integration import OpenMCNotFoundError
+    from promptmc.openmc_integration import OpenMCNotFoundError
 
     mock_integration = MagicMock()
     mock_integration.check_installation.side_effect = OpenMCNotFoundError("not found")

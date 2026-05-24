@@ -1,6 +1,6 @@
 """Tests for telemetry module."""
 
-from openmc_wrapper.telemetry import TelemetryManager
+from promptmc.telemetry import TelemetryManager
 
 
 def test_telemetry_manager_initialization():
@@ -61,7 +61,7 @@ def test_trace_function():
 
 def test_get_telemetry_manager_singleton():
     """Test that get_telemetry_manager returns singleton instance."""
-    from openmc_wrapper.telemetry import get_telemetry_manager
+    from promptmc.telemetry import get_telemetry_manager
 
     manager1 = get_telemetry_manager()
     manager2 = get_telemetry_manager()

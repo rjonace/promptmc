@@ -6,8 +6,8 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from openmc_wrapper.errors import ResourceError
-from openmc_wrapper.resources import (
+from promptmc.errors import ResourceError
+from promptmc.resources import (
     DiskSpace,
     ResourceLimits,
     ResourceMonitor,

@@ -2,7 +2,7 @@
 
 import time
 
-from openmc_wrapper.performance import (
+from promptmc.performance import (
     OptimizationAdvisor,
     OptimizationRecommendation,
     PerformanceMonitor,
