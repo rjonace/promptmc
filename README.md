@@ -62,21 +62,53 @@ Whether you're new to Monte Carlo or an experienced researcher, PromptMC reduces
 ### Prerequisites
 
 - Python 3.9 or higher
-- Poetry (for development)
-- OpenMC (Python API via `pip install openmc` or executable in PATH)
+- OpenMC (built from source or executable in PATH)
+- Nuclear cross-section data (for running simulations)
 
-### Install from Source
+### Install OpenMC
+
+OpenMC is not available via pip. Build from source:
+
+```bash
+# Install build dependencies (macOS with Homebrew)
+brew install cmake hdf5
+
+# Clone and build OpenMC
+git clone https://github.com/openmc-dev/openmc.git
+cd openmc
+mkdir build && cd build
+cmake ..
+make -j4
+sudo make install
+```
+
+For detailed installation instructions, see https://docs.openmc.org/en/stable/quickstart.html
+
+### Install Nuclear Data
+
+OpenMC requires nuclear cross-section data to run simulations:
+
+1. Register at https://www.nndc.bnl.gov/ for data access
+2. Download ENDF/B-VII.1 or similar cross-section library (~2-3 GB)
+3. Create a `cross_sections.xml` file pointing to the data
+4. Set `OPENMC_CROSS_SECTIONS` environment variable
+
+### Install PromptMC
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/promptmc.git
+git clone https://github.com/rjonace/promptmc.git
 cd promptmc
 
-# Install with Poetry
-poetry install
+# Create virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
 
-# Activate the virtual environment
-poetry shell
+# Install in editable mode
+pip install -e .
+
+# Install development dependencies (optional)
+pip install pytest pytest-cov mypy ruff pre-commit bandit
 ```
 
 ### Install as a Package (when published)
