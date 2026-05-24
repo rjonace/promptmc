@@ -1,6 +1,6 @@
 # PromptMC
 
-Production-grade Python wrapper for OpenMC Monte Carlo particle transport simulations.
+Production-grade, AI-enabled Python wrapper for OpenMC Monte Carlo particle transport simulations.
 
 ## Overview
 
