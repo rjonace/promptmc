@@ -2,7 +2,7 @@
 
 **Project Vision:** We are building `PromptMC`, an advanced web-based SaaS platform that wraps the `OpenMC` nuclear physics engine. It translates natural language into complex Monte Carlo simulations, visualizes them, optimizes them autonomously, and orchestrates the heavy compute on the cloud.
 
-### Phase 1: Core Functionality (Current)
+### Phase 1: Core Functionality
 - [x] Project scaffolding with Poetry
 - [x] CLI architecture with Typer
 - [x] OpenTelemetry integration
