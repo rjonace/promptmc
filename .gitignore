@@ -152,6 +152,7 @@ Thumbs.db
 *.vtk
 *.statepoint
 *.summary
+openmc/
 
 # Exceptions for examples
 !examples/*.xml
