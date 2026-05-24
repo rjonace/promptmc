@@ -74,7 +74,9 @@ class OpenAICompatibleLLMClient:
         )
         self.model: str = model or os.getenv("PROMPTMC_LLM_MODEL") or "gpt-4o-mini"
         self.endpoint: str = (
-            endpoint or os.getenv("PROMPTMC_LLM_ENDPOINT") or "https://api.openai.com/v1/chat/completions"
+            endpoint
+            or os.getenv("PROMPTMC_LLM_ENDPOINT")
+            or "https://api.openai.com/v1/chat/completions"
         )
         self.timeout_seconds = timeout_seconds
 
