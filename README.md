@@ -409,7 +409,7 @@ The result is a fully functional, well-tested tool that I hope will be useful to
 
 ## Agentic Coding Disclaimer
 
-This project was developed using agentic programming techniques with Cascade (an AI coding assistant). While the code was generated through AI-human collaboration, it has been reviewed, tested, and validated for production use. The project demonstrates the potential of agentic workflows while maintaining software engineering best practices: comprehensive testing, linting, type checking, and documentation.
+This project was developed using agentic programming techniques with AI coding assistants, specifically Cascade, Antigravity, and Gemini. While the code was generated through AI-human collaboration, it has been reviewed, tested, and validated for production use. The project demonstrates the potential of agentic workflows while maintaining software engineering best practices: comprehensive testing, linting, type checking, and documentation.
 
 ## Contributions
 
