@@ -1,5 +1,4 @@
-"""Tests for OpenMC integration module."""
-
+import shutil
 import tempfile
 from pathlib import Path
 
@@ -11,6 +10,22 @@ from promptmc.openmc_integration import (
     OpenMCNotFoundError,
     OpenMCValidationError,
 )
+
+
+@pytest.mark.skipif(shutil.which("openmc") is not None, reason="OpenMC is installed")
+def test_run_simulation_without_openmc():
+    """Test that running simulation without OpenMC raises error."""
+    integration = OpenMCIntegration()
+
+    with tempfile.NamedTemporaryFile(mode="wb", suffix=".xml", delete=False) as f:
+        f.write(b"<settings><run_mode>eigenvalue</run_mode></settings>")
+        temp_path = Path(f.name)
+
+    try:
+        with pytest.raises((OpenMCNotFoundError, OpenMCIntegrationError)):
+            integration.run_simulation(temp_path)
+    finally:
+        temp_path.unlink()
 
 
 def test_openmc_integration_initialization():
@@ -213,18 +228,3 @@ def test_determine_execution_mode_subprocess():
     integration = OpenMCIntegration(ExecutionMode.SUBPROCESS)
     mode = integration._determine_execution_mode()
     assert mode == ExecutionMode.SUBPROCESS
-
-
-def test_run_simulation_without_openmc():
-    """Test that running simulation without OpenMC raises error."""
-    integration = OpenMCIntegration()
-
-    with tempfile.NamedTemporaryFile(mode="wb", suffix=".xml", delete=False) as f:
-        f.write(b"<settings><run_mode>eigenvalue</run_mode></settings>")
-        temp_path = Path(f.name)
-
-    try:
-        with pytest.raises((OpenMCNotFoundError, OpenMCIntegrationError)):
-            integration.run_simulation(temp_path)
-    finally:
-        temp_path.unlink()
