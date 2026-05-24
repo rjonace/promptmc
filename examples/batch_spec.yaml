@@ -1,0 +1,14 @@
+name: parameter-sweep-example
+description: Example batch specification for parameter sweep simulations
+base_input: ./input.xml
+output_root: ./batch_results
+threads_per_job: 2
+parameter_sweeps:
+  - particles: 1000
+    batches: 50
+  - particles: 5000
+    batches: 50
+  - particles: 10000
+    batches: 100
+  - particles: 50000
+    batches: 200
