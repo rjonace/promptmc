@@ -39,7 +39,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/pyproject.toml') }}
       
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
@@ -83,7 +83,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ env.PYTHON_DEFAULT }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ env.PYTHON_DEFAULT }}-${{ hashFiles('**/pyproject.toml') }}
       
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
@@ -120,7 +120,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ env.PYTHON_DEFAULT }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ env.PYTHON_DEFAULT }}-${{ hashFiles('**/pyproject.toml') }}
       
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
@@ -156,7 +156,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ env.PYTHON_DEFAULT }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ env.PYTHON_DEFAULT }}-${{ hashFiles('**/pyproject.toml') }}
       
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
