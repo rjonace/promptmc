@@ -233,7 +233,7 @@ class OpenMCIntegration:
 
                 import openmc
 
-                cast(Any, openmc).run(output_path=str(output_path))
+                cast(Any, openmc).run(cwd='.', threads=threads)
                 return subprocess.CompletedProcess[str](
                     args=["openmc", str(input_path)],
                     returncode=0,

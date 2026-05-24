@@ -155,4 +155,4 @@ Thumbs.db
 openmc/
 
 # Exceptions for examples
-!examples/*.xml
+!examples/**/*.xml

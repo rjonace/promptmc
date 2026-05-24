@@ -86,12 +86,18 @@ For detailed installation instructions, see https://docs.openmc.org/en/stable/qu
 
 ### Install Nuclear Data
 
-OpenMC requires nuclear cross-section data to run simulations:
+OpenMC requires nuclear cross-section data to run simulations. The easiest way to get this is using the `openmc_data_downloader` package:
 
-1. Register at https://www.nndc.bnl.gov/ for data access
-2. Download ENDF/B-VII.1 or similar cross-section library (~2-3 GB)
-3. Create a `cross_sections.xml` file pointing to the data
-4. Set `OPENMC_CROSS_SECTIONS` environment variable
+```bash
+# Install the downloader
+pip install openmc-data-downloader
+
+# Download data for specific isotopes (e.g., U-235, U-238, O-16, H-1)
+openmc_data_downloader -l TENDL-2019 -i U235 U238 O16 H1 -d cross_sections
+
+# Export the path so OpenMC can find it
+export OPENMC_CROSS_SECTIONS=$(pwd)/cross_sections/cross_sections.xml
+```
 
 ### Install PromptMC
 
@@ -347,7 +353,8 @@ promptmc/
 │   ├── test_resources.py         # Resource management tests
 │   └── test_plugins.py           # Plugin system tests
 ├── examples/                    # Usage examples
-│   └── batch_spec.yaml          # Example batch specification
+│   ├── batch_spec.yaml          # Example batch specification
+│   └── uo2_criticality/         # Full UO2 and Light Water criticality example
 ├── .github/workflows/           # CI/CD pipelines
 ├── pyproject.toml               # Poetry configuration
 └── README.md                    # This file
