@@ -1,4 +1,4 @@
-# Roadmap to v1.0
+# Development Roadmap
 
 ### Phase 1: Core Functionality (Current)
 - [x] Project scaffolding with Poetry
@@ -30,3 +30,10 @@
 - [x] CLI Phase 4 integration (`schema-check`, `list-plugins`, `--schema` flag)
 - [x] Natural-language assistant command (`ask`) with optional OpenAI-compatible LLM mode
 - [x] 218 tests, 82% coverage, and zero lint warnings
+
+## Version 2.0 (Future)
+
+### Phase 5: Cloud & Advanced AI
+- [ ] **Cloud-Native Orchestration**: Deploy parallel/batch workloads to cloud environments (GCP/Kubernetes) for large-scale parameter sweeps.
+- [ ] **Expanded Agentic Capabilities**: LLM analysis of simulation outputs to autonomously suggest geometry, material, or optimization tweaks.
+- [ ] **Pre-Run Visualizations**: Lightweight terminal-based visual feedback of geometry and materials prior to execution.
