@@ -12,20 +12,22 @@ from promptmc.openmc_integration import (
 )
 
 
-@pytest.mark.skipif(shutil.which("openmc") is not None, reason="OpenMC is installed")
+from unittest.mock import patch
+
 def test_run_simulation_without_openmc():
     """Test that running simulation without OpenMC raises error."""
-    integration = OpenMCIntegration()
+    with patch("shutil.which", return_value=None), patch.dict("sys.modules", {"openmc": None}):
+        integration = OpenMCIntegration()
 
-    with tempfile.NamedTemporaryFile(mode="wb", suffix=".xml", delete=False) as f:
-        f.write(b"<settings><run_mode>eigenvalue</run_mode></settings>")
-        temp_path = Path(f.name)
+        with tempfile.NamedTemporaryFile(mode="wb", suffix=".xml", delete=False) as f:
+            f.write(b"<settings><run_mode>eigenvalue</run_mode></settings>")
+            temp_path = Path(f.name)
 
-    try:
-        with pytest.raises((OpenMCNotFoundError, OpenMCIntegrationError)):
-            integration.run_simulation(temp_path)
-    finally:
-        temp_path.unlink()
+        try:
+            with pytest.raises((OpenMCNotFoundError, OpenMCIntegrationError)):
+                integration.run_simulation(temp_path)
+        finally:
+            temp_path.unlink()
 
 
 def test_openmc_integration_initialization():
