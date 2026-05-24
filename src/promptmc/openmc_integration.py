@@ -6,7 +6,7 @@ import os
 import shutil
 import subprocess  # nosec B404
 import xml.etree.ElementTree as ET  # nosec B405
-from defusedxml.ElementTree import parse as defused_parse  # type: ignore[import-untyped]
+from defusedxml.ElementTree import parse as defused_parse
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -229,8 +229,9 @@ class OpenMCIntegration:
             try:
                 # Re-import to satisfy type checkers; cached import is fine
                 import openmc
+                from typing import Any, cast
 
-                openmc.run(output_path=str(output_path))  # type: ignore[attr-defined]
+                cast(Any, openmc).run(output_path=str(output_path))
                 return subprocess.CompletedProcess[str](
                     args=["openmc", str(input_path)],
                     returncode=0,
@@ -355,7 +356,7 @@ class OpenMCIntegration:
     def _extract_summary_metrics(summary_file: Path, results: dict) -> None:
         """Extract summary metrics from summary.h5 if h5py is available."""
         try:
-            import h5py  # type: ignore[import-untyped]
+            import h5py
         except ImportError:
             return
 

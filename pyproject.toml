@@ -80,6 +80,16 @@ warn_unused_ignores = true
 warn_no_return = true
 strict_equality = true
 
+[[tool.mypy.overrides]]
+module = [
+    "openmc.*",
+    "yaml.*",
+    "psutil.*",
+    "h5py.*",
+    "defusedxml.*"
+]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]

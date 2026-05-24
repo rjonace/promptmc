@@ -67,7 +67,7 @@ class ResultParser:
             result: Result object to populate
         """
         try:
-            import h5py  # type: ignore[import-untyped]
+            import h5py
 
             with h5py.File(statepoint_path, "r") as f:
                 # Extract k-effective if available

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import contextlib
 import xml.etree.ElementTree as ET  # nosec B405
-from defusedxml.ElementTree import parse as defused_parse  # type: ignore[import-untyped]
+from defusedxml.ElementTree import parse as defused_parse
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
