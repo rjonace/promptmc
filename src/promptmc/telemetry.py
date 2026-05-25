@@ -44,12 +44,12 @@ except ImportError:
     MeterProvider = None  # type: ignore[assignment,misc]
     TracerProvider = None  # type: ignore[assignment,misc]
     Resource = None  # type: ignore[assignment,misc]
-    SERVICE_NAME = "service.name"  # type: ignore[assignment]
+    SERVICE_NAME = "service.name"
     Span = None  # type: ignore[assignment,misc]
     ConsoleMetricExporter = object  # type: ignore[assignment,misc]
     MetricExporter = object  # type: ignore[assignment,misc]
-    MetricExportResult = None  # type: ignore[assignment]
-    MetricsData = None  # type: ignore[assignment]
+    MetricExportResult = None  # type: ignore[assignment,misc]
+    MetricsData = None  # type: ignore[assignment,misc]
 
 T = TypeVar("T")
 

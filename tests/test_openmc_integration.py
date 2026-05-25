@@ -5,6 +5,8 @@ from unittest.mock import patch
 import pytest
 from promptmc.errors import (
     OpenMCError as OpenMCIntegrationError,
+)
+from promptmc.errors import (
     OpenMCNotFoundError,
     OpenMCValidationError,
 )
