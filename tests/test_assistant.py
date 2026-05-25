@@ -5,7 +5,10 @@ from __future__ import annotations
 import json
 import xml.etree.ElementTree as ET
 
-from promptmc.assistant import NaturalLanguageAssistant, OpenAICompatibleLLMClient
+from promptmc.assistant import (
+    NaturalLanguageAssistant,
+    OpenAICompatibleLLMClient,
+)
 from promptmc.templates import TemplateType
 
 
@@ -36,7 +39,9 @@ class UnconfiguredLLMClient(OpenAICompatibleLLMClient):
 
 def test_local_plan_shielding_request():
     assistant = NaturalLanguageAssistant()
-    plan = assistant.plan("make a concrete shielding calculation with 1 million particles")
+    plan = assistant.plan(
+        "make a concrete shielding calculation with 1 million particles"
+    )
 
     assert plan.template_type == TemplateType.SHIELDING
     assert plan.particles == 1_000_000
@@ -47,7 +52,9 @@ def test_local_plan_shielding_request():
 
 def test_local_plan_reactor_pin_request():
     assistant = NaturalLanguageAssistant()
-    plan = assistant.plan("set up a fuel pin cell criticality run with 50k particles")
+    plan = assistant.plan(
+        "set up a fuel pin cell criticality run with 50k particles"
+    )
 
     assert plan.template_type == TemplateType.REACTOR_PIN
     assert plan.particles == 50_000
@@ -56,7 +63,9 @@ def test_local_plan_reactor_pin_request():
 
 def test_local_plan_fixed_source_request():
     assistant = NaturalLanguageAssistant()
-    plan = assistant.plan("run a fixed source 14 MeV neutron beam with 25 batches")
+    plan = assistant.plan(
+        "run a fixed source 14 MeV neutron beam with 25 batches"
+    )
 
     assert plan.template_type == TemplateType.FIXED_SOURCE
     assert plan.batches == 25
@@ -77,7 +86,9 @@ def test_local_plan_renders_settings_xml(tmp_path):
 
 
 def test_llm_plan_uses_configured_client():
-    assistant = NaturalLanguageAssistant(llm_client=FakeLLMClient(api_key="test"))
+    assistant = NaturalLanguageAssistant(
+        llm_client=FakeLLMClient(api_key="test")
+    )
     plan = assistant.plan("I need shielding", use_llm=True)
 
     assert plan.source == "llm"
@@ -86,7 +97,9 @@ def test_llm_plan_uses_configured_client():
 
 
 def test_llm_plan_falls_back_without_api_key():
-    assistant = NaturalLanguageAssistant(llm_client=UnconfiguredLLMClient(api_key=None))
+    assistant = NaturalLanguageAssistant(
+        llm_client=UnconfiguredLLMClient(api_key=None)
+    )
     plan = assistant.plan("shielding calculation", use_llm=True)
 
     assert plan.source == "local"

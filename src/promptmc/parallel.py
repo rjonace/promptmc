@@ -5,7 +5,11 @@ from __future__ import annotations
 import multiprocessing
 import os
 from collections.abc import Callable
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
+from concurrent.futures import (
+    ProcessPoolExecutor,
+    ThreadPoolExecutor,
+    as_completed,
+)
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -111,8 +115,12 @@ class ParallelExecutor:
         """
         results: dict[str, JobResult] = {}
 
-        with ThreadPoolExecutor(max_workers=self.config.max_workers) as executor:
-            future_to_job = {executor.submit(self._run_single_job, job): job for job in jobs}
+        with ThreadPoolExecutor(
+            max_workers=self.config.max_workers
+        ) as executor:
+            future_to_job = {
+                executor.submit(self._run_single_job, job): job for job in jobs
+            }
 
             for future in as_completed(future_to_job):
                 job = future_to_job[future]
@@ -151,8 +159,12 @@ class ParallelExecutor:
         """
         results: dict[str, JobResult] = {}
 
-        with ProcessPoolExecutor(max_workers=self.config.max_workers) as executor:
-            future_to_job = {executor.submit(_run_job_in_process, job): job for job in jobs}
+        with ProcessPoolExecutor(
+            max_workers=self.config.max_workers
+        ) as executor:
+            future_to_job = {
+                executor.submit(_run_job_in_process, job): job for job in jobs
+            }
 
             for future in as_completed(future_to_job):
                 job = future_to_job[future]
@@ -263,7 +275,11 @@ class ParallelExecutor:
         env["OMP_NUM_THREADS"] = str(self.config.omp_threads)
 
         try:
-            cwd = job.input_path.parent if job.input_path.is_file() else job.input_path
+            cwd = (
+                job.input_path.parent
+                if job.input_path.is_file()
+                else job.input_path
+            )
 
             result = subprocess.run(  # nosec B603
                 cmd,

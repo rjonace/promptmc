@@ -113,8 +113,18 @@ def test_export_summary_table_with_results():
     """Test exporting summary table with multiple results."""
     visualizer = ResultVisualizer()
     results = [
-        SimulationResult(k_effective=1.0, n_batches=100, n_particles=10000, runtime_seconds=10.0),
-        SimulationResult(k_effective=0.99, n_batches=100, n_particles=10000, runtime_seconds=11.0),
+        SimulationResult(
+            k_effective=1.0,
+            n_batches=100,
+            n_particles=10000,
+            runtime_seconds=10.0,
+        ),
+        SimulationResult(
+            k_effective=0.99,
+            n_batches=100,
+            n_particles=10000,
+            runtime_seconds=11.0,
+        ),
     ]
     table = visualizer.export_summary_table(results)
 

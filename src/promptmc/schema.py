@@ -10,7 +10,13 @@ from pathlib import Path
 from typing import Literal
 
 from defusedxml.ElementTree import parse as defused_parse
-from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
 
 
 class RunMode(str, Enum):
@@ -67,7 +73,9 @@ class MaterialsSchema(BaseModel):
 
     @field_validator("materials")
     @classmethod
-    def _check_unique_ids(cls, materials: list[MaterialSchema]) -> list[MaterialSchema]:
+    def _check_unique_ids(
+        cls, materials: list[MaterialSchema]
+    ) -> list[MaterialSchema]:
         ids = [m.id for m in materials]
         duplicates = {x for x in ids if ids.count(x) > 1}
         if duplicates:
@@ -128,10 +136,12 @@ class SchemaValidationResult:
 
     @property
     def errors(self) -> list[SchemaIssue]:
+        """All issues with ERROR severity."""
         return [i for i in self.issues if i.severity == SchemaSeverity.ERROR]
 
     @property
     def warnings(self) -> list[SchemaIssue]:
+        """All issues with WARNING severity."""
         return [i for i in self.issues if i.severity == SchemaSeverity.WARNING]
 
 
@@ -185,7 +195,9 @@ class SchemaValidator:
 
         return SchemaValidationResult(is_valid=not issues, issues=issues)
 
-    def validate_materials(self, xml_path: str | Path) -> SchemaValidationResult:
+    def validate_materials(
+        self, xml_path: str | Path
+    ) -> SchemaValidationResult:
         """Validate a materials.xml file."""
         xml_path = Path(xml_path)
         issues: list[SchemaIssue] = []
@@ -240,12 +252,16 @@ class SchemaValidator:
                 mat_dict["density_units"] = units
 
             mat_dict["nuclides"] = [
-                str(n.get("name", "")) for n in material_elem.findall("nuclide") if n.get("name")
+                str(n.get("name", ""))
+                for n in material_elem.findall("nuclide")
+                if n.get("name")
             ]
             materials_data.append(mat_dict)
 
         try:
-            MaterialsSchema(materials=[MaterialSchema(**m) for m in materials_data])
+            MaterialsSchema(
+                materials=[MaterialSchema(**m) for m in materials_data]
+            )
         except ValidationError as e:
             for err in e.errors():
                 issues.append(
@@ -300,7 +316,9 @@ class SchemaValidator:
                     "universe": int(str(cell_elem.get("universe")))
                     if cell_elem.get("universe")
                     else None,
-                    "fill": int(str(cell_elem.get("fill"))) if cell_elem.get("fill") else None,
+                    "fill": int(str(cell_elem.get("fill")))
+                    if cell_elem.get("fill")
+                    else None,
                 }
             )
 
@@ -319,7 +337,9 @@ class SchemaValidator:
 
         return SchemaValidationResult(is_valid=not issues, issues=issues)
 
-    def validate_directory(self, directory: str | Path) -> SchemaValidationResult:
+    def validate_directory(
+        self, directory: str | Path
+    ) -> SchemaValidationResult:
         """Validate all OpenMC input files in a directory."""
         directory = Path(directory)
         all_issues: list[SchemaIssue] = []
@@ -346,7 +366,9 @@ class SchemaValidator:
             all_issues.extend(result.issues)
 
         return SchemaValidationResult(
-            is_valid=not any(i.severity == SchemaSeverity.ERROR for i in all_issues),
+            is_valid=not any(
+                i.severity == SchemaSeverity.ERROR for i in all_issues
+            ),
             issues=all_issues,
         )
 
@@ -394,7 +416,9 @@ def format_validation_report(result: SchemaValidationResult) -> str:
 
     status = "PASSED" if result.is_valid else "FAILED"
     lines.append(f"Status: {status}")
-    lines.append(f"Issues: {len(result.errors)} error(s), {len(result.warnings)} warning(s)")
+    lines.append(
+        f"Issues: {len(result.errors)} error(s), {len(result.warnings)} warning(s)"
+    )
     lines.append("")
 
     if not result.issues:
@@ -407,7 +431,9 @@ def format_validation_report(result: SchemaValidationResult) -> str:
                 SchemaSeverity.INFO: "[INFO] ",
             }[issue.severity]
             location = (
-                f" ({issue.file_path}:{issue.field})" if issue.file_path else f" ({issue.field})"
+                f" ({issue.file_path}:{issue.field})"
+                if issue.file_path
+                else f" ({issue.field})"
             )
             lines.append(f"{marker}{location}")
             lines.append(f"        {issue.message}")

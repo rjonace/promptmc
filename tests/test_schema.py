@@ -75,7 +75,9 @@ def test_validator_settings_valid():
     """Test validating a valid settings.xml."""
     validator = SchemaValidator()
 
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".xml", delete=False, encoding="utf-8") as f:
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".xml", delete=False, encoding="utf-8"
+    ) as f:
         f.write(
             "<settings>"
             "<run_mode>eigenvalue</run_mode>"
@@ -98,7 +100,9 @@ def test_validator_settings_invalid_inactive():
     """Test validating settings with inactive >= batches."""
     validator = SchemaValidator()
 
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".xml", delete=False, encoding="utf-8") as f:
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".xml", delete=False, encoding="utf-8"
+    ) as f:
         f.write(
             "<settings>"
             "<batches>10</batches>"
@@ -120,7 +124,9 @@ def test_validator_invalid_xml():
     """Test validating malformed XML."""
     validator = SchemaValidator()
 
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".xml", delete=False, encoding="utf-8") as f:
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".xml", delete=False, encoding="utf-8"
+    ) as f:
         f.write("<settings><run_mode>")  # malformed
         temp_path = Path(f.name)
 
@@ -136,7 +142,9 @@ def test_validator_materials_valid():
     """Test validating valid materials.xml."""
     validator = SchemaValidator()
 
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".xml", delete=False, encoding="utf-8") as f:
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".xml", delete=False, encoding="utf-8"
+    ) as f:
         f.write(
             "<materials>"
             '<material id="1" name="water">'
@@ -159,7 +167,9 @@ def test_validator_geometry_valid():
     """Test validating valid geometry.xml."""
     validator = SchemaValidator()
 
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".xml", delete=False, encoding="utf-8") as f:
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".xml", delete=False, encoding="utf-8"
+    ) as f:
         f.write(
             "<geometry>"
             '<cell id="1" name="core" material="1"/>'

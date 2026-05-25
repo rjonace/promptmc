@@ -100,7 +100,9 @@ class SystemProfiler:
         # Cap at logical core count
         return min(threads, info.cpu_count)
 
-    def recommend_particle_count(self, available_memory_gb: float | None = None) -> int:
+    def recommend_particle_count(
+        self, available_memory_gb: float | None = None
+    ) -> int:
         """Recommend particle count based on available memory.
 
         Args:
@@ -205,7 +207,8 @@ class PerformanceMonitor:
         """
         if not self._samples:
             return PerformanceMetrics(
-                duration_seconds=getattr(self, "_end_time", 0) - getattr(self, "_start_time", 0),
+                duration_seconds=getattr(self, "_end_time", 0)
+                - getattr(self, "_start_time", 0),
                 cpu_percent_avg=0.0,
                 cpu_percent_max=0.0,
                 memory_mb_avg=0.0,
@@ -334,7 +337,9 @@ class OptimizationAdvisor:
 
         return recommendations
 
-    def format_report(self, recommendations: list[OptimizationRecommendation]) -> str:
+    def format_report(
+        self, recommendations: list[OptimizationRecommendation]
+    ) -> str:
         """Format recommendations as a text report.
 
         Args:
@@ -350,7 +355,9 @@ class OptimizationAdvisor:
         lines.append("")
 
         severity_order = {"critical": 0, "warning": 1, "info": 2}
-        sorted_recs = sorted(recommendations, key=lambda r: severity_order.get(r.severity, 3))
+        sorted_recs = sorted(
+            recommendations, key=lambda r: severity_order.get(r.severity, 3)
+        )
 
         for rec in sorted_recs:
             severity_marker = {

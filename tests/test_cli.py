@@ -118,7 +118,9 @@ def test_run_validation_error(mock_cls):
     from promptmc.openmc_integration import OpenMCValidationError
 
     mock_integration = MagicMock()
-    mock_integration.validate_input_file.side_effect = OpenMCValidationError("bad xml")
+    mock_integration.validate_input_file.side_effect = OpenMCValidationError(
+        "bad xml"
+    )
     mock_cls.return_value = mock_integration
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -134,7 +136,9 @@ def test_run_not_found_error(mock_cls):
     from promptmc.openmc_integration import OpenMCNotFoundError
 
     mock_integration = MagicMock()
-    mock_integration.validate_input_file.side_effect = OpenMCNotFoundError("not found")
+    mock_integration.validate_input_file.side_effect = OpenMCNotFoundError(
+        "not found"
+    )
     mock_cls.return_value = mock_integration
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -158,12 +162,22 @@ def test_configure_help():
 @patch("promptmc.cli.OpenMCIntegration")
 def test_configure_success(mock_cls):
     mock_integration = MagicMock()
-    mock_integration.generate_configuration.return_value = Path("openmc_config.xml")
+    mock_integration.generate_configuration.return_value = Path(
+        "openmc_config.xml"
+    )
     mock_cls.return_value = mock_integration
 
     result = runner.invoke(
         app,
-        ["configure", "--particles", "5000", "--batches", "20", "--inactive", "5"],
+        [
+            "configure",
+            "--particles",
+            "5000",
+            "--batches",
+            "20",
+            "--inactive",
+            "5",
+        ],
     )
     assert result.exit_code == 0
     assert "Configuration generated" in result.stdout
@@ -172,7 +186,9 @@ def test_configure_success(mock_cls):
 @patch("promptmc.cli.OpenMCIntegration")
 def test_configure_error(mock_cls):
     mock_integration = MagicMock()
-    mock_integration.generate_configuration.side_effect = RuntimeError("disk full")
+    mock_integration.generate_configuration.side_effect = RuntimeError(
+        "disk full"
+    )
     mock_cls.return_value = mock_integration
 
     result = runner.invoke(app, ["configure"])
@@ -240,7 +256,7 @@ def test_info_help():
 
 
 def test_info_command():
-    """info exits 0 (OpenMC present) or 1 (not present)."""
+    """Info exits 0 (OpenMC present) or 1 (not present)."""
     result = runner.invoke(app, ["info"])
     assert result.exit_code in [0, 1]
 
@@ -266,7 +282,9 @@ def test_info_not_found(mock_cls):
     from promptmc.openmc_integration import OpenMCNotFoundError
 
     mock_integration = MagicMock()
-    mock_integration.check_installation.side_effect = OpenMCNotFoundError("not found")
+    mock_integration.check_installation.side_effect = OpenMCNotFoundError(
+        "not found"
+    )
     mock_cls.return_value = mock_integration
 
     result = runner.invoke(app, ["info"])
@@ -302,7 +320,9 @@ def test_template_invalid_type():
 
 def test_template_criticality(tmp_path):
     out = tmp_path / "settings.xml"
-    result = runner.invoke(app, ["template", "criticality", "--output", str(out)])
+    result = runner.invoke(
+        app, ["template", "criticality", "--output", str(out)]
+    )
     assert result.exit_code == 0
     assert out.exists()
 
@@ -311,7 +331,14 @@ def test_template_fixed_source(tmp_path):
     out = tmp_path / "settings.xml"
     result = runner.invoke(
         app,
-        ["template", "fixed_source", "--output", str(out), "--particles", "5000"],
+        [
+            "template",
+            "fixed_source",
+            "--output",
+            str(out),
+            "--particles",
+            "5000",
+        ],
     )
     assert result.exit_code == 0
     assert out.exists()
@@ -329,7 +356,9 @@ def test_ask_help():
 
 
 def test_ask_shielding_plan():
-    result = runner.invoke(app, ["ask", "make a shielding run with 1 million particles"])
+    result = runner.invoke(
+        app, ["ask", "make a shielding run with 1 million particles"]
+    )
     assert result.exit_code == 0
     assert "shielding" in result.stdout
     assert "1,000,000" in result.stdout
@@ -467,7 +496,9 @@ def test_analyze_with_json_export(mock_viz_cls, mock_parser_cls, tmp_path):
     mock_viz.export_json.return_value = json_out
     mock_viz_cls.return_value = mock_viz
 
-    result = runner.invoke(app, ["analyze", str(tmp_path), "--json", str(json_out)])
+    result = runner.invoke(
+        app, ["analyze", str(tmp_path), "--json", str(json_out)]
+    )
     assert result.exit_code == 0
     assert "exported" in result.stdout
 
@@ -490,7 +521,17 @@ def test_optimize_default():
 def test_optimize_custom():
     result = runner.invoke(
         app,
-        ["optimize", "--threads", "4", "--particles", "50000", "--batches", "200", "--jobs", "2"],
+        [
+            "optimize",
+            "--threads",
+            "4",
+            "--particles",
+            "50000",
+            "--batches",
+            "200",
+            "--jobs",
+            "2",
+        ],
     )
     assert result.exit_code == 0
 

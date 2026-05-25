@@ -59,7 +59,9 @@ class ResultParser:
 
         return result
 
-    def _parse_statepoint(self, statepoint_path: Path, result: SimulationResult) -> None:
+    def _parse_statepoint(
+        self, statepoint_path: Path, result: SimulationResult
+    ) -> None:
         """Parse statepoint HDF5 file.
 
         Args:
@@ -87,7 +89,9 @@ class ResultParser:
                 if "runtime" in f:
                     runtime_data = f["runtime"]
                     if "total" in runtime_data.attrs:
-                        result.runtime_seconds = float(runtime_data.attrs["total"])
+                        result.runtime_seconds = float(
+                            runtime_data.attrs["total"]
+                        )
 
                 # Store raw attributes
                 result.raw_data["statepoint_attrs"] = dict(f.attrs)
@@ -98,7 +102,9 @@ class ResultParser:
         except Exception as e:
             result.raw_data["statepoint_error"] = str(e)
 
-    def _parse_summary(self, summary_path: Path, result: SimulationResult) -> None:
+    def _parse_summary(
+        self, summary_path: Path, result: SimulationResult
+    ) -> None:
         """Parse summary HDF5 file.
 
         Args:
@@ -119,7 +125,9 @@ class ResultParser:
         except Exception as e:
             result.raw_data["summary_error"] = str(e)
 
-    def _parse_tallies(self, tallies_path: Path, result: SimulationResult) -> None:
+    def _parse_tallies(
+        self, tallies_path: Path, result: SimulationResult
+    ) -> None:
         """Parse tallies output file.
 
         Args:
@@ -165,7 +173,11 @@ class ResultVisualizer:
         # Key results
         lines.append("Key Results:")
         if result.k_effective is not None:
-            std_str = f" ± {result.k_effective_std:.5f}" if result.k_effective_std else ""
+            std_str = (
+                f" ± {result.k_effective_std:.5f}"
+                if result.k_effective_std
+                else ""
+            )
             lines.append(f"  k-effective: {result.k_effective:.5f}{std_str}")
         if result.n_batches:
             lines.append(f"  Batches:     {result.n_batches}")
@@ -184,7 +196,9 @@ class ResultVisualizer:
         lines.append("=" * 60)
         return "\n".join(lines)
 
-    def export_json(self, result: SimulationResult, output_path: str | Path) -> Path:
+    def export_json(
+        self, result: SimulationResult, output_path: str | Path
+    ) -> Path:
         """Export result as JSON.
 
         Args:
@@ -197,9 +211,15 @@ class ResultVisualizer:
         output_path = Path(output_path)
 
         data = {
-            "statepoint_path": str(result.statepoint_path) if result.statepoint_path else None,
-            "summary_path": str(result.summary_path) if result.summary_path else None,
-            "tallies_path": str(result.tallies_path) if result.tallies_path else None,
+            "statepoint_path": str(result.statepoint_path)
+            if result.statepoint_path
+            else None,
+            "summary_path": str(result.summary_path)
+            if result.summary_path
+            else None,
+            "tallies_path": str(result.tallies_path)
+            if result.tallies_path
+            else None,
             "k_effective": result.k_effective,
             "k_effective_std": result.k_effective_std,
             "n_batches": result.n_batches,
@@ -232,9 +252,7 @@ class ResultVisualizer:
 
         lines = []
         # Header
-        header = (
-            f"{'#':<4} {'k-effective':<15} {'Batches':<10} {'Particles':<15} {'Runtime (s)':<12}"
-        )
+        header = f"{'#':<4} {'k-effective':<15} {'Batches':<10} {'Particles':<15} {'Runtime (s)':<12}"
         lines.append(header)
         lines.append("-" * len(header))
 

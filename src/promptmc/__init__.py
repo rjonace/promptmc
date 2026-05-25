@@ -1,4 +1,4 @@
-"""PromptMC - Production-grade Python wrapper for OpenMC Monte Carlo simulations."""
+"""PromptMC - Python wrapper for OpenMC Monte Carlo simulations."""
 
 __version__ = "1.0.0"
 __author__ = "PromptMC Contributors"

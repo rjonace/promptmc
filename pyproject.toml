@@ -40,7 +40,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 target-version = "py310"
-line-length = 100
+line-length = 80
 
 [tool.ruff.lint]
 select = [
@@ -53,16 +53,26 @@ select = [
     "UP",  # pyupgrade
     "ARG", # flake8-unused-arguments
     "SIM", # flake8-simplify
+    "D",   # pydocstyle (Google convention)
 ]
 ignore = [
-    "B008",  # Function calls in argument defaults (Typer pattern)
+    "B008",   # Function calls in argument defaults (Typer pattern)
+    "D100",   # Missing docstring in public module (handled per-file)
+    "D104",   # Missing docstring in public package
+    "D107",   # Missing docstring in __init__ (use class docstring)
+    "D203",   # Conflicts with D211 (no-blank-line-before-class)
+    "D213",   # Conflicts with D212 (multi-line-summary-first-line)
+    "E501",   # Line too long (formatter handles code; strings are exempt per Google style)
 ]
 
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
 [tool.ruff.lint.per-file-ignores]
-"src/promptmc/cli.py" = ["ARG001"]
+"src/promptmc/cli.py" = ["ARG001", "D103", "E501"]
 "src/promptmc/templates.py" = ["ARG002"]
 "src/promptmc/openmc_integration.py" = ["ARG002"]
-"tests/*" = ["ARG001", "ARG002"]
+"tests/*" = ["ARG001", "ARG002", "D100", "D101", "D102", "D103"]
 
 [tool.ruff.format]
 quote-style = "double"

@@ -54,7 +54,9 @@ class OpenMCExecutionError(OpenMCIntegrationError):
 class OpenMCIntegration:
     """Manages OpenMC integration supporting both Python API and subprocess invocation."""
 
-    def __init__(self, execution_mode: ExecutionMode = ExecutionMode.AUTO) -> None:
+    def __init__(
+        self, execution_mode: ExecutionMode = ExecutionMode.AUTO
+    ) -> None:
         """Initialize OpenMC integration.
 
         Args:
@@ -89,7 +91,9 @@ class OpenMCIntegration:
             version = getattr(openmc_module, "__version__", "unknown")
         except ImportError:
             if subprocess_available and executable_path is not None:
-                version = self._query_executable_version(executable_path) or "unknown"
+                version = (
+                    self._query_executable_version(executable_path) or "unknown"
+                )
 
         if not subprocess_available and not python_available:
             raise OpenMCNotFoundError(
@@ -143,9 +147,15 @@ class OpenMCIntegration:
                 )
             self._validate_xml_structure(input_path)
         elif input_path.is_dir():
-            missing = [name for name in REQUIRED_INPUT_FILES if not (input_path / name).exists()]
+            missing = [
+                name
+                for name in REQUIRED_INPUT_FILES
+                if not (input_path / name).exists()
+            ]
             if missing:
-                raise OpenMCValidationError(f"Missing required files in directory: {missing}")
+                raise OpenMCValidationError(
+                    f"Missing required files in directory: {missing}"
+                )
             for file_name in REQUIRED_INPUT_FILES:
                 self._validate_xml_structure(input_path / file_name)
         else:
@@ -163,7 +173,9 @@ class OpenMCIntegration:
         try:
             defused_parse(xml_path)
         except ET.ParseError as e:
-            raise OpenMCValidationError(f"Invalid XML in {xml_path}: {e}") from e
+            raise OpenMCValidationError(
+                f"Invalid XML in {xml_path}: {e}"
+            ) from e
 
     def run_simulation(
         self,
@@ -188,7 +200,9 @@ class OpenMCIntegration:
             OpenMCExecutionError: If subprocess invocation fails unexpectedly.
         """
         input_path = Path(input_path)
-        resolved_input_dir = input_path if input_path.is_dir() else input_path.parent
+        resolved_input_dir = (
+            input_path if input_path.is_dir() else input_path.parent
+        )
         output_path = Path(output_path) if output_path else resolved_input_dir
         cwd = Path(cwd) if cwd else resolved_input_dir
 
@@ -282,9 +296,13 @@ class OpenMCIntegration:
                 check=False,
             )
         except FileNotFoundError as e:
-            raise OpenMCNotFoundError("OpenMC executable not found in PATH") from e
+            raise OpenMCNotFoundError(
+                "OpenMC executable not found in PATH"
+            ) from e
         except OSError as e:
-            raise OpenMCExecutionError(f"Failed to run OpenMC subprocess: {e}") from e
+            raise OpenMCExecutionError(
+                f"Failed to run OpenMC subprocess: {e}"
+            ) from e
 
     def generate_configuration(
         self,

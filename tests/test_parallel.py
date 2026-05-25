@@ -80,7 +80,9 @@ def test_execute_jobs_with_threads_no_openmc():
     config = ParallelConfig(mode=ParallelMode.THREADS, max_workers=2)
     executor = ParallelExecutor(config)
 
-    with tempfile.NamedTemporaryFile(mode="wb", suffix=".xml", delete=False) as f:
+    with tempfile.NamedTemporaryFile(
+        mode="wb", suffix=".xml", delete=False
+    ) as f:
         f.write(b"<settings></settings>")
         temp_path = Path(f.name)
 

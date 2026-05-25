@@ -11,8 +11,12 @@ from contextlib import contextmanager, suppress
 from typing import Any, TypeVar
 
 from opentelemetry import metrics, trace
-from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (
+    OTLPMetricExporter,
+)
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
+    OTLPSpanExporter,
+)
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import (
     ConsoleMetricExporter,
@@ -108,11 +112,15 @@ class TelemetryManager:
         provider = TracerProvider(resource=self.resource)
 
         if self.enable_console:
-            provider.add_span_processor(SimpleSpanProcessor(ConsoleSpanExporter()))
+            provider.add_span_processor(
+                SimpleSpanProcessor(ConsoleSpanExporter())
+            )
 
         if self.otlp_endpoint:
             provider.add_span_processor(
-                BatchSpanProcessor(OTLPSpanExporter(endpoint=self.otlp_endpoint, insecure=True))
+                BatchSpanProcessor(
+                    OTLPSpanExporter(endpoint=self.otlp_endpoint, insecure=True)
+                )
             )
 
         return provider
@@ -121,12 +129,16 @@ class TelemetryManager:
         """Build the configured meter provider."""
         exporter: MetricExporter
         if self.otlp_endpoint:
-            exporter = OTLPMetricExporter(endpoint=self.otlp_endpoint, insecure=True)
+            exporter = OTLPMetricExporter(
+                endpoint=self.otlp_endpoint, insecure=True
+            )
         else:
             exporter = _SafeConsoleMetricExporter()
 
         # Long export interval; explicit shutdown() flushes pending data
-        reader = PeriodicExportingMetricReader(exporter, export_interval_millis=60_000)
+        reader = PeriodicExportingMetricReader(
+            exporter, export_interval_millis=60_000
+        )
         return MeterProvider(resource=self.resource, metric_readers=[reader])
 
     def _create_metrics(self) -> None:
@@ -150,7 +162,9 @@ class TelemetryManager:
 
     def record_simulation_start(self, simulation_id: str) -> None:
         """Record the start of a simulation."""
-        self.simulation_counter.add(1, {"simulation_id": simulation_id, "status": "started"})
+        self.simulation_counter.add(
+            1, {"simulation_id": simulation_id, "status": "started"}
+        )
 
     def record_simulation_complete(
         self,
@@ -159,12 +173,20 @@ class TelemetryManager:
         particle_count: int = 0,
     ) -> None:
         """Record the completion of a simulation."""
-        self.simulation_counter.add(1, {"simulation_id": simulation_id, "status": "completed"})
-        self.simulation_duration.record(duration_seconds, {"simulation_id": simulation_id})
+        self.simulation_counter.add(
+            1, {"simulation_id": simulation_id, "status": "completed"}
+        )
+        self.simulation_duration.record(
+            duration_seconds, {"simulation_id": simulation_id}
+        )
         if particle_count > 0:
-            self.particle_counter.add(particle_count, {"simulation_id": simulation_id})
+            self.particle_counter.add(
+                particle_count, {"simulation_id": simulation_id}
+            )
 
-    def record_simulation_error(self, simulation_id: str, error_type: str) -> None:
+    def record_simulation_error(
+        self, simulation_id: str, error_type: str
+    ) -> None:
         """Record a simulation error."""
         self.simulation_counter.add(
             1,
@@ -176,7 +198,9 @@ class TelemetryManager:
         )
 
     @contextmanager
-    def trace_operation(self, operation_name: str, **attributes: Any) -> Iterator[Span]:
+    def trace_operation(
+        self, operation_name: str, **attributes: Any
+    ) -> Iterator[Span]:
         """Context manager for tracing an operation.
 
         Args:

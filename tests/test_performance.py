@@ -128,7 +128,9 @@ def test_analyze_excessive_threads():
     )
 
     thread_warnings = [
-        r for r in recommendations if r.category == "threads" and r.severity == "warning"
+        r
+        for r in recommendations
+        if r.category == "threads" and r.severity == "warning"
     ]
     assert len(thread_warnings) >= 1
 
@@ -156,7 +158,9 @@ def test_format_report_severity_ordering():
     advisor = OptimizationAdvisor()
     recommendations = [
         OptimizationRecommendation("test", "info", "Info msg", "Action"),
-        OptimizationRecommendation("test", "critical", "Critical msg", "Action"),
+        OptimizationRecommendation(
+            "test", "critical", "Critical msg", "Action"
+        ),
         OptimizationRecommendation("test", "warning", "Warning msg", "Action"),
     ]
 

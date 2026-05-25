@@ -83,7 +83,10 @@ def test_temp_directory_manager_keep_on_error():
     """Test that directory is kept on error."""
     captured_path: list[Path] = []
 
-    with pytest.raises(RuntimeError), TempDirectoryManager(keep_on_error=True) as path:
+    with (
+        pytest.raises(RuntimeError),
+        TempDirectoryManager(keep_on_error=True) as path,
+    ):
         captured_path.append(path)
         raise RuntimeError("test error")
 
@@ -99,7 +102,10 @@ def test_temp_directory_manager_remove_on_error():
     """Test that directory is removed on error when keep_on_error=False."""
     captured_path: list[Path] = []
 
-    with pytest.raises(RuntimeError), TempDirectoryManager(keep_on_error=False) as path:
+    with (
+        pytest.raises(RuntimeError),
+        TempDirectoryManager(keep_on_error=False) as path,
+    ):
         captured_path.append(path)
         raise RuntimeError("test error")
 
@@ -136,7 +142,10 @@ def test_check_disk_space_sufficient():
 
 def test_check_disk_space_insufficient():
     """Test check_disk_space raises when insufficient."""
-    with tempfile.TemporaryDirectory() as temp_dir, pytest.raises(ResourceError):
+    with (
+        tempfile.TemporaryDirectory() as temp_dir,
+        pytest.raises(ResourceError),
+    ):
         # Require absurd amount
         check_disk_space(Path(temp_dir), required_mb=10**12)
 
@@ -163,7 +172,10 @@ def test_simulation_workspace_keep_on_error():
     """Test workspace kept on error."""
     captured: list[Path] = []
 
-    with pytest.raises(RuntimeError), simulation_workspace(keep_on_error=True) as ws:
+    with (
+        pytest.raises(RuntimeError),
+        simulation_workspace(keep_on_error=True) as ws,
+    ):
         captured.append(ws.root)
         raise RuntimeError("test")
 

@@ -159,7 +159,9 @@ def test_failing_hook_does_not_break():
     class _BadHook(HookPlugin):
         @property
         def metadata(self):
-            return PluginMetadata(name="bad", version="1.0", plugin_type=PluginType.HOOK)
+            return PluginMetadata(
+                name="bad", version="1.0", plugin_type=PluginType.HOOK
+            )
 
         def supported_events(self):
             return [HookEvent.BEFORE_RUN]

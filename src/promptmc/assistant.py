@@ -23,6 +23,8 @@ SUPPORTED_TEMPLATE_TYPES = {
 
 @dataclass
 class NaturalLanguagePlan:
+    """A simulation plan derived from natural language input."""
+
     prompt: str
     template_type: TemplateType
     particles: int
@@ -36,6 +38,7 @@ class NaturalLanguagePlan:
     source: str = "local"
 
     def command(self, output_path: str | Path = "settings.xml") -> str:
+        """Generate the CLI command to execute this plan."""
         parts = [
             "promptmc",
             "template",
@@ -52,6 +55,7 @@ class NaturalLanguagePlan:
         return " ".join(parts)
 
     def render(self, output_path: str | Path) -> Path:
+        """Render the plan to an XML settings file."""
         template = get_template(self.template_type)
         return template.render(
             output_path=output_path,
@@ -62,6 +66,8 @@ class NaturalLanguagePlan:
 
 
 class OpenAICompatibleLLMClient:
+    """Client for OpenAI-compatible LLM APIs."""
+
     def __init__(
         self,
         api_key: str | None = None,
@@ -70,9 +76,13 @@ class OpenAICompatibleLLMClient:
         timeout_seconds: int = 30,
     ) -> None:
         self.api_key: str | None = (
-            api_key or os.getenv("PROMPTMC_LLM_API_KEY") or os.getenv("OPENAI_API_KEY")
+            api_key
+            or os.getenv("PROMPTMC_LLM_API_KEY")
+            or os.getenv("OPENAI_API_KEY")
         )
-        self.model: str = model or os.getenv("PROMPTMC_LLM_MODEL") or "gpt-4o-mini"
+        self.model: str = (
+            model or os.getenv("PROMPTMC_LLM_MODEL") or "gpt-4o-mini"
+        )
         self.endpoint: str = (
             endpoint
             or os.getenv("PROMPTMC_LLM_ENDPOINT")
@@ -82,9 +92,13 @@ class OpenAICompatibleLLMClient:
 
     @property
     def configured(self) -> bool:
+        """Whether the client has an API key configured."""
         return bool(self.api_key)
 
-    def complete_json(self, system_prompt: str, user_prompt: str) -> dict[str, Any]:
+    def complete_json(
+        self, system_prompt: str, user_prompt: str
+    ) -> dict[str, Any]:
+        """Send a chat completion request and parse JSON."""
         if not self.api_key:
             raise RuntimeError("LLM API key is not configured")
 
@@ -110,7 +124,9 @@ class OpenAICompatibleLLMClient:
         )
 
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout_seconds) as response:  # nosec B310
+            with urllib.request.urlopen(
+                request, timeout=self.timeout_seconds
+            ) as response:  # nosec B310
                 data = json.loads(response.read().decode("utf-8"))
         except urllib.error.URLError as e:
             raise RuntimeError(f"LLM request failed: {e}") from e
@@ -122,7 +138,11 @@ class OpenAICompatibleLLMClient:
 
 
 class NaturalLanguageAssistant:
-    def __init__(self, llm_client: OpenAICompatibleLLMClient | None = None) -> None:
+    """Translates natural language into OpenMC simulation plans."""
+
+    def __init__(
+        self, llm_client: OpenAICompatibleLLMClient | None = None
+    ) -> None:
         self.llm_client = llm_client or OpenAICompatibleLLMClient()
 
     def plan(
@@ -132,6 +152,7 @@ class NaturalLanguageAssistant:
         model: str | None = None,
         endpoint: str | None = None,
     ) -> NaturalLanguagePlan:
+        """Generate a simulation plan from a prompt."""
         local_plan = self._local_plan(prompt)
         if not use_llm:
             return local_plan
@@ -142,15 +163,19 @@ class NaturalLanguageAssistant:
 
         if not client.configured:
             local_plan.warnings.append(
-                "LLM mode requested, but no API key is configured. Set OPENAI_API_KEY or "
-                "PROMPTMC_LLM_API_KEY. Returned the local planner result instead."
+                "LLM mode requested, but no API key is"
+                " configured. Set OPENAI_API_KEY or"
+                " PROMPTMC_LLM_API_KEY. Returned the"
+                " local planner result instead."
             )
             return local_plan
 
         try:
             return self._llm_plan(prompt, local_plan, client)
         except Exception as e:
-            local_plan.warnings.append(f"LLM planning failed; returned local plan instead: {e}")
+            local_plan.warnings.append(
+                f"LLM planning failed; returned local plan instead: {e}"
+            )
             return local_plan
 
     def _local_plan(self, prompt: str) -> NaturalLanguagePlan:
@@ -159,7 +184,14 @@ class NaturalLanguageAssistant:
         template = get_template(template_type)
         particles = self._extract_labeled_count(
             normalized,
-            ("particles", "particle", "histories", "history", "neutrons", "photons"),
+            (
+                "particles",
+                "particle",
+                "histories",
+                "history",
+                "neutrons",
+                "photons",
+            ),
             template.metadata.default_particles,
         )
         batches = self._extract_labeled_count(
@@ -176,13 +208,21 @@ class NaturalLanguageAssistant:
         warnings: list[str] = []
         if "depletion" in normalized or "burnup" in normalized:
             warnings.append(
-                "Depletion was detected, but the built-in depletion template is not "
-                "implemented yet. "
-                "Use the generated plan as a starting point and add depletion settings manually."
+                "Depletion was detected, but the built-in"
+                " depletion template is not implemented"
+                " yet. Use the generated plan as a"
+                " starting point and add depletion"
+                " settings manually."
             )
-        if template_type in {TemplateType.FIXED_SOURCE, TemplateType.SHIELDING} and inactive:
+        if (
+            template_type in {TemplateType.FIXED_SOURCE, TemplateType.SHIELDING}
+            and inactive
+        ):
             inactive = 0
-            warnings.append("Inactive batches are not used for fixed-source-style calculations.")
+            warnings.append(
+                "Inactive batches are not used for"
+                " fixed-source-style calculations."
+            )
 
         next_steps = [
             "Generate settings.xml from the recommended template.",
@@ -212,10 +252,13 @@ class NaturalLanguageAssistant:
         client: OpenAICompatibleLLMClient,
     ) -> NaturalLanguagePlan:
         system_prompt = (
-            "You translate plain-English OpenMC simulation requests into a small JSON plan. "
-            "Return only JSON. Valid template_type values are criticality, fixed_source, "
-            "shielding, and reactor_pin. Use positive integers for particles and batches. "
-            "Use inactive=0 for fixed_source and shielding."
+            "You translate plain-English OpenMC simulation"
+            " requests into a small JSON plan. Return"
+            " only JSON. Valid template_type values are"
+            " criticality, fixed_source, shielding, and"
+            " reactor_pin. Use positive integers for"
+            " particles and batches. Use inactive=0 for"
+            " fixed_source and shielding."
         )
         user_prompt = json.dumps(
             {
@@ -227,7 +270,9 @@ class NaturalLanguageAssistant:
                     "inactive": fallback.inactive,
                 },
                 "required_schema": {
-                    "template_type": "criticality|fixed_source|shielding|reactor_pin",
+                    "template_type": (  # noqa: E501
+                        "criticality|fixed_source" "|shielding|reactor_pin"
+                    ),
                     "particles": "int",
                     "batches": "int",
                     "inactive": "int",
@@ -240,7 +285,9 @@ class NaturalLanguageAssistant:
             }
         )
         data = client.complete_json(system_prompt, user_prompt)
-        template_type = TemplateType(str(data.get("template_type", fallback.template_type.value)))
+        template_type = TemplateType(
+            str(data.get("template_type", fallback.template_type.value))
+        )
         if template_type not in SUPPORTED_TEMPLATE_TYPES:
             template_type = fallback.template_type
 
@@ -250,36 +297,76 @@ class NaturalLanguageAssistant:
             particles=max(1, int(data.get("particles", fallback.particles))),
             batches=max(1, int(data.get("batches", fallback.batches))),
             inactive=max(0, int(data.get("inactive", fallback.inactive))),
-            confidence=max(0.0, min(1.0, float(data.get("confidence", fallback.confidence)))),
+            confidence=max(
+                0.0,
+                min(1.0, float(data.get("confidence", fallback.confidence))),
+            ),
             summary=str(data.get("summary", fallback.summary)),
-            rationale=self._string_list(data.get("rationale", fallback.rationale)),
+            rationale=self._string_list(
+                data.get("rationale", fallback.rationale)
+            ),
             warnings=self._string_list(data.get("warnings", fallback.warnings)),
-            next_steps=self._string_list(data.get("next_steps", fallback.next_steps)),
+            next_steps=self._string_list(
+                data.get("next_steps", fallback.next_steps)
+            ),
             source="llm",
         )
 
-    def _infer_template(self, normalized: str) -> tuple[TemplateType, float, list[str]]:
+    def _infer_template(
+        self, normalized: str
+    ) -> tuple[TemplateType, float, list[str]]:
         matches: list[tuple[int, TemplateType, str]] = []
         keyword_sets = [
             (
                 TemplateType.SHIELDING,
-                ("shield", "shielding", "dose", "attenuation", "concrete", "lead", "barrier"),
+                (
+                    "shield",
+                    "shielding",
+                    "dose",
+                    "attenuation",
+                    "concrete",
+                    "lead",
+                    "barrier",
+                ),
                 "Shielding/dose keywords suggest a shielding calculation.",
             ),
             (
                 TemplateType.REACTOR_PIN,
-                ("pin", "pin-cell", "pincell", "fuel rod", "fuel pellet", "cladding"),
+                (
+                    "pin",
+                    "pin-cell",
+                    "pincell",
+                    "fuel rod",
+                    "fuel pellet",
+                    "cladding",
+                ),
                 "Pin-cell keywords suggest the reactor pin template.",
             ),
             (
                 TemplateType.FIXED_SOURCE,
-                ("fixed source", "source", "beam", "dosimetry", "14 mev", "photon", "gamma"),
+                (
+                    "fixed source",
+                    "source",
+                    "beam",
+                    "dosimetry",
+                    "14 mev",
+                    "photon",
+                    "gamma",
+                ),
                 "Source/dosimetry keywords suggest a fixed-source calculation.",
             ),
             (
                 TemplateType.CRITICALITY,
-                ("criticality", "keff", "k-effective", "eigenvalue", "reactor", "multiplication"),
-                "Criticality/eigenvalue keywords suggest a criticality calculation.",
+                (
+                    "criticality",
+                    "keff",
+                    "k-effective",
+                    "eigenvalue",
+                    "reactor",
+                    "multiplication",
+                ),
+                "Criticality/eigenvalue keywords suggest"
+                " a criticality calculation.",
             ),
         ]
         for template_type, keywords, reason in keyword_sets:
@@ -297,7 +384,9 @@ class NaturalLanguageAssistant:
                 ],
             )
 
-        score, template_type, reason = sorted(matches, key=lambda item: item[0], reverse=True)[0]
+        score, template_type, reason = sorted(
+            matches, key=lambda item: item[0], reverse=True
+        )[0]
         confidence = min(0.95, 0.55 + 0.1 * score)
         return template_type, confidence, [reason]
 
@@ -308,11 +397,11 @@ class NaturalLanguageAssistant:
         default: int,
     ) -> int:
         label_group = "|".join(re.escape(label) for label in labels)
-        after_pattern = re.compile(
+        after_pattern = re.compile(  # noqa: E501
             rf"(?:{label_group})\D{{0,24}}(?P<number>\d[\d,]*(?:\.\d+)?(?:e[+-]?\d+)?)(?P<suffix>\s*(?:k|m|thousand|million))?",
             re.IGNORECASE,
         )
-        before_pattern = re.compile(
+        before_pattern = re.compile(  # noqa: E501
             rf"(?P<number>\d[\d,]*(?:\.\d+)?(?:e[+-]?\d+)?)(?P<suffix>\s*(?:k|m|thousand|million))?\s+(?:{label_group})",
             re.IGNORECASE,
         )
@@ -321,7 +410,9 @@ class NaturalLanguageAssistant:
             if match:
                 return max(
                     1,
-                    self._parse_number(match.group("number"), match.group("suffix") or ""),
+                    self._parse_number(
+                        match.group("number"), match.group("suffix") or ""
+                    ),
                 )
         return default
 
@@ -344,12 +435,15 @@ class NaturalLanguageAssistant:
     ) -> str:
         if inactive:
             return (
-                f"Use the {template_type.value} template with {particles:,} particles, "
-                f"{batches} batches, and {inactive} inactive batches."
+                f"Use the {template_type.value} template"
+                f" with {particles:,} particles,"
+                f" {batches} batches, and"
+                f" {inactive} inactive batches."
             )
         return (
-            f"Use the {template_type.value} template with {particles:,} particles "
-            f"and {batches} batches."
+            f"Use the {template_type.value} template"
+            f" with {particles:,} particles"
+            f" and {batches} batches."
         )
 
     @staticmethod

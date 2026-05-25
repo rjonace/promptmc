@@ -66,7 +66,9 @@ class ConfigurationTemplate:
         output_path = Path(output_path)
         particles = particles or self.metadata.default_particles
         batches = batches or self.metadata.default_batches
-        inactive = inactive if inactive is not None else self.metadata.default_inactive
+        inactive = (
+            inactive if inactive is not None else self.metadata.default_inactive
+        )
 
         root = self._build_xml(
             particles=particles,
@@ -285,7 +287,9 @@ class ReactorPinTemplate(ConfigurationTemplate):
         source = ET.SubElement(root, "source")
         space = ET.SubElement(source, "space", type="cylindrical")
         params = ET.SubElement(space, "parameters")
-        params.text = f"0 0 -{pin_height / 2} 0 0 {pin_height / 2} 0 {pin_radius}"
+        params.text = (
+            f"0 0 -{pin_height / 2} 0 0 {pin_height / 2} 0 {pin_radius}"
+        )
 
         return root
 
@@ -330,7 +334,9 @@ class TemplateRegistry:
 
         if template_type not in self._templates:
             available = list(self._templates.keys())
-            raise KeyError(f"Template '{template_type}' not found. Available: {available}")
+            raise KeyError(
+                f"Template '{template_type}' not found. Available: {available}"
+            )
 
         return self._templates[template_type]
 

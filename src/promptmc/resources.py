@@ -1,4 +1,4 @@
-"""Resource management for OpenMC simulations: limits, monitoring, and cleanup."""
+"""Resource management: limits, monitoring, and cleanup."""
 
 from __future__ import annotations
 
@@ -98,13 +98,19 @@ class ResourceMonitor:
         """
         usage = self.current_usage()
 
-        if self.limits.max_memory_mb is not None and usage.memory_mb > self.limits.max_memory_mb:
+        if (
+            self.limits.max_memory_mb is not None
+            and usage.memory_mb > self.limits.max_memory_mb
+        ):
             return (
                 f"Memory limit exceeded: {usage.memory_mb:.1f}MB > "
                 f"{self.limits.max_memory_mb:.1f}MB"
             )
 
-        if self.limits.max_threads is not None and usage.threads > self.limits.max_threads:
+        if (
+            self.limits.max_threads is not None
+            and usage.threads > self.limits.max_threads
+        ):
             return f"Thread limit exceeded: {usage.threads} > {self.limits.max_threads}"
 
         return None
@@ -132,12 +138,17 @@ class TempDirectoryManager:
         self._error_occurred = False
 
     def __enter__(self) -> Path:
+        """Create and return the temporary directory path."""
         self.path = Path(
-            tempfile.mkdtemp(prefix=self.prefix, dir=str(self.base_dir) if self.base_dir else None)
+            tempfile.mkdtemp(
+                prefix=self.prefix,
+                dir=str(self.base_dir) if self.base_dir else None,
+            )
         )
         return self.path
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        """Clean up the temporary directory on exit."""
         if exc_type is not None:
             self._error_occurred = True
 
@@ -160,6 +171,7 @@ class DiskSpace:
 
     @property
     def percent_used(self) -> float:
+        """Percentage of disk space used."""
         if self.total_mb <= 0:
             return 0.0
         return (self.used_mb / self.total_mb) * 100

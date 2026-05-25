@@ -169,7 +169,9 @@ class RichProgressDisplay:
     def add_subtask(self, description: str, total: int | None = None) -> TaskID:
         """Add a subtask under the main task."""
         if self._progress is None:
-            raise RuntimeError("Progress display not active. Use within display() context.")
+            raise RuntimeError(
+                "Progress display not active. Use within display() context."
+            )
         task_id = self._progress.add_task(description, total=total)
         self._subtask = task_id
         return task_id
@@ -239,12 +241,14 @@ class SimulationProgress:
 
     @property
     def batch_fraction(self) -> float:
+        """Fraction of batches completed (0.0 to 1.0)."""
         if self.total_batches <= 0:
             return 0.0
         return min(1.0, self.completed_batches / self.total_batches)
 
     @property
     def particle_fraction(self) -> float:
+        """Fraction of particles completed (0.0 to 1.0)."""
         if self.total_particles <= 0:
             return 0.0
         return min(1.0, self.completed_particles / self.total_particles)

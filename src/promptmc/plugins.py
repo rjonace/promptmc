@@ -107,7 +107,9 @@ class PluginRegistry:
     """Registry for managing plugins."""
 
     _plugins: dict[str, Plugin] = field(default_factory=dict)
-    _hooks_by_event: dict[HookEvent, list[HookPlugin]] = field(default_factory=dict)
+    _hooks_by_event: dict[HookEvent, list[HookPlugin]] = field(
+        default_factory=dict
+    )
     _post_processors: list[PostProcessorPlugin] = field(default_factory=list)
 
     def register(self, plugin: Plugin) -> None:
@@ -135,7 +137,11 @@ class PluginRegistry:
         if isinstance(plugin, PostProcessorPlugin):
             self._post_processors.append(plugin)
 
-        logger.info("Registered plugin: %s (%s)", name, plugin.metadata.plugin_type.value)
+        logger.info(
+            "Registered plugin: %s (%s)",
+            name,
+            plugin.metadata.plugin_type.value,
+        )
 
     def unregister(self, name: str) -> None:
         """Unregister a plugin by name."""
@@ -188,7 +194,9 @@ class PluginRegistry:
             try:
                 current = processor.process(output_path, current)
             except Exception:
-                logger.exception("Post-processor %s failed", processor.metadata.name)
+                logger.exception(
+                    "Post-processor %s failed", processor.metadata.name
+                )
         return current
 
     def discover_entry_points(self, group: str = "promptmc.plugins") -> int:
@@ -235,7 +243,9 @@ def register_plugin(plugin: Plugin) -> None:
     _registry.register(plugin)
 
 
-def hook(event: HookEvent) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+def hook(
+    event: HookEvent,
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator to mark a function as a hook handler.
 
     Example:

@@ -80,7 +80,9 @@ class PromptMCError(Exception):
         self.cause = cause
         if cause is not None and self.context.traceback_str is None:
             self.context.traceback_str = "".join(
-                traceback.format_exception(type(cause), cause, cause.__traceback__)
+                traceback.format_exception(
+                    type(cause), cause, cause.__traceback__
+                )
             )
 
     def to_dict(self) -> dict:
@@ -121,7 +123,9 @@ class RetryPolicy:
 
     def compute_delay(self, attempt: int) -> float:
         """Compute the delay for a given attempt (1-indexed)."""
-        delay = self.initial_delay_seconds * (self.backoff_multiplier ** (attempt - 1))
+        delay = self.initial_delay_seconds * (
+            self.backoff_multiplier ** (attempt - 1)
+        )
         return min(delay, self.max_delay_seconds)
 
 
@@ -191,13 +195,18 @@ class ErrorReporter:
 
     @property
     def errors(self) -> list[PromptMCError]:
+        """All recorded errors."""
         return list(self._errors)
 
     def has_errors(self) -> bool:
+        """Whether any errors have been recorded."""
         return bool(self._errors)
 
     def has_critical(self) -> bool:
-        return any(e.context.severity == ErrorSeverity.CRITICAL for e in self._errors)
+        """Whether any critical-severity errors exist."""
+        return any(
+            e.context.severity == ErrorSeverity.CRITICAL for e in self._errors
+        )
 
     def clear(self) -> None:
         """Clear recorded errors."""
@@ -227,7 +236,9 @@ class ErrorReporter:
             lines.append(f"    Category:  {err.context.category.value}")
             lines.append(f"    Severity:  {err.context.severity.value}")
             if err.context.correlation_id:
-                lines.append(f"    Correlation ID: {err.context.correlation_id}")
+                lines.append(
+                    f"    Correlation ID: {err.context.correlation_id}"
+                )
             if err.context.metadata:
                 lines.append(f"    Metadata:  {err.context.metadata}")
             if err.cause:

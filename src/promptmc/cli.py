@@ -40,7 +40,9 @@ console = Console()
 def version_callback(value: bool) -> None:
     """Show version and exit."""
     if value:
-        console.print(f"[bold green]promptmc[/bold green] version [cyan]{__version__}[/cyan]")
+        console.print(
+            f"[bold green]promptmc[/bold green] version [cyan]{__version__}[/cyan]"
+        )
         raise typer.Exit()
 
 
@@ -112,7 +114,9 @@ def run(
     try:
         execution_mode = ExecutionMode(mode.lower())
     except ValueError:
-        console.print(f"[red]Invalid mode: {mode}. Use 'auto', 'api', or 'subprocess'[/red]")
+        console.print(
+            f"[red]Invalid mode: {mode}. Use 'auto', 'api', or 'subprocess'[/red]"
+        )
         raise typer.Exit(1) from None
 
     try:
@@ -139,7 +143,8 @@ def run(
 
         registry = get_plugin_registry()
         registry.fire_hook(
-            HookEvent.BEFORE_RUN, {"input_file": str(input_file), "threads": threads}
+            HookEvent.BEFORE_RUN,
+            {"input_file": str(input_file), "threads": threads},
         )
 
         telemetry.record_simulation_start(simulation_id)
@@ -156,7 +161,9 @@ def run(
                 output_path=output,
             )
 
-        registry.fire_hook(HookEvent.AFTER_RUN, {"returncode": result.returncode})
+        registry.fire_hook(
+            HookEvent.AFTER_RUN, {"returncode": result.returncode}
+        )
 
         if result.returncode == 0:
             console.print("[green]✓[/green] Simulation completed successfully")
@@ -167,7 +174,9 @@ def run(
                 duration_seconds=0.0,
             )
         else:
-            console.print(f"[red]✗[/red] Simulation failed with return code {result.returncode}")
+            console.print(
+                f"[red]✗[/red] Simulation failed with return code {result.returncode}"
+            )
             if result.stderr:
                 console.print(f"[red]{result.stderr}[/red]")
             telemetry.record_simulation_error(
@@ -247,7 +256,9 @@ def configure(
             inactive=inactive,
         )
 
-        console.print(f"[green]✓[/green] Configuration generated: [cyan]{result_path}[/cyan]")
+        console.print(
+            f"[green]✓[/green] Configuration generated: [cyan]{result_path}[/cyan]"
+        )
 
     except Exception as e:
         console.print(f"[red]Error generating configuration: {e}[/red]")
@@ -331,8 +342,14 @@ def info() -> None:
         integration = OpenMCIntegration()
         installation = integration.check_installation()
 
-        api_status = "Available" if installation.python_available else "Not available"
-        sub_status = "Available" if installation.subprocess_available else "Not available"
+        api_status = (
+            "Available" if installation.python_available else "Not available"
+        )
+        sub_status = (
+            "Available"
+            if installation.subprocess_available
+            else "Not available"
+        )
         info_text = (
             f"[bold]OpenMC Installation Information[/bold]\n\n"
             f"Version:    [cyan]{installation.version}[/cyan]\n"
@@ -341,9 +358,13 @@ def info() -> None:
         )
 
         if installation.executable_path:
-            info_text += f"Executable: [cyan]{installation.executable_path}[/cyan]\n"
+            info_text += (
+                f"Executable: [cyan]{installation.executable_path}[/cyan]\n"
+            )
 
-        console.print(Panel(info_text, title="System Information", border_style="cyan"))
+        console.print(
+            Panel(info_text, title="System Information", border_style="cyan")
+        )
 
     except OpenMCNotFoundError as e:
         console.print(f"[red]OpenMC not found: {e}[/red]")
@@ -370,16 +391,24 @@ def template(
         "-o",
         help="Output file path",
     ),
-    particles: int | None = typer.Option(None, "--particles", "-p", help="Override particles"),
-    batches: int | None = typer.Option(None, "--batches", "-b", help="Override batches"),
-    inactive: int | None = typer.Option(None, "--inactive", "-i", help="Override inactive"),
+    particles: int | None = typer.Option(
+        None, "--particles", "-p", help="Override particles"
+    ),
+    batches: int | None = typer.Option(
+        None, "--batches", "-b", help="Override batches"
+    ),
+    inactive: int | None = typer.Option(
+        None, "--inactive", "-i", help="Override inactive"
+    ),
 ) -> None:
     """Generate a settings.xml from a named template."""
     try:
         tmpl_type = TemplateType(template_type.lower())
     except ValueError:
         available = [t.value for t in TemplateType]
-        console.print(f"[red]Unknown template: {template_type}. Available: {available}[/red]")
+        console.print(
+            f"[red]Unknown template: {template_type}. Available: {available}[/red]"
+        )
         raise typer.Exit(1) from None
 
     try:
@@ -478,9 +507,13 @@ def ask(
     """Turn a plain-English OpenMC request into a runnable configuration plan."""
     try:
         assistant = NaturalLanguageAssistant()
-        plan = assistant.plan(prompt, use_llm=llm, model=model, endpoint=endpoint)
+        plan = assistant.plan(
+            prompt, use_llm=llm, model=model, endpoint=endpoint
+        )
 
-        table = Table(title="Natural-Language OpenMC Plan", border_style="green")
+        table = Table(
+            title="Natural-Language OpenMC Plan", border_style="green"
+        )
         table.add_column("Field", style="cyan", no_wrap=True)
         table.add_column("Value")
         table.add_row("Source", plan.source)
@@ -510,7 +543,9 @@ def ask(
 
         if write:
             result_path = plan.render(output)
-            console.print(f"[green]✓[/green] Wrote settings file: [cyan]{result_path}[/cyan]")
+            console.print(
+                f"[green]✓[/green] Wrote settings file: [cyan]{result_path}[/cyan]"
+            )
             console.print(
                 f"[dim]Next: validate with `promptmc validate {result_path} --schema`[/dim]"
             )
@@ -627,7 +662,9 @@ def analyze(
 
         if export_json:
             json_path = visualizer.export_json(result, export_json)
-            console.print(f"[green]✓[/green] Results exported to: [cyan]{json_path}[/cyan]")
+            console.print(
+                f"[green]✓[/green] Results exported to: [cyan]{json_path}[/cyan]"
+            )
 
     except Exception as e:
         console.print(f"[red]Error: {e}[/red]")
@@ -641,10 +678,18 @@ def analyze(
 
 @app.command()
 def optimize(
-    threads: int = typer.Option(1, "--threads", "-t", help="Configured thread count"),
-    particles: int = typer.Option(10000, "--particles", "-p", help="Configured particles"),
-    batches: int = typer.Option(100, "--batches", "-b", help="Configured batches"),
-    target_jobs: int = typer.Option(1, "--jobs", "-j", help="Number of concurrent jobs"),
+    threads: int = typer.Option(
+        1, "--threads", "-t", help="Configured thread count"
+    ),
+    particles: int = typer.Option(
+        10000, "--particles", "-p", help="Configured particles"
+    ),
+    batches: int = typer.Option(
+        100, "--batches", "-b", help="Configured batches"
+    ),
+    target_jobs: int = typer.Option(
+        1, "--jobs", "-j", help="Number of concurrent jobs"
+    ),
 ) -> None:
     """Get optimization recommendations for your configuration."""
     try:
@@ -742,7 +787,9 @@ def list_plugins_cmd() -> None:
     plugins = registry.list_plugins()
 
     if loaded:
-        console.print(f"[dim]Discovered {loaded} plugin(s) from entry points[/dim]")
+        console.print(
+            f"[dim]Discovered {loaded} plugin(s) from entry points[/dim]"
+        )
 
     if not plugins:
         console.print("[yellow]No plugins registered.[/yellow]")

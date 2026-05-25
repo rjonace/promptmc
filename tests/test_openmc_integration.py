@@ -14,10 +14,15 @@ from promptmc.openmc_integration import (
 
 def test_run_simulation_without_openmc():
     """Test that running simulation without OpenMC raises error."""
-    with patch("shutil.which", return_value=None), patch.dict("sys.modules", {"openmc": None}):
+    with (
+        patch("shutil.which", return_value=None),
+        patch.dict("sys.modules", {"openmc": None}),
+    ):
         integration = OpenMCIntegration()
 
-        with tempfile.NamedTemporaryFile(mode="wb", suffix=".xml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="wb", suffix=".xml", delete=False
+        ) as f:
             f.write(b"<settings><run_mode>eigenvalue</run_mode></settings>")
             temp_path = Path(f.name)
 
@@ -67,7 +72,9 @@ def test_validate_input_file_valid_xml():
     """Test validation of valid XML file."""
     integration = OpenMCIntegration()
 
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".xml", delete=False) as f:
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".xml", delete=False
+    ) as f:
         f.write("<settings><run_mode>eigenvalue</run_mode></settings>")
         temp_path = Path(f.name)
 
@@ -82,8 +89,12 @@ def test_validate_input_file_invalid_xml():
     """Test validation of invalid XML file."""
     integration = OpenMCIntegration()
 
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".xml", delete=False) as f:
-        f.write("<settings><run_mode>eigenvalue</run_mode")  # Missing closing tag
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".xml", delete=False
+    ) as f:
+        f.write(
+            "<settings><run_mode>eigenvalue</run_mode"
+        )  # Missing closing tag
         temp_path = Path(f.name)
 
     try:
@@ -97,7 +108,9 @@ def test_validate_input_file_wrong_extension():
     """Test validation of file with wrong extension."""
     integration = OpenMCIntegration()
 
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".txt", delete=False
+    ) as f:
         f.write("test")
         temp_path = Path(f.name)
 

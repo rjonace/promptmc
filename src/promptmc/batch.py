@@ -84,7 +84,11 @@ class BatchRunner:
         total_duration = time.time() - start_time
         successful = sum(1 for r in results if r.success)
         failed = len(results) - successful
-        avg_duration = sum(r.duration_seconds for r in results) / len(results) if results else 0.0
+        avg_duration = (
+            sum(r.duration_seconds for r in results) / len(results)
+            if results
+            else 0.0
+        )
 
         summary = BatchSummary(
             batch_id=batch_id,
@@ -102,7 +106,9 @@ class BatchRunner:
 
         return summary
 
-    def _generate_jobs(self, spec: BatchSpec, batch_id: str) -> list[SimulationJob]:
+    def _generate_jobs(
+        self, spec: BatchSpec, batch_id: str
+    ) -> list[SimulationJob]:
         """Generate jobs from batch spec.
 
         Args:
@@ -182,7 +188,9 @@ def load_batch_spec(spec_path: str | Path) -> BatchSpec:
     elif spec_path.suffix == ".json":
         data = json.loads(content)
     else:
-        raise ValueError(f"Unsupported file format: {spec_path.suffix}. Use .yaml, .yml, or .json")
+        raise ValueError(
+            f"Unsupported file format: {spec_path.suffix}. Use .yaml, .yml, or .json"
+        )
 
     if not isinstance(data, dict):
         raise ValueError("Spec file must contain a dictionary at the root")
