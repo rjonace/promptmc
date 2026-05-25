@@ -252,13 +252,11 @@ class NaturalLanguageAssistant:
         client: OpenAICompatibleLLMClient,
     ) -> NaturalLanguagePlan:
         system_prompt = (
-            "You translate plain-English OpenMC simulation"
-            " requests into a small JSON plan. Return"
-            " only JSON. Valid template_type values are"
-            " criticality, fixed_source, shielding, and"
-            " reactor_pin. Use positive integers for"
-            " particles and batches. Use inactive=0 for"
-            " fixed_source and shielding."
+            "You translate plain-English OpenMC simulation requests into a"
+            " small JSON plan. Return only JSON. Valid template_type values"
+            " are criticality, fixed_source, shielding, and reactor_pin."
+            " Use positive integers for particles and batches."
+            " Use inactive=0 for fixed_source and shielding."
         )
         user_prompt = json.dumps(
             {
@@ -270,9 +268,7 @@ class NaturalLanguageAssistant:
                     "inactive": fallback.inactive,
                 },
                 "required_schema": {
-                    "template_type": (  # noqa: E501
-                        "criticality|fixed_source" "|shielding|reactor_pin"
-                    ),
+                    "template_type": "criticality|fixed_source|shielding|reactor_pin",
                     "particles": "int",
                     "batches": "int",
                     "inactive": "int",
@@ -435,15 +431,12 @@ class NaturalLanguageAssistant:
     ) -> str:
         if inactive:
             return (
-                f"Use the {template_type.value} template"
-                f" with {particles:,} particles,"
-                f" {batches} batches, and"
-                f" {inactive} inactive batches."
+                f"Use the {template_type.value} template with {particles:,} "
+                f"particles, {batches} batches, and {inactive} inactive batches."
             )
         return (
-            f"Use the {template_type.value} template"
-            f" with {particles:,} particles"
-            f" and {batches} batches."
+            f"Use the {template_type.value} template with {particles:,} "
+            f"particles and {batches} batches."
         )
 
     @staticmethod
