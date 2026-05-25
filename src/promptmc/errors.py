@@ -2,18 +2,18 @@
 
 from __future__ import annotations
 
-import functools
 import logging
-import time
 import traceback
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, TypeVar
+from typing import Any
+
+import tenacity
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T")
+
 
 
 class ErrorCategory(str, Enum):

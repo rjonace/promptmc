@@ -97,7 +97,7 @@ class _NoopTelemetryManager:
 
     @contextmanager
     def trace_operation(
-        self, operation_name: str, **attributes: Any
+        self, _operation_name: str, **_attributes: Any
     ) -> Iterator[Any]:
         yield None
 

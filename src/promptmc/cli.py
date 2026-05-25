@@ -320,11 +320,11 @@ def validate(
         raise typer.Exit(1)
 
     if schema:
-        validator = SchemaValidator()
+        schema_validator = SchemaValidator()
         if Path(input_file).is_dir():
-            result = validator.validate_directory(input_file)
+            result = schema_validator.validate_directory(input_file)
         else:
-            result = validator.validate_settings(input_file)
+            result = schema_validator.validate_settings(input_file)
 
         console.print(format_validation_report(result))
 

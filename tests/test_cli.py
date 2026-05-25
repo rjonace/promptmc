@@ -83,7 +83,7 @@ def test_run_success(mock_runner_cls, mock_validator_cls):
     mock_validator = MagicMock()
     mock_validator.validate_input_file.return_value = True
     mock_validator_cls.return_value = mock_validator
-    
+
     mock_runner = MagicMock()
     proc = MagicMock()
     proc.returncode = 0
@@ -105,7 +105,7 @@ def test_run_simulation_failure(mock_runner_cls, mock_validator_cls):
     mock_validator = MagicMock()
     mock_validator.validate_input_file.return_value = True
     mock_validator_cls.return_value = mock_validator
-    
+
     mock_runner = MagicMock()
     proc = MagicMock()
     proc.returncode = 1
@@ -149,9 +149,7 @@ def test_run_not_found_error(mock_runner_cls, mock_validator_cls):
     mock_validator_cls.return_value = mock_validator
 
     mock_runner = MagicMock()
-    mock_runner.run_simulation.side_effect = OpenMCNotFoundError(
-        "not found"
-    )
+    mock_runner.run_simulation.side_effect = OpenMCNotFoundError("not found")
     mock_runner_cls.return_value = mock_runner
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -175,9 +173,7 @@ def test_configure_help():
 @patch("promptmc.cli.OpenMCRunner")
 def test_configure_success(mock_runner_cls):
     mock_runner = MagicMock()
-    mock_runner.generate_configuration.return_value = Path(
-        "openmc_config.xml"
-    )
+    mock_runner.generate_configuration.return_value = Path("openmc_config.xml")
     mock_runner_cls.return_value = mock_runner
 
     result = runner.invoke(
@@ -199,9 +195,7 @@ def test_configure_success(mock_runner_cls):
 @patch("promptmc.cli.OpenMCRunner")
 def test_configure_error(mock_runner_cls):
     mock_runner = MagicMock()
-    mock_runner.generate_configuration.side_effect = RuntimeError(
-        "disk full"
-    )
+    mock_runner.generate_configuration.side_effect = RuntimeError("disk full")
     mock_runner_cls.return_value = mock_runner
 
     result = runner.invoke(app, ["configure"])
