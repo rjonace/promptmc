@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-05-25
+
+### Refactored
+- **Boilerplate Reduction in CLI**: Refactored `cli.py` to use a single custom error-handling decorator (`_handle_errors`) across all typer CLI commands, significantly reducing redundant try-except blocks.
+- **Simplified Schema Validation**: Consolidated validation helper methods in `schema.py` to use a single helper method rather than duplicate blocks for settings, materials, and geometry.
+- **Consolidated OpenMC Integration**: Refactored the heavyweight `OpenMCIntegration` class into three focused, single-responsibility classes: `OpenMCRunner`, `OpenMCValidator`, and `OpenMCInstaller`.
+- **Streamlined Exception Tree**: Simplified `errors.py` by removing custom context wrappers (`ErrorContext` and `ErrorReporter`), leaving a lightweight exception tree.
+- **Psutil and Type Improvements**: Removed optional `psutil` dependency guards (since `psutil` is now required) and unified path typing with a new `PathLike` alias across all files.
+
+### Fixed
+- **OpenTelemetry Availability**: Added `pytest.mark.skipif` guards to `test_telemetry.py` to gracefully bypass telemetry tests when the library is installed without the `telemetry` extras.
+
+## [1.1.0] - 2026-05-25
+
+### Changed
+- **Consolidated Modules**: Merged parallel and performance tools directly into batch runner, resource monitor, and progress reporter.
+- **Removed Plugins**: Removed the plugin registry system (`plugins.py`) to keep core API simple and focused.
+- **Lazy Telemetry**: Telemetry dependency components are now lazily loaded and initialized to prevent unnecessary overhead when unused.
+
 ## [1.0.0] - 2026-05-23
 
 ### Added

@@ -39,10 +39,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/pyproject.toml') }}
+          key: venv-v2-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
       
       - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --with dev --extras telemetry
       
       - name: Run tests
@@ -83,10 +82,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ env.PYTHON_DEFAULT }}-${{ hashFiles('**/pyproject.toml') }}
+          key: venv-v2-${{ runner.os }}-${{ env.PYTHON_DEFAULT }}-${{ hashFiles('**/poetry.lock') }}
       
       - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --with dev --extras telemetry
       
       - name: Run Ruff
@@ -120,10 +118,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ env.PYTHON_DEFAULT }}-${{ hashFiles('**/pyproject.toml') }}
+          key: venv-v2-${{ runner.os }}-${{ env.PYTHON_DEFAULT }}-${{ hashFiles('**/poetry.lock') }}
       
       - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --with dev --extras telemetry
       
       - name: Run MyPy
@@ -156,10 +153,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ env.PYTHON_DEFAULT }}-${{ hashFiles('**/pyproject.toml') }}
+          key: venv-v2-${{ runner.os }}-${{ env.PYTHON_DEFAULT }}-${{ hashFiles('**/poetry.lock') }}
       
       - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --with dev --extras telemetry
       
       - name: Run Bandit
