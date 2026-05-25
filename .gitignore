@@ -159,3 +159,7 @@ openmc/
 
 # Exceptions for examples
 !examples/**/*.xml
+
+# Private planning documents
+BUSINESS_PLAN.md
+AGENTS.md
