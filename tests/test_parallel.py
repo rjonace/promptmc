@@ -4,7 +4,7 @@ import multiprocessing
 import tempfile
 from pathlib import Path
 
-from promptmc.parallel import (
+from promptmc.batch import (
     JobResult,
     ParallelConfig,
     ParallelExecutor,

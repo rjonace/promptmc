@@ -2,7 +2,7 @@
 
 import time
 
-from promptmc.performance import (
+from promptmc.progress import (
     OptimizationAdvisor,
     OptimizationRecommendation,
     PerformanceMonitor,

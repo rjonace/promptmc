@@ -3,13 +3,12 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from promptmc.openmc_integration import (
-    ExecutionMode,
-    OpenMCIntegration,
-    OpenMCIntegrationError,
+from promptmc.errors import (
+    OpenMCError as OpenMCIntegrationError,
     OpenMCNotFoundError,
     OpenMCValidationError,
 )
+from promptmc.openmc_integration import ExecutionMode, OpenMCIntegration
 
 
 def test_run_simulation_without_openmc():

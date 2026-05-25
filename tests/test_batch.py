@@ -7,10 +7,11 @@ import pytest
 from promptmc.batch import (
     BatchRunner,
     BatchSpec,
+    ParallelConfig,
+    ParallelMode,
     load_batch_spec,
     save_batch_spec,
 )
-from promptmc.parallel import ParallelConfig, ParallelMode
 
 
 def test_batch_spec_creation():
