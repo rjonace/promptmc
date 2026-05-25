@@ -14,8 +14,6 @@ import tenacity
 logger = logging.getLogger(__name__)
 
 
-
-
 class ErrorCategory(str, Enum):
     """Categories for structured errors."""
 
@@ -132,7 +130,9 @@ def default_retry() -> Callable[..., Any]:
     return tenacity.retry(
         stop=tenacity.stop_after_attempt(3),
         wait=tenacity.wait_exponential(multiplier=1, min=1, max=10),
-        retry=tenacity.retry_if_exception_type((OSError, TimeoutError, ExecutionError)),
+        retry=tenacity.retry_if_exception_type(
+            (OSError, TimeoutError, ExecutionError)
+        ),
         reraise=True,
     )
 

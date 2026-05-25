@@ -1,6 +1,11 @@
 """Tests for telemetry module."""
 
-from promptmc.telemetry import TelemetryManager
+import pytest
+from promptmc.telemetry import _OTEL_AVAILABLE, TelemetryManager
+
+pytestmark = pytest.mark.skipif(
+    not _OTEL_AVAILABLE, reason="OpenTelemetry not available"
+)
 
 
 def test_telemetry_manager_initialization():
