@@ -99,9 +99,14 @@ strict_equality = true
 [[tool.mypy.overrides]]
 module = [
     "openmc.*",
-    "h5py.*"
+    "h5py.*",
+    "opentelemetry.*",
 ]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "promptmc.telemetry"
+warn_unused_ignores = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

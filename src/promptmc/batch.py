@@ -127,11 +127,17 @@ class ParallelExecutor:
         """
         if self.config.mode == ParallelMode.THREADS:
             return self._execute_with_pool(
-                jobs, ThreadPoolExecutor, self._run_single_job, progress_callback
+                jobs,
+                ThreadPoolExecutor,
+                self._run_single_job,
+                progress_callback,
             )
         if self.config.mode == ParallelMode.PROCESSES:
             return self._execute_with_pool(
-                jobs, ProcessPoolExecutor, _run_job_in_process, progress_callback
+                jobs,
+                ProcessPoolExecutor,
+                _run_job_in_process,
+                progress_callback,
             )
         if self.config.mode == ParallelMode.MPI:
             return self._execute_mpi(jobs, progress_callback)
@@ -147,9 +153,7 @@ class ParallelExecutor:
         """Generic pool executor shared by threads and processes modes."""
         results: dict[str, JobResult] = {}
         with executor_cls(max_workers=self.config.max_workers) as executor:
-            future_to_job = {
-                executor.submit(run_fn, job): job for job in jobs
-            }
+            future_to_job = {executor.submit(run_fn, job): job for job in jobs}
             for future in as_completed(future_to_job):
                 job = future_to_job[future]
                 try:
@@ -220,7 +224,11 @@ class ParallelExecutor:
         ]
         env = os.environ.copy()
         env["OMP_NUM_THREADS"] = str(self.config.omp_threads)
-        cwd = job.input_path.parent if job.input_path.is_file() else job.input_path
+        cwd = (
+            job.input_path.parent
+            if job.input_path.is_file()
+            else job.input_path
+        )
         try:
             result = subprocess.run(  # nosec B603
                 cmd,

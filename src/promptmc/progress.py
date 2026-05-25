@@ -592,9 +592,11 @@ class OptimizationAdvisor:
         )
         lines = ["=" * 60, "Optimization Recommendations", "=" * 60, ""]
         for rec in sorted_recs:
-            marker = {"critical": "[CRITICAL]", "warning": "[WARNING]", "info": "[INFO]"}.get(
-                rec.severity, "[INFO]"
-            )
+            marker = {
+                "critical": "[CRITICAL]",
+                "warning": "[WARNING]",
+                "info": "[INFO]",
+            }.get(rec.severity, "[INFO]")
             lines.append(f"{marker} {rec.category.upper()}")
             lines.append(f"  Issue:  {rec.message}")
             lines.append(f"  Action: {rec.suggested_action}")

@@ -38,7 +38,6 @@ try:
     _OTEL_AVAILABLE = True
 except ImportError:
     _OTEL_AVAILABLE = False
-    # Stub types so the rest of the module can reference them without crashing
     metrics = None  # type: ignore[assignment]
     trace = None  # type: ignore[assignment]
     MeterProvider = None  # type: ignore[assignment,misc]
