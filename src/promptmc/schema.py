@@ -18,6 +18,8 @@ from pydantic import (
     model_validator,
 )
 
+from promptmc._typing import PathLike
+
 
 class RunMode(str, Enum):
     """Valid OpenMC run modes."""
@@ -148,7 +150,7 @@ class SchemaValidationResult:
 class SchemaValidator:
     """Validates OpenMC XML files against Pydantic schemas."""
 
-    def validate_settings(self, xml_path: str | Path) -> SchemaValidationResult:
+    def validate_settings(self, xml_path: PathLike) -> SchemaValidationResult:
         """Validate a settings.xml file."""
         xml_path = Path(xml_path)
         issues: list[SchemaIssue] = []
@@ -180,24 +182,11 @@ class SchemaValidator:
 
         data = self._settings_xml_to_dict(root)
 
-        try:
-            SettingsSchema(**data)
-        except ValidationError as e:
-            for err in e.errors():
-                issues.append(
-                    SchemaIssue(
-                        severity=SchemaSeverity.ERROR,
-                        field=".".join(str(p) for p in err["loc"]),
-                        message=err["msg"],
-                        file_path=str(xml_path),
-                    )
-                )
+        self._run_pydantic(SettingsSchema, data, issues, xml_path)
 
         return SchemaValidationResult(is_valid=not issues, issues=issues)
 
-    def validate_materials(
-        self, xml_path: str | Path
-    ) -> SchemaValidationResult:
+    def validate_materials(self, xml_path: PathLike) -> SchemaValidationResult:
         """Validate a materials.xml file."""
         xml_path = Path(xml_path)
         issues: list[SchemaIssue] = []
@@ -258,24 +247,13 @@ class SchemaValidator:
             ]
             materials_data.append(mat_dict)
 
-        try:
-            MaterialsSchema(
-                materials=[MaterialSchema(**m) for m in materials_data]
-            )
-        except ValidationError as e:
-            for err in e.errors():
-                issues.append(
-                    SchemaIssue(
-                        severity=SchemaSeverity.ERROR,
-                        field=".".join(str(p) for p in err["loc"]),
-                        message=err["msg"],
-                        file_path=str(xml_path),
-                    )
-                )
+        self._run_pydantic(
+            MaterialsSchema, {"materials": materials_data}, issues, xml_path
+        )
 
         return SchemaValidationResult(is_valid=not issues, issues=issues)
 
-    def validate_geometry(self, xml_path: str | Path) -> SchemaValidationResult:
+    def validate_geometry(self, xml_path: PathLike) -> SchemaValidationResult:
         """Validate a geometry.xml file."""
         xml_path = Path(xml_path)
         issues: list[SchemaIssue] = []
@@ -322,8 +300,22 @@ class SchemaValidator:
                 }
             )
 
+        self._run_pydantic(
+            GeometrySchema, {"cells": cells_data}, issues, xml_path
+        )
+
+        return SchemaValidationResult(is_valid=not issues, issues=issues)
+
+    def _run_pydantic(
+        self,
+        schema_cls: type,
+        kwargs: dict,
+        issues: list[SchemaIssue],
+        xml_path: PathLike,
+    ) -> None:
+        """Run Pydantic validation and append any issues."""
         try:
-            GeometrySchema(cells=[CellSchema(**c) for c in cells_data])
+            schema_cls(**kwargs)
         except ValidationError as e:
             for err in e.errors():
                 issues.append(
@@ -335,11 +327,7 @@ class SchemaValidator:
                     )
                 )
 
-        return SchemaValidationResult(is_valid=not issues, issues=issues)
-
-    def validate_directory(
-        self, directory: str | Path
-    ) -> SchemaValidationResult:
+    def validate_directory(self, directory: PathLike) -> SchemaValidationResult:
         """Validate all OpenMC input files in a directory."""
         directory = Path(directory)
         all_issues: list[SchemaIssue] = []

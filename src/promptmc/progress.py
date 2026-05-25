@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import contextlib
-import multiprocessing
 import os
 import threading
 import time
@@ -13,6 +12,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
+import psutil
 from rich.console import Console
 from rich.progress import (
     BarColumn,
@@ -329,27 +329,15 @@ class SystemProfiler:
         import platform
         import sys
 
-        try:
-            import psutil
-
-            memory = psutil.virtual_memory()
-            return SystemInfo(
-                cpu_count=psutil.cpu_count(logical=True) or 1,
-                cpu_count_physical=psutil.cpu_count(logical=False) or 1,
-                total_memory_gb=memory.total / (1024**3),
-                available_memory_gb=memory.available / (1024**3),
-                platform=platform.platform(),
-                python_version=sys.version,
-            )
-        except ImportError:
-            return SystemInfo(
-                cpu_count=multiprocessing.cpu_count(),
-                cpu_count_physical=multiprocessing.cpu_count(),
-                total_memory_gb=0.0,
-                available_memory_gb=0.0,
-                platform=platform.platform(),
-                python_version=sys.version,
-            )
+        memory = psutil.virtual_memory()
+        return SystemInfo(
+            cpu_count=psutil.cpu_count(logical=True) or 1,
+            cpu_count_physical=psutil.cpu_count(logical=False) or 1,
+            total_memory_gb=memory.total / (1024**3),
+            available_memory_gb=memory.available / (1024**3),
+            platform=platform.platform(),
+            python_version=sys.version,
+        )
 
     def recommend_thread_count(self, target_jobs: int = 1) -> int:
         """Recommend optimal OpenMP thread count.
@@ -421,26 +409,21 @@ class PerformanceMonitor:
 
     def _sample_loop(self) -> None:
         """Sample metrics periodically."""
-        try:
-            import psutil
-
-            process = psutil.Process(os.getpid())
-            while self._monitoring:
-                try:
-                    cpu_percent = process.cpu_percent(interval=None)
-                    memory_mb = process.memory_info().rss / (1024**2)
-                    self._samples.append(
-                        {
-                            "timestamp": time.time(),
-                            "cpu_percent": cpu_percent,
-                            "memory_mb": memory_mb,
-                        }
-                    )
-                except Exception:
-                    continue  # nosec B112
-                time.sleep(self.sample_interval)
-        except ImportError:
-            pass
+        process = psutil.Process(os.getpid())
+        while self._monitoring:
+            try:
+                cpu_percent = process.cpu_percent(interval=None)
+                memory_mb = process.memory_info().rss / (1024**2)
+                self._samples.append(
+                    {
+                        "timestamp": time.time(),
+                        "cpu_percent": cpu_percent,
+                        "memory_mb": memory_mb,
+                    }
+                )
+            except Exception:
+                continue  # nosec B112
+            time.sleep(self.sample_interval)
 
     def get_metrics(self) -> PerformanceMetrics:
         """Get aggregated metrics from monitoring.

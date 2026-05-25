@@ -127,70 +127,14 @@ class OpenMCExecutionError(OpenMCError):
     """Raised when OpenMC simulation execution fails."""
 
 
-@dataclass
-class RetryPolicy:
-    """Configuration for retry behavior."""
-
-    max_attempts: int = 3
-    initial_delay_seconds: float = 1.0
-    max_delay_seconds: float = 60.0
-    backoff_multiplier: float = 2.0
-    retryable_exceptions: tuple = (OSError, TimeoutError, ExecutionError)
-
-    def compute_delay(self, attempt: int) -> float:
-        """Compute the delay for a given attempt (1-indexed)."""
-        delay = self.initial_delay_seconds * (
-            self.backoff_multiplier ** (attempt - 1)
-        )
-        return min(delay, self.max_delay_seconds)
-
-
-def retry(
-    policy: RetryPolicy | None = None,
-    on_retry: Callable[[int, Exception, float], None] | None = None,
-) -> Callable[[Callable[..., T]], Callable[..., T]]:
-    """Decorator that retries a function on configured exceptions.
-
-    Args:
-        policy: Retry policy. Uses defaults when not provided.
-        on_retry: Callback invoked as ``on_retry(attempt, exception, delay)``
-            after each failed attempt before the next one.
-
-    Returns:
-        The decorated function.
-    """
-    actual_policy = policy or RetryPolicy()
-
-    def decorator(func: Callable[..., T]) -> Callable[..., T]:
-        @functools.wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> T:
-            last_exc: Exception | None = None
-            for attempt in range(1, actual_policy.max_attempts + 1):
-                try:
-                    return func(*args, **kwargs)
-                except actual_policy.retryable_exceptions as e:
-                    last_exc = e
-                    if attempt >= actual_policy.max_attempts:
-                        break
-                    delay = actual_policy.compute_delay(attempt)
-                    logger.warning(
-                        "Attempt %d/%d failed for %s: %s. Retrying in %.1fs",
-                        attempt,
-                        actual_policy.max_attempts,
-                        func.__name__,
-                        e,
-                        delay,
-                    )
-                    if on_retry is not None:
-                        on_retry(attempt, e, delay)
-                    time.sleep(delay)
-
-            assert last_exc is not None  # nosec B101
-            raise last_exc
-
-        return wrapper
-
-    return decorator
+def default_retry() -> Callable[..., Any]:
+    """Default retry decorator using tenacity."""
+    return tenacity.retry(
+        stop=tenacity.stop_after_attempt(3),
+        wait=tenacity.wait_exponential(multiplier=1, min=1, max=10),
+        retry=tenacity.retry_if_exception_type((OSError, TimeoutError, ExecutionError)),
+        reraise=True,
+    )
 
 
 class ErrorReporter:

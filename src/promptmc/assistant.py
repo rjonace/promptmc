@@ -309,14 +309,11 @@ class NaturalLanguageAssistant:
             source="llm",
         )
 
-    def _infer_template(
-        self, normalized: str
-    ) -> tuple[TemplateType, float, list[str]]:
-        matches: list[tuple[int, TemplateType, str]] = []
-        keyword_sets = [
-            (
-                TemplateType.SHIELDING,
-                (
+    KEYWORD_TEMPLATES: dict[TemplateType, tuple[list[re.Pattern[str]], str]] = {
+        TemplateType.SHIELDING: (
+            [
+                re.compile(rf"\b{kw}\b", re.IGNORECASE)
+                for kw in (
                     "shield",
                     "shielding",
                     "dose",
@@ -324,24 +321,28 @@ class NaturalLanguageAssistant:
                     "concrete",
                     "lead",
                     "barrier",
-                ),
-                "Shielding/dose keywords suggest a shielding calculation.",
-            ),
-            (
-                TemplateType.REACTOR_PIN,
-                (
+                )
+            ],
+            "Shielding/dose keywords suggest a shielding calculation.",
+        ),
+        TemplateType.REACTOR_PIN: (
+            [
+                re.compile(rf"\b{kw}\b", re.IGNORECASE)
+                for kw in (
                     "pin",
                     "pin-cell",
                     "pincell",
                     "fuel rod",
                     "fuel pellet",
                     "cladding",
-                ),
-                "Pin-cell keywords suggest the reactor pin template.",
-            ),
-            (
-                TemplateType.FIXED_SOURCE,
-                (
+                )
+            ],
+            "Pin-cell keywords suggest the reactor pin template.",
+        ),
+        TemplateType.FIXED_SOURCE: (
+            [
+                re.compile(rf"\b{kw}\b", re.IGNORECASE)
+                for kw in (
                     "fixed source",
                     "source",
                     "beam",
@@ -349,25 +350,32 @@ class NaturalLanguageAssistant:
                     "14 mev",
                     "photon",
                     "gamma",
-                ),
-                "Source/dosimetry keywords suggest a fixed-source calculation.",
-            ),
-            (
-                TemplateType.CRITICALITY,
-                (
+                )
+            ],
+            "Source/dosimetry keywords suggest a fixed-source calculation.",
+        ),
+        TemplateType.CRITICALITY: (
+            [
+                re.compile(rf"\b{kw}\b", re.IGNORECASE)
+                for kw in (
                     "criticality",
                     "keff",
                     "k-effective",
                     "eigenvalue",
                     "reactor",
                     "multiplication",
-                ),
-                "Criticality/eigenvalue keywords suggest"
-                " a criticality calculation.",
-            ),
-        ]
-        for template_type, keywords, reason in keyword_sets:
-            score = sum(1 for keyword in keywords if keyword in normalized)
+                )
+            ],
+            "Criticality/eigenvalue keywords suggest a criticality calculation.",
+        ),
+    }
+
+    def _infer_template(
+        self, normalized: str
+    ) -> tuple[TemplateType, float, list[str]]:
+        matches: list[tuple[int, TemplateType, str]] = []
+        for template_type, (patterns, reason) in self.KEYWORD_TEMPLATES.items():
+            score = sum(1 for p in patterns if p.search(normalized))
             if score:
                 matches.append((score, template_type, reason))
 
@@ -376,8 +384,7 @@ class NaturalLanguageAssistant:
                 TemplateType.CRITICALITY,
                 0.45,
                 [
-                    "No strong domain keywords were found, so criticality was chosen as "
-                    "a safe default."
+                    "No strong domain keywords were found, so criticality was chosen as a safe default."
                 ],
             )
 

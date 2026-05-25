@@ -11,6 +11,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+import psutil
+
 from promptmc.errors import ResourceError
 
 
@@ -56,13 +58,8 @@ class ResourceMonitor:
 
     @staticmethod
     def _get_process() -> Any | None:
-        """Get a psutil Process if psutil is available."""
-        try:
-            import psutil
-
-            return psutil.Process(os.getpid())
-        except ImportError:
-            return None
+        """Get a psutil Process."""
+        return psutil.Process(os.getpid())
 
     def current_usage(self) -> ResourceUsage:
         """Snapshot current resource usage."""

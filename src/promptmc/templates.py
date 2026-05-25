@@ -8,6 +8,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
+from promptmc._typing import PathLike
+
 
 class TemplateType(Enum):
     """Built-in template types."""
@@ -45,7 +47,7 @@ class ConfigurationTemplate:
 
     def render(
         self,
-        output_path: str | Path,
+        output_path: PathLike,
         particles: int | None = None,
         batches: int | None = None,
         inactive: int | None = None,

@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "promptmc"
-version = "1.1.0"
-description = "Production-grade Python wrapper for OpenMC Monte Carlo particle transport code"
+version = "1.2.0"
+description = "AI Assistant and CLI for OpenMC simulation workflows"
 authors = ["PromptMC Contributors"]
 license = "MIT"
 readme = "README.md"
@@ -19,6 +19,7 @@ defusedxml = "^0.7.1"
 opentelemetry-api = {version = "^1.26.0", optional = true}
 opentelemetry-sdk = {version = "^1.26.0", optional = true}
 opentelemetry-exporter-otlp = {version = "^1.26.0", optional = true}
+tenacity = "^9.1.4"
 
 [tool.poetry.extras]
 telemetry = ["opentelemetry-api", "opentelemetry-sdk", "opentelemetry-exporter-otlp"]

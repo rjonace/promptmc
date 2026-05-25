@@ -20,7 +20,8 @@ from pathlib import Path
 
 import yaml
 
-from promptmc.openmc_integration import OpenMCIntegration
+from promptmc._typing import PathLike
+from promptmc.openmc_integration import OpenMCRunner
 
 
 class ParallelMode(Enum):
@@ -75,8 +76,8 @@ def _run_job_in_process(job: SimulationJob) -> JobResult:
     """Top-level helper for ProcessPoolExecutor (must be picklable)."""
     start_time = time.time()
     try:
-        integration = OpenMCIntegration()
-        result = integration.run_simulation(
+        runner = OpenMCRunner()
+        result = runner.run_simulation(
             input_path=job.input_path,
             threads=job.threads,
             output_path=job.output_path,
@@ -189,8 +190,8 @@ class ParallelExecutor:
         """Run a single simulation job (used by thread pool)."""
         start_time = time.time()
         try:
-            integration = OpenMCIntegration()
-            result = integration.run_simulation(
+            runner = OpenMCRunner()
+            result = runner.run_simulation(
                 input_path=job.input_path,
                 threads=job.threads,
                 output_path=job.output_path,
@@ -403,7 +404,7 @@ class BatchRunner:
         summary_path.write_text(json.dumps(data, indent=2, default=str))
 
 
-def load_batch_spec(spec_path: str | Path) -> BatchSpec:
+def load_batch_spec(spec_path: PathLike) -> BatchSpec:
     """Load a batch specification from YAML or JSON file.
 
     Args:
@@ -443,7 +444,7 @@ def load_batch_spec(spec_path: str | Path) -> BatchSpec:
     return BatchSpec(**data)
 
 
-def save_batch_spec(spec: BatchSpec, output_path: str | Path) -> Path:
+def save_batch_spec(spec: BatchSpec, output_path: PathLike) -> Path:
     """Save a batch specification to YAML or JSON file.
 
     Args:

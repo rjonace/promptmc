@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import sys
+from collections.abc import Callable
+from functools import wraps
 from pathlib import Path
+from typing import Any
 
 import typer
 from rich.console import Console
@@ -23,12 +26,38 @@ from promptmc.errors import (
     OpenMCValidationError,
     configure_logging,
 )
-from promptmc.openmc_integration import ExecutionMode, OpenMCIntegration
+from promptmc.openmc_integration import (
+    ExecutionMode,
+    OpenMCInstaller,
+    OpenMCRunner,
+    OpenMCValidator,
+)
 from promptmc.progress import OptimizationAdvisor, SystemProfiler
 from promptmc.schema import SchemaValidator, format_validation_report
 from promptmc.telemetry import get_telemetry_manager
 from promptmc.templates import TemplateType, get_template, list_templates
 from promptmc.visualization import ResultParser, ResultVisualizer
+
+
+def _handle_errors(func: Callable[..., Any]) -> Callable[..., Any]:
+    @wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        try:
+            return func(*args, **kwargs)
+        except OpenMCValidationError as e:
+            console.print(f"[red]Validation error: {e}[/red]")
+            raise typer.Exit(1) from e
+        except OpenMCNotFoundError as e:
+            console.print(f"[red]OpenMC not found: {e}[/red]")
+            raise typer.Exit(1) from e
+        except typer.Exit:
+            raise
+        except Exception as e:
+            console.print(f"[red]Error: {e}[/red]")
+            raise typer.Exit(1) from e
+
+    return wrapper
+
 
 app = typer.Typer(
     name="promptmc",
@@ -86,6 +115,7 @@ def main(
 
 
 @app.command()
+@_handle_errors
 def run(
     input_file: Path = typer.Argument(
         ...,
@@ -113,19 +143,14 @@ def run(
     ),
 ) -> None:
     """Run an OpenMC simulation."""
-    try:
-        execution_mode = ExecutionMode(mode.lower())
-    except ValueError:
-        console.print(
-            f"[red]Invalid mode: {mode}. Use 'auto', 'api', or 'subprocess'[/red]"
-        )
-        raise typer.Exit(1) from None
+    execution_mode = ExecutionMode(mode.lower())
 
     try:
-        integration = OpenMCIntegration(execution_mode=execution_mode)
+        runner = OpenMCRunner(execution_mode=execution_mode)
+        validator = OpenMCValidator()
 
         console.print(f"[dim]Validating input: {input_file}[/dim]")
-        integration.validate_input_file(input_file)
+        validator.validate_input_file(input_file)
         console.print("[green]✓[/green] Input validation passed")
 
         telemetry = get_telemetry_manager()
@@ -151,7 +176,7 @@ def run(
             threads=threads,
             mode=mode,
         ):
-            result = integration.run_simulation(
+            result = runner.run_simulation(
                 input_path=input_file,
                 threads=threads,
                 output_path=output,
@@ -196,6 +221,7 @@ def run(
 
 
 @app.command()
+@_handle_errors
 def configure(
     output: Path = typer.Option(
         Path("openmc_config.xml"),
@@ -226,35 +252,30 @@ def configure(
     ),
 ) -> None:
     """Generate an OpenMC configuration file."""
-    try:
-        integration = OpenMCIntegration()
+    runner = OpenMCRunner()
 
-        console.print(
-            Panel(
-                f"[bold]Generating OpenMC configuration[/bold]\n\n"
-                f"Output: [cyan]{output}[/cyan]\n"
-                f"Particles: [cyan]{particles}[/cyan]\n"
-                f"Batches: [cyan]{batches}[/cyan]\n"
-                f"Inactive: [cyan]{inactive}[/cyan]",
-                title="Configuration",
-                border_style="blue",
-            )
+    console.print(
+        Panel(
+            f"[bold]Generating OpenMC configuration[/bold]\n\n"
+            f"Output: [cyan]{output}[/cyan]\n"
+            f"Particles: [cyan]{particles}[/cyan]\n"
+            f"Batches: [cyan]{batches}[/cyan]\n"
+            f"Inactive: [cyan]{inactive}[/cyan]",
+            title="Configuration",
+            border_style="blue",
         )
+    )
 
-        result_path = integration.generate_configuration(
-            output_path=output,
-            particles=particles,
-            batches=batches,
-            inactive=inactive,
-        )
+    result_path = runner.generate_configuration(
+        output_path=output,
+        particles=particles,
+        batches=batches,
+        inactive=inactive,
+    )
 
-        console.print(
-            f"[green]✓[/green] Configuration generated: [cyan]{result_path}[/cyan]"
-        )
-
-    except Exception as e:
-        console.print(f"[red]Error generating configuration: {e}[/red]")
-        raise typer.Exit(1) from e
+    console.print(
+        f"[green]✓[/green] Configuration generated: [cyan]{result_path}[/cyan]"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -263,6 +284,7 @@ def configure(
 
 
 @app.command()
+@_handle_errors
 def validate(
     input_file: Path = typer.Argument(
         ...,
@@ -277,49 +299,39 @@ def validate(
     ),
 ) -> None:
     """Validate OpenMC input files (XML structure + optional schema checks)."""
-    try:
-        integration = OpenMCIntegration()
+    validator = OpenMCValidator()
 
-        console.print(
-            Panel(
-                f"[bold]Validating OpenMC input[/bold]\n\n"
-                f"Input: [cyan]{input_file}[/cyan]\n"
-                f"Schema validation: [cyan]{schema}[/cyan]",
-                title="Validation",
-                border_style="yellow",
-            )
+    console.print(
+        Panel(
+            f"[bold]Validating OpenMC input[/bold]\n\n"
+            f"Input: [cyan]{input_file}[/cyan]\n"
+            f"Schema validation: [cyan]{schema}[/cyan]",
+            title="Validation",
+            border_style="yellow",
         )
+    )
 
-        is_valid = integration.validate_input_file(input_file)
+    is_valid = validator.validate_input_file(input_file)
 
-        if is_valid:
-            console.print("[green]✓[/green] XML structure validation passed")
+    if is_valid:
+        console.print("[green]✓[/green] XML structure validation passed")
+    else:
+        console.print("[red]✗[/red] XML structure validation failed")
+        raise typer.Exit(1)
+
+    if schema:
+        validator = SchemaValidator()
+        if Path(input_file).is_dir():
+            result = validator.validate_directory(input_file)
         else:
-            console.print("[red]✗[/red] XML structure validation failed")
+            result = validator.validate_settings(input_file)
+
+        console.print(format_validation_report(result))
+
+        if not result.is_valid:
             raise typer.Exit(1)
-
-        if schema:
-            validator = SchemaValidator()
-            if Path(input_file).is_dir():
-                result = validator.validate_directory(input_file)
-            else:
-                result = validator.validate_settings(input_file)
-
-            console.print(format_validation_report(result))
-
-            if not result.is_valid:
-                raise typer.Exit(1)
-            else:
-                console.print("[green]✓[/green] Schema validation passed")
-
-    except OpenMCValidationError as e:
-        console.print(f"[red]Validation error: {e}[/red]")
-        raise typer.Exit(1) from e
-    except typer.Exit:
-        raise
-    except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(1) from e
+        else:
+            console.print("[green]✓[/green] Schema validation passed")
 
 
 # ---------------------------------------------------------------------------
@@ -328,42 +340,33 @@ def validate(
 
 
 @app.command()
+@_handle_errors
 def info() -> None:
     """Show OpenMC installation information."""
-    try:
-        integration = OpenMCIntegration()
-        installation = integration.check_installation()
+    installer = OpenMCInstaller()
+    installation = installer.check_installation()
 
-        api_status = (
-            "Available" if installation.python_available else "Not available"
-        )
-        sub_status = (
-            "Available"
-            if installation.subprocess_available
-            else "Not available"
-        )
-        info_text = (
-            f"[bold]OpenMC Installation Information[/bold]\n\n"
-            f"Version:    [cyan]{installation.version}[/cyan]\n"
-            f"Python API: [cyan]{api_status}[/cyan]\n"
-            f"Subprocess: [cyan]{sub_status}[/cyan]\n"
-        )
+    api_status = (
+        "Available" if installation.python_available else "Not available"
+    )
+    sub_status = (
+        "Available" if installation.subprocess_available else "Not available"
+    )
+    info_text = (
+        f"[bold]OpenMC Installation Information[/bold]\n\n"
+        f"Version:    [cyan]{installation.version}[/cyan]\n"
+        f"Python API: [cyan]{api_status}[/cyan]\n"
+        f"Subprocess: [cyan]{sub_status}[/cyan]\n"
+    )
 
-        if installation.executable_path:
-            info_text += (
-                f"Executable: [cyan]{installation.executable_path}[/cyan]\n"
-            )
-
-        console.print(
-            Panel(info_text, title="System Information", border_style="cyan")
+    if installation.executable_path:
+        info_text += (
+            f"Executable: [cyan]{installation.executable_path}[/cyan]\n"
         )
 
-    except OpenMCNotFoundError as e:
-        console.print(f"[red]OpenMC not found: {e}[/red]")
-        raise typer.Exit(1) from e
-    except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(1) from e
+    console.print(
+        Panel(info_text, title="System Information", border_style="cyan")
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -372,6 +375,7 @@ def info() -> None:
 
 
 @app.command()
+@_handle_errors
 def template(
     template_type: str = typer.Argument(
         ...,
@@ -394,14 +398,7 @@ def template(
     ),
 ) -> None:
     """Generate a settings.xml from a named template."""
-    try:
-        tmpl_type = TemplateType(template_type.lower())
-    except ValueError:
-        available = [t.value for t in TemplateType]
-        console.print(
-            f"[red]Unknown template: {template_type}. Available: {available}[/red]"
-        )
-        raise typer.Exit(1) from None
+    tmpl_type = TemplateType(template_type.lower())
 
     try:
         tmpl = get_template(tmpl_type)
@@ -434,6 +431,7 @@ def template(
 
 
 @app.command(name="list-templates")
+@_handle_errors
 def list_templates_cmd() -> None:
     """List all available configuration templates."""
     templates = list_templates()
@@ -463,6 +461,7 @@ def list_templates_cmd() -> None:
 
 
 @app.command()
+@_handle_errors
 def ask(
     prompt: str = typer.Argument(
         ...,
@@ -497,54 +496,45 @@ def ask(
     ),
 ) -> None:
     """Turn a plain-English OpenMC request into a runnable configuration plan."""
-    try:
-        assistant = NaturalLanguageAssistant()
-        plan = assistant.plan(
-            prompt, use_llm=llm, model=model, endpoint=endpoint
+    assistant = NaturalLanguageAssistant()
+    plan = assistant.plan(prompt, use_llm=llm, model=model, endpoint=endpoint)
+
+    table = Table(title="Natural-Language OpenMC Plan", border_style="green")
+    table.add_column("Field", style="cyan", no_wrap=True)
+    table.add_column("Value")
+    table.add_row("Source", plan.source)
+    table.add_row("Template", plan.template_type.value)
+    table.add_row("Particles", f"{plan.particles:,}")
+    table.add_row("Batches", str(plan.batches))
+    table.add_row("Inactive", str(plan.inactive))
+    table.add_row("Confidence", f"{plan.confidence:.0%}")
+    table.add_row("Command", plan.command(output))
+    console.print(table)
+    console.print(Panel(plan.summary, title="Summary", border_style="blue"))
+
+    if plan.rationale:
+        console.print("[bold]Why this plan[/bold]")
+        for reason in plan.rationale:
+            console.print(f"- {reason}")
+
+    if plan.warnings:
+        console.print("[bold yellow]Warnings[/bold yellow]")
+        for warning in plan.warnings:
+            console.print(f"- {warning}")
+
+    if plan.next_steps:
+        console.print("[bold]Next steps[/bold]")
+        for step in plan.next_steps:
+            console.print(f"- {step}")
+
+    if write:
+        result_path = plan.render(output)
+        console.print(
+            f"[green]✓[/green] Wrote settings file: [cyan]{result_path}[/cyan]"
         )
-
-        table = Table(
-            title="Natural-Language OpenMC Plan", border_style="green"
+        console.print(
+            f"[dim]Next: validate with `promptmc validate {result_path} --schema`[/dim]"
         )
-        table.add_column("Field", style="cyan", no_wrap=True)
-        table.add_column("Value")
-        table.add_row("Source", plan.source)
-        table.add_row("Template", plan.template_type.value)
-        table.add_row("Particles", f"{plan.particles:,}")
-        table.add_row("Batches", str(plan.batches))
-        table.add_row("Inactive", str(plan.inactive))
-        table.add_row("Confidence", f"{plan.confidence:.0%}")
-        table.add_row("Command", plan.command(output))
-        console.print(table)
-        console.print(Panel(plan.summary, title="Summary", border_style="blue"))
-
-        if plan.rationale:
-            console.print("[bold]Why this plan[/bold]")
-            for reason in plan.rationale:
-                console.print(f"- {reason}")
-
-        if plan.warnings:
-            console.print("[bold yellow]Warnings[/bold yellow]")
-            for warning in plan.warnings:
-                console.print(f"- {warning}")
-
-        if plan.next_steps:
-            console.print("[bold]Next steps[/bold]")
-            for step in plan.next_steps:
-                console.print(f"- {step}")
-
-        if write:
-            result_path = plan.render(output)
-            console.print(
-                f"[green]✓[/green] Wrote settings file: [cyan]{result_path}[/cyan]"
-            )
-            console.print(
-                f"[dim]Next: validate with `promptmc validate {result_path} --schema`[/dim]"
-            )
-
-    except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(1) from e
 
 
 # ---------------------------------------------------------------------------
@@ -553,6 +543,7 @@ def ask(
 
 
 @app.command()
+@_handle_errors
 def batch(
     spec_file: Path = typer.Argument(
         ...,
@@ -573,11 +564,7 @@ def batch(
     ),
 ) -> None:
     """Run a batch of simulations from a specification file."""
-    try:
-        mode = ParallelMode(parallel_mode.lower())
-    except ValueError:
-        console.print(f"[red]Invalid parallel mode: {parallel_mode}[/red]")
-        raise typer.Exit(1) from None
+    mode = ParallelMode(parallel_mode.lower())
 
     try:
         spec = load_batch_spec(spec_file)
@@ -630,6 +617,7 @@ def batch(
 
 
 @app.command()
+@_handle_errors
 def analyze(
     output_path: Path = typer.Argument(
         ...,
@@ -644,23 +632,18 @@ def analyze(
     ),
 ) -> None:
     """Analyze OpenMC simulation results."""
-    try:
-        parser = ResultParser()
-        visualizer = ResultVisualizer()
+    parser = ResultParser()
+    visualizer = ResultVisualizer()
 
-        result = parser.parse_results(output_path)
-        report = visualizer.format_text_report(result)
-        console.print(report)
+    result = parser.parse_results(output_path)
+    report = visualizer.format_text_report(result)
+    console.print(report)
 
-        if export_json:
-            json_path = visualizer.export_json(result, export_json)
-            console.print(
-                f"[green]✓[/green] Results exported to: [cyan]{json_path}[/cyan]"
-            )
-
-    except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(1) from e
+    if export_json:
+        json_path = visualizer.export_json(result, export_json)
+        console.print(
+            f"[green]✓[/green] Results exported to: [cyan]{json_path}[/cyan]"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -669,6 +652,7 @@ def analyze(
 
 
 @app.command()
+@_handle_errors
 def optimize(
     threads: int = typer.Option(
         1, "--threads", "-t", help="Configured thread count"
@@ -684,20 +668,15 @@ def optimize(
     ),
 ) -> None:
     """Get optimization recommendations for your configuration."""
-    try:
-        advisor = OptimizationAdvisor()
-        recommendations = advisor.analyze(
-            threads=threads,
-            particles=particles,
-            batches=batches,
-            target_jobs=target_jobs,
-        )
-        report = advisor.format_report(recommendations)
-        console.print(report)
-
-    except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(1) from e
+    advisor = OptimizationAdvisor()
+    recommendations = advisor.analyze(
+        threads=threads,
+        particles=particles,
+        batches=batches,
+        target_jobs=target_jobs,
+    )
+    report = advisor.format_report(recommendations)
+    console.print(report)
 
 
 # ---------------------------------------------------------------------------
@@ -706,30 +685,26 @@ def optimize(
 
 
 @app.command(name="system-info")
+@_handle_errors
 def system_info_cmd() -> None:
     """Display system information for OpenMC tuning."""
-    try:
-        profiler = SystemProfiler()
-        sys_info = profiler.get_system_info()
+    profiler = SystemProfiler()
+    sys_info = profiler.get_system_info()
 
-        console.print(
-            Panel(
-                f"[bold]System Information[/bold]\n\n"
-                f"CPU (logical):       [cyan]{sys_info.cpu_count}[/cyan]\n"
-                f"CPU (physical):      [cyan]{sys_info.cpu_count_physical}[/cyan]\n"
-                f"Total memory:        [cyan]{sys_info.total_memory_gb:.2f} GB[/cyan]\n"
-                f"Available memory:    [cyan]{sys_info.available_memory_gb:.2f} GB[/cyan]\n"
-                f"Platform:            [cyan]{sys_info.platform}[/cyan]\n"
-                f"Recommended threads: [cyan]{profiler.recommend_thread_count()}[/cyan]\n"
-                f"Recommended particles: [cyan]{profiler.recommend_particle_count():,}[/cyan]",
-                title="System Info",
-                border_style="cyan",
-            )
+    console.print(
+        Panel(
+            f"[bold]System Information[/bold]\n\n"
+            f"CPU (logical):       [cyan]{sys_info.cpu_count}[/cyan]\n"
+            f"CPU (physical):      [cyan]{sys_info.cpu_count_physical}[/cyan]\n"
+            f"Total memory:        [cyan]{sys_info.total_memory_gb:.2f} GB[/cyan]\n"
+            f"Available memory:    [cyan]{sys_info.available_memory_gb:.2f} GB[/cyan]\n"
+            f"Platform:            [cyan]{sys_info.platform}[/cyan]\n"
+            f"Recommended threads: [cyan]{profiler.recommend_thread_count()}[/cyan]\n"
+            f"Recommended particles: [cyan]{profiler.recommend_particle_count():,}[/cyan]",
+            title="System Info",
+            border_style="cyan",
         )
-
-    except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(1) from e
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -738,6 +713,7 @@ def system_info_cmd() -> None:
 
 
 @app.command(name="schema-check")
+@_handle_errors
 def schema_check(
     input_path: Path = typer.Argument(
         ...,
@@ -746,24 +722,17 @@ def schema_check(
     ),
 ) -> None:
     """Run schema validation against OpenMC XML input files."""
-    try:
-        validator = SchemaValidator()
+    validator = SchemaValidator()
 
-        if Path(input_path).is_dir():
-            result = validator.validate_directory(input_path)
-        else:
-            result = validator.validate_settings(input_path)
+    if Path(input_path).is_dir():
+        result = validator.validate_directory(input_path)
+    else:
+        result = validator.validate_settings(input_path)
 
-        console.print(format_validation_report(result))
+    console.print(format_validation_report(result))
 
-        if not result.is_valid:
-            raise typer.Exit(1)
-
-    except typer.Exit:
-        raise
-    except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(1) from e
+    if not result.is_valid:
+        raise typer.Exit(1)
 
 
 # ---------------------------------------------------------------------------

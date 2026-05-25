@@ -77,16 +77,20 @@ def test_run_invalid_mode():
     assert result.exit_code == 1
 
 
-@patch("promptmc.cli.OpenMCIntegration")
-def test_run_success(mock_cls):
-    mock_integration = MagicMock()
-    mock_integration.validate_input_file.return_value = True
+@patch("promptmc.cli.OpenMCValidator")
+@patch("promptmc.cli.OpenMCRunner")
+def test_run_success(mock_runner_cls, mock_validator_cls):
+    mock_validator = MagicMock()
+    mock_validator.validate_input_file.return_value = True
+    mock_validator_cls.return_value = mock_validator
+    
+    mock_runner = MagicMock()
     proc = MagicMock()
     proc.returncode = 0
     proc.stdout = "Simulation complete"
     proc.stderr = ""
-    mock_integration.run_simulation.return_value = proc
-    mock_cls.return_value = mock_integration
+    mock_runner.run_simulation.return_value = proc
+    mock_runner_cls.return_value = mock_runner
 
     with tempfile.TemporaryDirectory() as tmp:
         p = _write_settings(Path(tmp))
@@ -95,16 +99,20 @@ def test_run_success(mock_cls):
     assert result.exit_code == 0
 
 
-@patch("promptmc.cli.OpenMCIntegration")
-def test_run_simulation_failure(mock_cls):
-    mock_integration = MagicMock()
-    mock_integration.validate_input_file.return_value = True
+@patch("promptmc.cli.OpenMCValidator")
+@patch("promptmc.cli.OpenMCRunner")
+def test_run_simulation_failure(mock_runner_cls, mock_validator_cls):
+    mock_validator = MagicMock()
+    mock_validator.validate_input_file.return_value = True
+    mock_validator_cls.return_value = mock_validator
+    
+    mock_runner = MagicMock()
     proc = MagicMock()
     proc.returncode = 1
     proc.stdout = ""
     proc.stderr = "Segfault"
-    mock_integration.run_simulation.return_value = proc
-    mock_cls.return_value = mock_integration
+    mock_runner.run_simulation.return_value = proc
+    mock_runner_cls.return_value = mock_runner
 
     with tempfile.TemporaryDirectory() as tmp:
         p = _write_settings(Path(tmp))
@@ -113,15 +121,15 @@ def test_run_simulation_failure(mock_cls):
     assert result.exit_code == 1
 
 
-@patch("promptmc.cli.OpenMCIntegration")
-def test_run_validation_error(mock_cls):
+@patch("promptmc.cli.OpenMCValidator")
+def test_run_validation_error(mock_validator_cls):
     from promptmc.openmc_integration import OpenMCValidationError
 
-    mock_integration = MagicMock()
-    mock_integration.validate_input_file.side_effect = OpenMCValidationError(
+    mock_validator = MagicMock()
+    mock_validator.validate_input_file.side_effect = OpenMCValidationError(
         "bad xml"
     )
-    mock_cls.return_value = mock_integration
+    mock_validator_cls.return_value = mock_validator
 
     with tempfile.TemporaryDirectory() as tmp:
         p = _write_settings(Path(tmp))
@@ -131,15 +139,20 @@ def test_run_validation_error(mock_cls):
     assert "Validation error" in result.stdout
 
 
-@patch("promptmc.cli.OpenMCIntegration")
-def test_run_not_found_error(mock_cls):
+@patch("promptmc.cli.OpenMCValidator")
+@patch("promptmc.cli.OpenMCRunner")
+def test_run_not_found_error(mock_runner_cls, mock_validator_cls):
     from promptmc.openmc_integration import OpenMCNotFoundError
 
-    mock_integration = MagicMock()
-    mock_integration.validate_input_file.side_effect = OpenMCNotFoundError(
+    mock_validator = MagicMock()
+    mock_validator.validate_input_file.return_value = True
+    mock_validator_cls.return_value = mock_validator
+
+    mock_runner = MagicMock()
+    mock_runner.run_simulation.side_effect = OpenMCNotFoundError(
         "not found"
     )
-    mock_cls.return_value = mock_integration
+    mock_runner_cls.return_value = mock_runner
 
     with tempfile.TemporaryDirectory() as tmp:
         p = _write_settings(Path(tmp))
@@ -159,13 +172,13 @@ def test_configure_help():
     assert result.exit_code == 0
 
 
-@patch("promptmc.cli.OpenMCIntegration")
-def test_configure_success(mock_cls):
-    mock_integration = MagicMock()
-    mock_integration.generate_configuration.return_value = Path(
+@patch("promptmc.cli.OpenMCRunner")
+def test_configure_success(mock_runner_cls):
+    mock_runner = MagicMock()
+    mock_runner.generate_configuration.return_value = Path(
         "openmc_config.xml"
     )
-    mock_cls.return_value = mock_integration
+    mock_runner_cls.return_value = mock_runner
 
     result = runner.invoke(
         app,
@@ -183,13 +196,13 @@ def test_configure_success(mock_cls):
     assert "Configuration generated" in result.stdout
 
 
-@patch("promptmc.cli.OpenMCIntegration")
-def test_configure_error(mock_cls):
-    mock_integration = MagicMock()
-    mock_integration.generate_configuration.side_effect = RuntimeError(
+@patch("promptmc.cli.OpenMCRunner")
+def test_configure_error(mock_runner_cls):
+    mock_runner = MagicMock()
+    mock_runner.generate_configuration.side_effect = RuntimeError(
         "disk full"
     )
-    mock_cls.return_value = mock_integration
+    mock_runner_cls.return_value = mock_runner
 
     result = runner.invoke(app, ["configure"])
     assert result.exit_code == 1
@@ -205,11 +218,11 @@ def test_validate_help():
     assert result.exit_code == 0
 
 
-@patch("promptmc.cli.OpenMCIntegration")
-def test_validate_success(mock_cls):
-    mock_integration = MagicMock()
-    mock_integration.validate_input_file.return_value = True
-    mock_cls.return_value = mock_integration
+@patch("promptmc.cli.OpenMCValidator")
+def test_validate_success(mock_validator_cls):
+    mock_validator = MagicMock()
+    mock_validator.validate_input_file.return_value = True
+    mock_validator_cls.return_value = mock_validator
 
     with tempfile.TemporaryDirectory() as tmp:
         p = _write_settings(Path(tmp))
@@ -219,11 +232,11 @@ def test_validate_success(mock_cls):
     assert "passed" in result.stdout
 
 
-@patch("promptmc.cli.OpenMCIntegration")
-def test_validate_fail(mock_cls):
-    mock_integration = MagicMock()
-    mock_integration.validate_input_file.return_value = False
-    mock_cls.return_value = mock_integration
+@patch("promptmc.cli.OpenMCValidator")
+def test_validate_fail(mock_validator_cls):
+    mock_validator = MagicMock()
+    mock_validator.validate_input_file.return_value = False
+    mock_validator_cls.return_value = mock_validator
 
     with tempfile.TemporaryDirectory() as tmp:
         p = _write_settings(Path(tmp))
@@ -232,11 +245,11 @@ def test_validate_fail(mock_cls):
     assert result.exit_code == 1
 
 
-@patch("promptmc.cli.OpenMCIntegration")
-def test_validate_with_schema(mock_cls):
-    mock_integration = MagicMock()
-    mock_integration.validate_input_file.return_value = True
-    mock_cls.return_value = mock_integration
+@patch("promptmc.cli.OpenMCValidator")
+def test_validate_with_schema(mock_validator_cls):
+    mock_validator = MagicMock()
+    mock_validator.validate_input_file.return_value = True
+    mock_validator_cls.return_value = mock_validator
 
     with tempfile.TemporaryDirectory() as tmp:
         p = _write_settings(Path(tmp))
@@ -261,31 +274,31 @@ def test_info_command():
     assert result.exit_code in [0, 1]
 
 
-@patch("promptmc.cli.OpenMCIntegration")
-def test_info_success(mock_cls):
+@patch("promptmc.cli.OpenMCInstaller")
+def test_info_success(mock_installer_cls):
     mock_info = MagicMock()
     mock_info.version = "0.14.0"
     mock_info.python_available = True
     mock_info.subprocess_available = True
     mock_info.executable_path = "/usr/local/bin/openmc"
-    mock_integration = MagicMock()
-    mock_integration.check_installation.return_value = mock_info
-    mock_cls.return_value = mock_integration
+    mock_installer = MagicMock()
+    mock_installer.check_installation.return_value = mock_info
+    mock_installer_cls.return_value = mock_installer
 
     result = runner.invoke(app, ["info"])
     assert result.exit_code == 0
     assert "0.14.0" in result.stdout
 
 
-@patch("promptmc.cli.OpenMCIntegration")
-def test_info_not_found(mock_cls):
+@patch("promptmc.cli.OpenMCInstaller")
+def test_info_not_found(mock_installer_cls):
     from promptmc.openmc_integration import OpenMCNotFoundError
 
-    mock_integration = MagicMock()
-    mock_integration.check_installation.side_effect = OpenMCNotFoundError(
+    mock_installer = MagicMock()
+    mock_installer.check_installation.side_effect = OpenMCNotFoundError(
         "not found"
     )
-    mock_cls.return_value = mock_integration
+    mock_installer_cls.return_value = mock_installer
 
     result = runner.invoke(app, ["info"])
     assert result.exit_code == 1
@@ -315,7 +328,7 @@ def test_template_help():
 def test_template_invalid_type():
     result = runner.invoke(app, ["template", "badtype"])
     assert result.exit_code == 1
-    assert "Unknown template" in result.stdout
+    assert "is not a valid TemplateType" in result.stdout
 
 
 def test_template_criticality(tmp_path):

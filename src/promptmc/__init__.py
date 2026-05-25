@@ -1,7 +1,22 @@
-"""PromptMC - Python wrapper for OpenMC Monte Carlo simulations."""
+"""PromptMC: AI Assistant and CLI for OpenMC workflows."""
 
-__version__ = "1.1.0"
-__author__ = "PromptMC Contributors"
-__license__ = "MIT"
+from promptmc.batch import BatchRunner, ParallelConfig, ParallelMode
+from promptmc.openmc_integration import (
+    ExecutionMode,
+    OpenMCInstaller,
+    OpenMCRunner,
+    OpenMCValidator,
+)
 
-__all__ = ["__version__"]
+__version__ = "1.2.0"
+
+__all__ = [
+    "__version__",
+    "BatchRunner",
+    "ExecutionMode",
+    "OpenMCInstaller",
+    "OpenMCRunner",
+    "OpenMCValidator",
+    "ParallelConfig",
+    "ParallelMode",
+]

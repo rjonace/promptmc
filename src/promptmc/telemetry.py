@@ -53,7 +53,7 @@ except ImportError:
 T = TypeVar("T")
 
 # Module-level singleton (None until first access)
-_telemetry_manager: TelemetryManager | None = None
+_telemetry_manager: TelemetryManager | _NoopTelemetryManager | None = None
 
 
 class _SafeConsoleMetricExporter(ConsoleMetricExporter):
@@ -74,6 +74,41 @@ class _SafeConsoleMetricExporter(ConsoleMetricExporter):
             return super().export(metrics_data, timeout_millis, **kwargs)
         except (ValueError, OSError):
             return MetricExportResult.SUCCESS
+
+
+class _NoopTelemetryManager:
+    """A telemetry manager that does nothing when OpenTelemetry is unavailable."""
+
+    def record_simulation_start(self, simulation_id: str) -> None:
+        pass
+
+    def record_simulation_complete(
+        self,
+        simulation_id: str,
+        duration_seconds: float,
+        particle_count: int = 0,
+    ) -> None:
+        pass
+
+    def record_simulation_error(
+        self, simulation_id: str, error_type: str
+    ) -> None:
+        pass
+
+    @contextmanager
+    def trace_operation(
+        self, operation_name: str, **attributes: Any
+    ) -> Iterator[Any]:
+        yield None
+
+    def trace_function(self, func: Callable[..., T]) -> Callable[..., T]:
+        return func
+
+    def shutdown(self) -> None:
+        pass
+
+    def _safe_shutdown(self) -> None:
+        pass
 
 
 class TelemetryManager:
@@ -106,9 +141,6 @@ class TelemetryManager:
         self.enable_console = enable_console
         self.otlp_endpoint = otlp_endpoint
         self._shutdown_called = False
-
-        if not _OTEL_AVAILABLE:
-            return
 
         self.resource = Resource.create({SERVICE_NAME: service_name})
 
@@ -181,8 +213,6 @@ class TelemetryManager:
 
     def record_simulation_start(self, simulation_id: str) -> None:
         """Record the start of a simulation."""
-        if not _OTEL_AVAILABLE:
-            return
         self.simulation_counter.add(
             1, {"simulation_id": simulation_id, "status": "started"}
         )
@@ -194,8 +224,6 @@ class TelemetryManager:
         particle_count: int = 0,
     ) -> None:
         """Record the completion of a simulation."""
-        if not _OTEL_AVAILABLE:
-            return
         self.simulation_counter.add(
             1, {"simulation_id": simulation_id, "status": "completed"}
         )
@@ -211,8 +239,6 @@ class TelemetryManager:
         self, simulation_id: str, error_type: str
     ) -> None:
         """Record a simulation error."""
-        if not _OTEL_AVAILABLE:
-            return
         self.simulation_counter.add(
             1,
             {
@@ -235,9 +261,6 @@ class TelemetryManager:
         Yields:
             The active span for the operation.
         """
-        if not _OTEL_AVAILABLE:
-            yield None  # type: ignore[misc]
-            return
         with self.tracer.start_as_current_span(operation_name) as span:
             for key, value in attributes.items():
                 span.set_attribute(key, value)
@@ -245,8 +268,6 @@ class TelemetryManager:
 
     def trace_function(self, func: Callable[..., T]) -> Callable[..., T]:
         """Decorator to automatically trace a function."""
-        if not _OTEL_AVAILABLE:
-            return func
 
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> T:
@@ -279,7 +300,7 @@ class TelemetryManager:
             sys.stdout.flush()
 
 
-def get_telemetry_manager() -> TelemetryManager:
+def get_telemetry_manager() -> TelemetryManager | _NoopTelemetryManager:
     """Get or create the global telemetry manager instance.
 
     Reads configuration from environment variables:
@@ -294,9 +315,12 @@ def get_telemetry_manager() -> TelemetryManager:
     if _telemetry_manager is not None:
         return _telemetry_manager
 
+    if not _OTEL_AVAILABLE:
+        _telemetry_manager = _NoopTelemetryManager()
+        return _telemetry_manager
+
     otlp_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
     enable_console = os.getenv("OTEL_CONSOLE_EXPORT", "true").lower() == "true"
-
     _telemetry_manager = TelemetryManager(
         service_name="promptmc",
         enable_console=enable_console,

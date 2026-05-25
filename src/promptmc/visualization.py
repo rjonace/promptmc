@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from promptmc._typing import PathLike
+
 
 @dataclass
 class SimulationResult:
@@ -27,7 +29,7 @@ class SimulationResult:
 class ResultParser:
     """Parses OpenMC simulation results from output files."""
 
-    def parse_results(self, output_path: str | Path) -> SimulationResult:
+    def parse_results(self, output_path: PathLike) -> SimulationResult:
         """Parse simulation results from output directory.
 
         Args:
@@ -197,7 +199,7 @@ class ResultVisualizer:
         return "\n".join(lines)
 
     def export_json(
-        self, result: SimulationResult, output_path: str | Path
+        self, result: SimulationResult, output_path: PathLike
     ) -> Path:
         """Export result as JSON.
 
