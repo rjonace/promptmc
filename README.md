@@ -54,7 +54,7 @@ Whether you're new to Monte Carlo or an experienced researcher, PromptMC reduces
 - **Modern CLI**: Extensible command-line interface built with Typer (12 commands)
 - **Optional Observability**: OpenTelemetry integration for distributed tracing and metrics (`pip install promptmc[telemetry]`)
 - **Type Safety**: Full type hints, `from __future__ import annotations`, Python 3.10+
-- **Quality Assurance**: 203 tests, 83% coverage, and zero ruff warnings
+- **Quality Assurance**: 190 tests, 83% coverage, and zero ruff warnings
 - **Production-Ready**: Strict dependency management with Poetry
 
 ## Installation
@@ -247,22 +247,28 @@ promptmc --verbose run input.xml
 ### Python API Usage
 
 ```python
-from promptmc.telemetry import TelemetryManager
-from promptmc.openmc_integration import OpenMCIntegration, ExecutionMode
-
-# Initialize OpenMC integration
-integration = OpenMCIntegration(execution_mode=ExecutionMode.AUTO)
+from promptmc import (
+    ExecutionMode,
+    OpenMCInstaller,
+    OpenMCRunner,
+    OpenMCValidator,
+)
+from promptmc.telemetry import get_telemetry_manager
+from promptmc.visualization import ResultParser
 
 # Check OpenMC installation
-info = integration.check_installation()
+installer = OpenMCInstaller()
+info = installer.check_installation()
 print(f"OpenMC version: {info.version}")
 print(f"Python API available: {info.python_available}")
 
 # Validate input files
-integration.validate_input_file("input.xml")
+validator = OpenMCValidator()
+validator.validate_input_file("input.xml")
 
 # Generate configuration
-integration.generate_configuration(
+runner = OpenMCRunner(execution_mode=ExecutionMode.AUTO)
+runner.generate_configuration(
     output_path="settings.xml",
     particles=10000,
     batches=10,
@@ -270,18 +276,20 @@ integration.generate_configuration(
 )
 
 # Run simulation
-result = integration.run_simulation(
+result = runner.run_simulation(
     input_path="input.xml",
     threads=4,
     output_path="results",
 )
 
 # Parse output
-results = integration.parse_output("results")
-print(f"Output files: {results['files']}")
+parser = ResultParser()
+results = parser.parse_results("results")
+print(f"k-effective: {results.k_effective}")
+print(f"Statepoint: {results.statepoint_path}")
 
-# Use telemetry
-telemetry = TelemetryManager()
+# Use telemetry (no-op unless `promptmc[telemetry]` is installed)
+telemetry = get_telemetry_manager()
 telemetry.record_simulation_start("sim-001")
 
 with telemetry.trace_operation("simulation_run", simulation_id="sim-001"):
@@ -291,7 +299,6 @@ with telemetry.trace_operation("simulation_run", simulation_id="sim-001"):
 telemetry.record_simulation_complete(
     simulation_id="sim-001",
     duration_seconds=120.5,
-    particle_count=1000000,
 )
 ```
 
@@ -326,7 +333,8 @@ promptmc/
 │   ├── cli.py                   # CLI (12 commands)
 │   ├── assistant.py             # Natural-language and optional LLM planning
 │   ├── telemetry.py             # OpenTelemetry integration (optional)
-│   ├── openmc_integration.py    # OpenMC API wrapper and subprocess support
+│   ├── openmc_integration.py    # OpenMCInstaller, OpenMCValidator, OpenMCRunner
+│   ├── _typing.py               # Shared type aliases (PathLike)
 │   ├── batch.py                 # Batch and parallel simulation execution
 │   ├── templates.py             # Configuration templates
 │   ├── visualization.py         # Result parsing and visualization

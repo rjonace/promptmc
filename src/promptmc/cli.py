@@ -145,74 +145,61 @@ def run(
     """Run an OpenMC simulation."""
     execution_mode = ExecutionMode(mode.lower())
 
-    try:
-        runner = OpenMCRunner(execution_mode=execution_mode)
-        validator = OpenMCValidator()
+    runner = OpenMCRunner(execution_mode=execution_mode)
+    validator = OpenMCValidator()
 
-        console.print(f"[dim]Validating input: {input_file}[/dim]")
-        validator.validate_input_file(input_file)
-        console.print("[green]✓[/green] Input validation passed")
+    console.print(f"[dim]Validating input: {input_file}[/dim]")
+    validator.validate_input_file(input_file)
+    console.print("[green]✓[/green] Input validation passed")
 
-        telemetry = get_telemetry_manager()
-        simulation_id = input_file.stem
+    telemetry = get_telemetry_manager()
+    simulation_id = input_file.stem
 
-        console.print(
-            Panel(
-                f"[bold]Running OpenMC simulation[/bold]\n\n"
-                f"Input: [cyan]{input_file}[/cyan]\n"
-                f"Threads: [cyan]{threads}[/cyan]\n"
-                f"Output: [cyan]{output or 'default'}[/cyan]\n"
-                f"Mode: [cyan]{mode}[/cyan]",
-                title="Simulation Configuration",
-                border_style="green",
-            )
+    console.print(
+        Panel(
+            f"[bold]Running OpenMC simulation[/bold]\n\n"
+            f"Input: [cyan]{input_file}[/cyan]\n"
+            f"Threads: [cyan]{threads}[/cyan]\n"
+            f"Output: [cyan]{output or 'default'}[/cyan]\n"
+            f"Mode: [cyan]{mode}[/cyan]",
+            title="Simulation Configuration",
+            border_style="green",
+        )
+    )
+
+    telemetry.record_simulation_start(simulation_id)
+
+    with telemetry.trace_operation(
+        "openmc_simulation",
+        simulation_id=simulation_id,
+        threads=threads,
+        mode=mode,
+    ):
+        result = runner.run_simulation(
+            input_path=input_file,
+            threads=threads,
+            output_path=output,
         )
 
-        telemetry.record_simulation_start(simulation_id)
-
-        with telemetry.trace_operation(
-            "openmc_simulation",
+    if result.returncode == 0:
+        console.print("[green]✓[/green] Simulation completed successfully")
+        if result.stdout:
+            console.print(f"[dim]{result.stdout}[/dim]")
+        telemetry.record_simulation_complete(
             simulation_id=simulation_id,
-            threads=threads,
-            mode=mode,
-        ):
-            result = runner.run_simulation(
-                input_path=input_file,
-                threads=threads,
-                output_path=output,
-            )
-
-        if result.returncode == 0:
-            console.print("[green]✓[/green] Simulation completed successfully")
-            if result.stdout:
-                console.print(f"[dim]{result.stdout}[/dim]")
-            telemetry.record_simulation_complete(
-                simulation_id=simulation_id,
-                duration_seconds=0.0,
-            )
-        else:
-            console.print(
-                f"[red]✗[/red] Simulation failed with return code {result.returncode}"
-            )
-            if result.stderr:
-                console.print(f"[red]{result.stderr}[/red]")
-            telemetry.record_simulation_error(
-                simulation_id=simulation_id,
-                error_type="ExecutionError",
-            )
-            raise typer.Exit(1)
-
-    except OpenMCValidationError as e:
-        console.print(f"[red]Validation error: {e}[/red]")
-        raise typer.Exit(1) from e
-    except OpenMCNotFoundError as e:
-        console.print(f"[red]OpenMC not found: {e}[/red]")
-        raise typer.Exit(1) from e
-    except typer.Exit:
-        raise
-    except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(1) from e
+            duration_seconds=0.0,
+        )
+    else:
+        console.print(
+            f"[red]✗[/red] Simulation failed with return code {result.returncode}"
+        )
+        if result.stderr:
+            console.print(f"[red]{result.stderr}[/red]")
+        telemetry.record_simulation_error(
+            simulation_id=simulation_id,
+            error_type="ExecutionError",
+        )
+        raise typer.Exit(1)
 
 
 # ---------------------------------------------------------------------------
@@ -400,29 +387,24 @@ def template(
     """Generate a settings.xml from a named template."""
     tmpl_type = TemplateType(template_type.lower())
 
-    try:
-        tmpl = get_template(tmpl_type)
-        result_path = tmpl.render(
-            output_path=output,
-            particles=particles,
-            batches=batches,
-            inactive=inactive,
-        )
+    tmpl = get_template(tmpl_type)
+    result_path = tmpl.render(
+        output_path=output,
+        particles=particles,
+        batches=batches,
+        inactive=inactive,
+    )
 
-        console.print(
-            Panel(
-                f"[bold]Template Generated[/bold]\n\n"
-                f"Type: [cyan]{tmpl.metadata.name}[/cyan]\n"
-                f"Description: {tmpl.metadata.description}\n"
-                f"Output: [cyan]{result_path}[/cyan]",
-                title="Configuration Template",
-                border_style="green",
-            )
+    console.print(
+        Panel(
+            f"[bold]Template Generated[/bold]\n\n"
+            f"Type: [cyan]{tmpl.metadata.name}[/cyan]\n"
+            f"Description: {tmpl.metadata.description}\n"
+            f"Output: [cyan]{result_path}[/cyan]",
+            title="Configuration Template",
+            border_style="green",
         )
-
-    except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(1) from e
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -566,49 +548,42 @@ def batch(
     """Run a batch of simulations from a specification file."""
     mode = ParallelMode(parallel_mode.lower())
 
-    try:
-        spec = load_batch_spec(spec_file)
-        config = ParallelConfig(mode=mode, max_workers=max_workers)
-        runner = BatchRunner(parallel_config=config)
+    spec = load_batch_spec(spec_file)
+    config = ParallelConfig(mode=mode, max_workers=max_workers)
+    runner = BatchRunner(parallel_config=config)
 
-        console.print(
-            Panel(
-                f"[bold]Running Batch: {spec.name}[/bold]\n\n"
-                f"Description: {spec.description}\n"
-                f"Base input:  [cyan]{spec.base_input}[/cyan]\n"
-                f"Output root: [cyan]{spec.output_root}[/cyan]\n"
-                f"Mode:        [cyan]{parallel_mode}[/cyan]\n"
-                f"Workers:     [cyan]{config.max_workers or 'auto'}[/cyan]",
-                title="Batch Configuration",
-                border_style="green",
-            )
+    console.print(
+        Panel(
+            f"[bold]Running Batch: {spec.name}[/bold]\n\n"
+            f"Description: {spec.description}\n"
+            f"Base input:  [cyan]{spec.base_input}[/cyan]\n"
+            f"Output root: [cyan]{spec.output_root}[/cyan]\n"
+            f"Mode:        [cyan]{parallel_mode}[/cyan]\n"
+            f"Workers:     [cyan]{config.max_workers or 'auto'}[/cyan]",
+            title="Batch Configuration",
+            border_style="green",
         )
+    )
 
-        summary = runner.run_batch(spec)
+    summary = runner.run_batch(spec)
 
-        border = "green" if summary.failed_jobs == 0 else "yellow"
-        console.print(
-            Panel(
-                f"[bold]Batch Complete[/bold]\n\n"
-                f"Batch ID:         [cyan]{summary.batch_id}[/cyan]\n"
-                f"Total:            [cyan]{summary.total_jobs}[/cyan]\n"
-                f"Successful:       [green]{summary.successful_jobs}[/green]\n"
-                f"Failed:           [red]{summary.failed_jobs}[/red]\n"
-                f"Total duration:   [cyan]{summary.total_duration_seconds:.2f}s[/cyan]\n"
-                f"Average duration: [cyan]{summary.average_duration_seconds:.2f}s[/cyan]",
-                title="Batch Summary",
-                border_style=border,
-            )
+    border = "green" if summary.failed_jobs == 0 else "yellow"
+    console.print(
+        Panel(
+            f"[bold]Batch Complete[/bold]\n\n"
+            f"Batch ID:         [cyan]{summary.batch_id}[/cyan]\n"
+            f"Total:            [cyan]{summary.total_jobs}[/cyan]\n"
+            f"Successful:       [green]{summary.successful_jobs}[/green]\n"
+            f"Failed:           [red]{summary.failed_jobs}[/red]\n"
+            f"Total duration:   [cyan]{summary.total_duration_seconds:.2f}s[/cyan]\n"
+            f"Average duration: [cyan]{summary.average_duration_seconds:.2f}s[/cyan]",
+            title="Batch Summary",
+            border_style=border,
         )
+    )
 
-        if summary.failed_jobs > 0:
-            raise typer.Exit(1)
-
-    except typer.Exit:
-        raise
-    except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(1) from e
+    if summary.failed_jobs > 0:
+        raise typer.Exit(1)
 
 
 # ---------------------------------------------------------------------------
