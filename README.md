@@ -50,13 +50,11 @@ Whether you're new to Monte Carlo or an experienced researcher, PromptMC reduces
 - **Advanced Error Handling**: Structured exceptions, retry decorator, and error reporting
 - **Progress Reporting**: Real-time simulation progress with Rich progress bars
 - **Resource Management**: CPU/memory limits, disk-space checks, and workspace context manager
-- **Plugin System**: Extensible hook and post-processor plugin architecture
 - **Input Validation**: XML structure validation for OpenMC input files
-- **Modern CLI**: Extensible command-line interface built with Typer (13 commands)
-- **Built-in Observability**: OpenTelemetry integration for distributed tracing and metrics
+- **Modern CLI**: Extensible command-line interface built with Typer (12 commands)
+- **Optional Observability**: OpenTelemetry integration for distributed tracing and metrics (`pip install promptmc[telemetry]`)
 - **Type Safety**: Full type hints, `from __future__ import annotations`, Python 3.10+
-- **Quality Assurance**: 218 tests, 82% coverage, and zero ruff warnings
-- **Zero-Config Telemetry**: Console export by default with OTLP support
+- **Quality Assurance**: 203 tests, 83% coverage, and zero ruff warnings
 - **Production-Ready**: Strict dependency management with Poetry
 
 ## Installation
@@ -114,6 +112,9 @@ source .venv/bin/activate
 
 # Install in editable mode
 pip install -e .
+
+# Install with optional telemetry support
+pip install -e ".[telemetry]"
 
 # Install development dependencies (optional)
 pip install pytest pytest-cov mypy ruff pre-commit bandit types-PyYAML types-psutil types-defusedxml
@@ -239,9 +240,6 @@ promptmc analyze ./output --json results.json
 # Get optimization recommendations
 promptmc optimize --threads 4 --particles 10000 --batches 100
 
-# List loaded plugins
-promptmc list-plugins
-
 # Enable verbose output
 promptmc --verbose run input.xml
 ```
@@ -249,7 +247,7 @@ promptmc --verbose run input.xml
 ### Python API Usage
 
 ```python
-from promptmc import TelemetryManager
+from promptmc.telemetry import TelemetryManager
 from promptmc.openmc_integration import OpenMCIntegration, ExecutionMode
 
 # Initialize OpenMC integration
@@ -325,20 +323,17 @@ mypy src/
 promptmc/
 ├── src/promptmc/
 │   ├── __init__.py              # Package initialization
-│   ├── cli.py                   # CLI (13 commands)
+│   ├── cli.py                   # CLI (12 commands)
 │   ├── assistant.py             # Natural-language and optional LLM planning
-│   ├── telemetry.py             # OpenTelemetry integration
+│   ├── telemetry.py             # OpenTelemetry integration (optional)
 │   ├── openmc_integration.py    # OpenMC API wrapper and subprocess support
-│   ├── parallel.py              # Parallel execution (threads/processes/MPI)
-│   ├── batch.py                 # Batch simulation runner
+│   ├── batch.py                 # Batch and parallel simulation execution
 │   ├── templates.py             # Configuration templates
 │   ├── visualization.py         # Result parsing and visualization
-│   ├── performance.py           # Performance profiling and optimization
 │   ├── schema.py                # Pydantic schema validation
 │   ├── errors.py                # Structured exceptions and retry logic
-│   ├── progress.py              # Rich progress reporting
-│   ├── resources.py             # Resource limits and workspace management
-│   └── plugins.py               # Extensible plugin system
+│   ├── progress.py              # Progress reporting and performance monitoring
+│   └── resources.py             # Resource limits and workspace management
 ├── tests/
 │   ├── test_cli.py               # CLI tests
 │   ├── test_assistant.py         # Natural-language assistant tests
@@ -352,8 +347,7 @@ promptmc/
 │   ├── test_schema.py            # Schema validation tests
 │   ├── test_errors.py            # Error handling tests
 │   ├── test_progress.py          # Progress reporting tests
-│   ├── test_resources.py         # Resource management tests
-│   └── test_plugins.py           # Plugin system tests
+│   └── test_resources.py         # Resource management tests
 ├── examples/                    # Usage examples
 │   ├── batch_spec.yaml          # Example batch specification
 │   └── uo2_criticality/         # Full UO2 and Light Water criticality example
@@ -368,13 +362,15 @@ promptmc/
 - **Type Checking**: MyPy in strict mode
 - **Testing**: pytest with coverage reporting
 - **Security**: Bandit security scanning
-- **Formatting**: Ruff formatter with 100 character line length
+- **Formatting**: Ruff formatter with 80 character line length
 
 ## Telemetry Configuration
 
+Telemetry is **optional**. Install with `pip install promptmc[telemetry]` to enable OpenTelemetry support. Without it, all telemetry calls are no-ops.
+
 ### Console Export (Default)
 
-Telemetry is exported to console by default with no configuration required:
+When telemetry is installed, it exports to console by default with no configuration required:
 
 ```bash
 promptmc run input.xml
@@ -397,7 +393,7 @@ export OTEL_CONSOLE_EXPORT="false"
 promptmc run input.xml
 ```
 
-## Roadmap to v1.0
+## Roadmap
 
 See the [ROADMAP.md](ROADMAP.md) file for the project's development phases and current status.
 
