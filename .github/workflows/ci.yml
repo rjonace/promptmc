@@ -43,7 +43,7 @@ jobs:
       
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --with dev
+        run: poetry install --with dev --extras telemetry
       
       - name: Run tests
         run: |
@@ -87,7 +87,7 @@ jobs:
       
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --with dev
+        run: poetry install --with dev --extras telemetry
       
       - name: Run Ruff
         run: |
@@ -124,7 +124,7 @@ jobs:
       
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --with dev
+        run: poetry install --with dev --extras telemetry
       
       - name: Run MyPy
         run: |
@@ -160,7 +160,7 @@ jobs:
       
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --with dev
+        run: poetry install --with dev --extras telemetry
       
       - name: Run Bandit
         run: |
