@@ -407,7 +407,7 @@ See the [ROADMAP.md](ROADMAP.md) file for the project's development phases and c
 
 ## About the Author / Motivation
 
-I studied nuclear engineering at MIT over 20 years ago and used MCNP 4 for my senior thesis project. I left during my senior year without graduating. Since then, I've been a software engineer at Google for the past 10 years.
+I studied nuclear engineering at MIT over 20 years ago and used MCNP 4 for my senior thesis project. Since then, I've had 10 years of software engineering at a major FAANG cloud provider.
 
 This project is a personal exploration of agentic programming — using AI agents to build software. PromptMC seemed like the perfect test case: it combines my background in nuclear physics with modern software engineering practices. The goal was to see how much of a production-grade tool could be built through agentic coding, from architecture design to implementation, testing, and documentation.
 
