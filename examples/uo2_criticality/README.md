@@ -32,5 +32,15 @@ export OPENMC_CROSS_SECTIONS=$(pwd)/cross_sections/cross_sections.xml
    poetry run promptmc run examples/uo2_criticality/
    ```
 
+   > **Tip:** If you installed the optional `[telemetry]` extra, the default console exporter will dump verbose JSON telemetry to stdout alongside OpenMC output. To silence it for a one-off run:
+   >
+   > ```bash
+   > OTEL_CONSOLE_EXPORT=false poetry run promptmc run examples/uo2_criticality/
+   > ```
+
 3. **View Results:**
-   Once finished, `promptmc` will stream OpenTelemetry metrics, and OpenMC will output the k-effective values to your terminal. A `statepoint.20.h5` and `summary.h5` file will be generated in the `examples/uo2_criticality/` directory.
+   Once finished, OpenMC will print the k-effective values to your terminal and write `statepoint.20.h5` and `summary.h5` into `examples/uo2_criticality/`. You can also parse and pretty-print the results:
+
+   ```bash
+   poetry run promptmc analyze examples/uo2_criticality/
+   ```
