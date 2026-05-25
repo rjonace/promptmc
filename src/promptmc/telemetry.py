@@ -10,29 +10,46 @@ from collections.abc import Callable, Iterator
 from contextlib import contextmanager, suppress
 from typing import Any, TypeVar
 
-from opentelemetry import metrics, trace
-from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (
-    OTLPMetricExporter,
-)
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
-    OTLPSpanExporter,
-)
-from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.metrics.export import (
-    ConsoleMetricExporter,
-    MetricExporter,
-    MetricExportResult,
-    MetricsData,
-    PeriodicExportingMetricReader,
-)
-from opentelemetry.sdk.resources import SERVICE_NAME, Resource
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import (
-    BatchSpanProcessor,
-    ConsoleSpanExporter,
-    SimpleSpanProcessor,
-)
-from opentelemetry.trace import Span
+try:
+    from opentelemetry import metrics, trace
+    from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (
+        OTLPMetricExporter,
+    )
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
+        OTLPSpanExporter,
+    )
+    from opentelemetry.sdk.metrics import MeterProvider
+    from opentelemetry.sdk.metrics.export import (
+        ConsoleMetricExporter,
+        MetricExporter,
+        MetricExportResult,
+        MetricsData,
+        PeriodicExportingMetricReader,
+    )
+    from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import (
+        BatchSpanProcessor,
+        ConsoleSpanExporter,
+        SimpleSpanProcessor,
+    )
+    from opentelemetry.trace import Span
+
+    _OTEL_AVAILABLE = True
+except ImportError:
+    _OTEL_AVAILABLE = False
+    # Stub types so the rest of the module can reference them without crashing
+    metrics = None  # type: ignore[assignment]
+    trace = None  # type: ignore[assignment]
+    MeterProvider = None  # type: ignore[assignment,misc]
+    TracerProvider = None  # type: ignore[assignment,misc]
+    Resource = None  # type: ignore[assignment,misc]
+    SERVICE_NAME = "service.name"  # type: ignore[assignment]
+    Span = None  # type: ignore[assignment,misc]
+    ConsoleMetricExporter = object  # type: ignore[assignment,misc]
+    MetricExporter = object  # type: ignore[assignment,misc]
+    MetricExportResult = None  # type: ignore[assignment]
+    MetricsData = None  # type: ignore[assignment]
 
 T = TypeVar("T")
 
@@ -90,6 +107,9 @@ class TelemetryManager:
         self.enable_console = enable_console
         self.otlp_endpoint = otlp_endpoint
         self._shutdown_called = False
+
+        if not _OTEL_AVAILABLE:
+            return
 
         self.resource = Resource.create({SERVICE_NAME: service_name})
 
@@ -162,6 +182,8 @@ class TelemetryManager:
 
     def record_simulation_start(self, simulation_id: str) -> None:
         """Record the start of a simulation."""
+        if not _OTEL_AVAILABLE:
+            return
         self.simulation_counter.add(
             1, {"simulation_id": simulation_id, "status": "started"}
         )
@@ -173,6 +195,8 @@ class TelemetryManager:
         particle_count: int = 0,
     ) -> None:
         """Record the completion of a simulation."""
+        if not _OTEL_AVAILABLE:
+            return
         self.simulation_counter.add(
             1, {"simulation_id": simulation_id, "status": "completed"}
         )
@@ -188,6 +212,8 @@ class TelemetryManager:
         self, simulation_id: str, error_type: str
     ) -> None:
         """Record a simulation error."""
+        if not _OTEL_AVAILABLE:
+            return
         self.simulation_counter.add(
             1,
             {
@@ -210,6 +236,9 @@ class TelemetryManager:
         Yields:
             The active span for the operation.
         """
+        if not _OTEL_AVAILABLE:
+            yield None  # type: ignore[misc]
+            return
         with self.tracer.start_as_current_span(operation_name) as span:
             for key, value in attributes.items():
                 span.set_attribute(key, value)
@@ -217,6 +246,8 @@ class TelemetryManager:
 
     def trace_function(self, func: Callable[..., T]) -> Callable[..., T]:
         """Decorator to automatically trace a function."""
+        if not _OTEL_AVAILABLE:
+            return func
 
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> T:
@@ -229,7 +260,7 @@ class TelemetryManager:
 
     def shutdown(self) -> None:
         """Shutdown telemetry providers and flush pending data."""
-        if self._shutdown_called:
+        if self._shutdown_called or not _OTEL_AVAILABLE:
             return
         self._shutdown_called = True
         with suppress(Exception):

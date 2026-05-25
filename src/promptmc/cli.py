@@ -12,17 +12,19 @@ from rich.table import Table
 
 from promptmc import __version__
 from promptmc.assistant import NaturalLanguageAssistant
-from promptmc.batch import BatchRunner, load_batch_spec
-from promptmc.errors import configure_logging
-from promptmc.openmc_integration import (
-    ExecutionMode,
-    OpenMCIntegration,
+from promptmc.batch import (
+    BatchRunner,
+    ParallelConfig,
+    ParallelMode,
+    load_batch_spec,
+)
+from promptmc.errors import (
     OpenMCNotFoundError,
     OpenMCValidationError,
+    configure_logging,
 )
-from promptmc.parallel import ParallelConfig, ParallelMode
-from promptmc.performance import OptimizationAdvisor, SystemProfiler
-from promptmc.plugins import HookEvent, get_plugin_registry
+from promptmc.openmc_integration import ExecutionMode, OpenMCIntegration
+from promptmc.progress import OptimizationAdvisor, SystemProfiler
 from promptmc.schema import SchemaValidator, format_validation_report
 from promptmc.telemetry import get_telemetry_manager
 from promptmc.templates import TemplateType, get_template, list_templates
@@ -141,12 +143,6 @@ def run(
             )
         )
 
-        registry = get_plugin_registry()
-        registry.fire_hook(
-            HookEvent.BEFORE_RUN,
-            {"input_file": str(input_file), "threads": threads},
-        )
-
         telemetry.record_simulation_start(simulation_id)
 
         with telemetry.trace_operation(
@@ -160,10 +156,6 @@ def run(
                 threads=threads,
                 output_path=output,
             )
-
-        registry.fire_hook(
-            HookEvent.AFTER_RUN, {"returncode": result.returncode}
-        )
 
         if result.returncode == 0:
             console.print("[green]✓[/green] Simulation completed successfully")
@@ -772,44 +764,6 @@ def schema_check(
     except Exception as e:
         console.print(f"[red]Error: {e}[/red]")
         raise typer.Exit(1) from e
-
-
-# ---------------------------------------------------------------------------
-# plugins
-# ---------------------------------------------------------------------------
-
-
-@app.command(name="list-plugins")
-def list_plugins_cmd() -> None:
-    """List all registered plugins."""
-    registry = get_plugin_registry()
-    loaded = registry.discover_entry_points()
-    plugins = registry.list_plugins()
-
-    if loaded:
-        console.print(
-            f"[dim]Discovered {loaded} plugin(s) from entry points[/dim]"
-        )
-
-    if not plugins:
-        console.print("[yellow]No plugins registered.[/yellow]")
-        return
-
-    table = Table(title="Registered Plugins", border_style="blue")
-    table.add_column("Name", style="cyan", no_wrap=True)
-    table.add_column("Type")
-    table.add_column("Version")
-    table.add_column("Description")
-
-    for meta in plugins:
-        table.add_row(
-            meta.name,
-            meta.plugin_type.value,
-            meta.version,
-            meta.description or "",
-        )
-
-    console.print(table)
 
 
 # ---------------------------------------------------------------------------

@@ -13,6 +13,12 @@ from typing import Any
 
 from defusedxml.ElementTree import parse as defused_parse
 
+from promptmc.errors import (
+    OpenMCExecutionError,
+    OpenMCNotFoundError,
+    OpenMCValidationError,
+)
+
 # OpenMC required input files for a directory-based simulation
 REQUIRED_INPUT_FILES = ("geometry.xml", "materials.xml", "settings.xml")
 
@@ -33,22 +39,6 @@ class OpenMCInfo:
     executable_path: str
     python_available: bool
     subprocess_available: bool
-
-
-class OpenMCIntegrationError(Exception):
-    """Base exception for OpenMC integration errors."""
-
-
-class OpenMCNotFoundError(OpenMCIntegrationError):
-    """Raised when OpenMC is not found."""
-
-
-class OpenMCValidationError(OpenMCIntegrationError):
-    """Raised when OpenMC input validation fails."""
-
-
-class OpenMCExecutionError(OpenMCIntegrationError):
-    """Raised when OpenMC simulation execution fails."""
 
 
 class OpenMCIntegration:
@@ -237,32 +227,26 @@ class OpenMCIntegration:
     ) -> subprocess.CompletedProcess:
         """Run simulation using the OpenMC Python API."""
         os.environ["OMP_NUM_THREADS"] = str(threads)
-
-        original_cwd = os.getcwd()
-        os.chdir(cwd)
         try:
-            try:
-                # Re-import to satisfy type checkers; cached import is fine
-                from typing import Any, cast
+            # Re-import to satisfy type checkers; cached import is fine
+            from typing import Any, cast
 
-                import openmc
+            import openmc
 
-                cast(Any, openmc).run(cwd=".", threads=threads)
-                return subprocess.CompletedProcess[str](
-                    args=["openmc", str(input_path)],
-                    returncode=0,
-                    stdout="Simulation completed successfully via API",
-                    stderr="",
-                )
-            except Exception as e:  # noqa: BLE001 - convert to CompletedProcess result
-                return subprocess.CompletedProcess[str](
-                    args=["openmc", str(input_path)],
-                    returncode=1,
-                    stdout="",
-                    stderr=str(e),
-                )
-        finally:
-            os.chdir(original_cwd)
+            cast(Any, openmc).run(cwd=str(cwd), threads=threads)
+            return subprocess.CompletedProcess[str](
+                args=["openmc", str(input_path)],
+                returncode=0,
+                stdout="Simulation completed successfully via API",
+                stderr="",
+            )
+        except Exception as e:  # noqa: BLE001 - convert to CompletedProcess result
+            return subprocess.CompletedProcess[str](
+                args=["openmc", str(input_path)],
+                returncode=1,
+                stdout="",
+                stderr=str(e),
+            )
 
     def _run_via_subprocess(
         self,

@@ -1,21 +1,256 @@
-"""Batch simulation runner for OpenMC."""
+"""Batch and parallel simulation runner for OpenMC."""
 
 from __future__ import annotations
 
 import json
+import multiprocessing
+import os
+import subprocess  # nosec B404
 import time
 import uuid
+from collections.abc import Callable
+from concurrent.futures import (
+    ProcessPoolExecutor,
+    ThreadPoolExecutor,
+    as_completed,
+)
 from dataclasses import asdict, dataclass, field
+from enum import Enum
 from pathlib import Path
 
 import yaml
 
-from promptmc.parallel import (
-    JobResult,
-    ParallelConfig,
-    ParallelExecutor,
-    SimulationJob,
-)
+from promptmc.openmc_integration import OpenMCIntegration
+
+# ---------------------------------------------------------------------------
+# Parallel primitives (formerly parallel.py)
+# ---------------------------------------------------------------------------
+
+
+class ParallelMode(Enum):
+    """Parallel execution mode."""
+
+    THREADS = "threads"
+    PROCESSES = "processes"
+    MPI = "mpi"
+
+
+@dataclass
+class ParallelConfig:
+    """Configuration for parallel execution."""
+
+    mode: ParallelMode = ParallelMode.THREADS
+    max_workers: int | None = None
+    omp_threads: int = 1
+    mpi_processes: int = 1
+    mpi_executable: str = "mpirun"
+
+    def __post_init__(self) -> None:
+        """Set default max_workers based on CPU count."""
+        if self.max_workers is None:
+            self.max_workers = multiprocessing.cpu_count()
+
+
+@dataclass
+class SimulationJob:
+    """Represents a single simulation job."""
+
+    job_id: str
+    input_path: Path
+    output_path: Path | None = None
+    threads: int = 1
+    extra_args: dict = field(default_factory=dict)
+
+
+@dataclass
+class JobResult:
+    """Result of a simulation job."""
+
+    job_id: str
+    success: bool
+    duration_seconds: float
+    return_code: int
+    stdout: str = ""
+    stderr: str = ""
+    error: str | None = None
+
+
+def _run_job_in_process(job: SimulationJob) -> JobResult:
+    """Top-level helper for ProcessPoolExecutor (must be picklable)."""
+    start_time = time.time()
+    try:
+        integration = OpenMCIntegration()
+        result = integration.run_simulation(
+            input_path=job.input_path,
+            threads=job.threads,
+            output_path=job.output_path,
+        )
+        duration = time.time() - start_time
+        return JobResult(
+            job_id=job.job_id,
+            success=result.returncode == 0,
+            duration_seconds=duration,
+            return_code=result.returncode,
+            stdout=result.stdout or "",
+            stderr=result.stderr or "",
+        )
+    except Exception as e:
+        return JobResult(
+            job_id=job.job_id,
+            success=False,
+            duration_seconds=time.time() - start_time,
+            return_code=-1,
+            error=str(e),
+        )
+
+
+class ParallelExecutor:
+    """Manages parallel execution of OpenMC simulations."""
+
+    def __init__(self, config: ParallelConfig | None = None) -> None:
+        """Initialize the parallel executor.
+
+        Args:
+            config: Parallel execution configuration.
+        """
+        self.config = config or ParallelConfig()
+
+    def execute_jobs(
+        self,
+        jobs: list[SimulationJob],
+        progress_callback: Callable[[str, JobResult], None] | None = None,
+    ) -> list[JobResult]:
+        """Execute multiple simulation jobs in parallel.
+
+        Args:
+            jobs: List of simulation jobs to execute.
+            progress_callback: Optional callback for progress updates.
+
+        Returns:
+            List of job results in the same order as input jobs.
+        """
+        if self.config.mode == ParallelMode.THREADS:
+            return self._execute_with_pool(
+                jobs, ThreadPoolExecutor, self._run_single_job, progress_callback
+            )
+        if self.config.mode == ParallelMode.PROCESSES:
+            return self._execute_with_pool(
+                jobs, ProcessPoolExecutor, _run_job_in_process, progress_callback
+            )
+        if self.config.mode == ParallelMode.MPI:
+            return self._execute_mpi(jobs, progress_callback)
+        raise ValueError(f"Unknown parallel mode: {self.config.mode}")
+
+    def _execute_with_pool(
+        self,
+        jobs: list[SimulationJob],
+        executor_cls: type,
+        run_fn: Callable[[SimulationJob], JobResult],
+        progress_callback: Callable[[str, JobResult], None] | None,
+    ) -> list[JobResult]:
+        """Generic pool executor shared by threads and processes modes."""
+        results: dict[str, JobResult] = {}
+        with executor_cls(max_workers=self.config.max_workers) as executor:
+            future_to_job = {
+                executor.submit(run_fn, job): job for job in jobs
+            }
+            for future in as_completed(future_to_job):
+                job = future_to_job[future]
+                try:
+                    result = future.result()
+                except Exception as e:
+                    result = JobResult(
+                        job_id=job.job_id,
+                        success=False,
+                        duration_seconds=0.0,
+                        return_code=-1,
+                        error=str(e),
+                    )
+                results[job.job_id] = result
+                if progress_callback:
+                    progress_callback(job.job_id, result)
+        return [results[job.job_id] for job in jobs]
+
+    def _execute_mpi(
+        self,
+        jobs: list[SimulationJob],
+        progress_callback: Callable[[str, JobResult], None] | None,
+    ) -> list[JobResult]:
+        """Execute jobs sequentially, each using MPI internally."""
+        results = []
+        for job in jobs:
+            result = self._run_mpi_job(job)
+            results.append(result)
+            if progress_callback:
+                progress_callback(job.job_id, result)
+        return results
+
+    def _run_single_job(self, job: SimulationJob) -> JobResult:
+        """Run a single simulation job (used by thread pool)."""
+        start_time = time.time()
+        try:
+            integration = OpenMCIntegration()
+            result = integration.run_simulation(
+                input_path=job.input_path,
+                threads=job.threads,
+                output_path=job.output_path,
+            )
+            duration = time.time() - start_time
+            return JobResult(
+                job_id=job.job_id,
+                success=result.returncode == 0,
+                duration_seconds=duration,
+                return_code=result.returncode,
+                stdout=result.stdout or "",
+                stderr=result.stderr or "",
+            )
+        except Exception as e:
+            return JobResult(
+                job_id=job.job_id,
+                success=False,
+                duration_seconds=time.time() - start_time,
+                return_code=-1,
+                error=str(e),
+            )
+
+    def _run_mpi_job(self, job: SimulationJob) -> JobResult:
+        """Run a single job using MPI."""
+        start_time = time.time()
+        cmd = [
+            self.config.mpi_executable,
+            "-n",
+            str(self.config.mpi_processes),
+            "openmc",
+        ]
+        env = os.environ.copy()
+        env["OMP_NUM_THREADS"] = str(self.config.omp_threads)
+        cwd = job.input_path.parent if job.input_path.is_file() else job.input_path
+        try:
+            result = subprocess.run(  # nosec B603
+                cmd,
+                cwd=cwd,
+                capture_output=True,
+                text=True,
+                env=env,
+                check=False,
+            )
+            duration = time.time() - start_time
+            return JobResult(
+                job_id=job.job_id,
+                success=result.returncode == 0,
+                duration_seconds=duration,
+                return_code=result.returncode,
+                stdout=result.stdout,
+                stderr=result.stderr,
+            )
+        except Exception as e:
+            return JobResult(
+                job_id=job.job_id,
+                success=False,
+                duration_seconds=time.time() - start_time,
+                return_code=-1,
+                error=str(e),
+            )
 
 
 @dataclass

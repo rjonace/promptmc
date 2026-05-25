@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shlex
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
@@ -52,7 +53,7 @@ class NaturalLanguagePlan:
         ]
         if self.inactive:
             parts.extend(["--inactive", str(self.inactive)])
-        return " ".join(parts)
+        return shlex.join(parts)
 
     def render(self, output_path: str | Path) -> Path:
         """Render the plan to an XML settings file."""

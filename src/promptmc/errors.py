@@ -111,6 +111,22 @@ class ResourceError(PromptMCError):
     """Raised when resource limits are exceeded or resources unavailable."""
 
 
+class OpenMCError(ExecutionError):
+    """Base exception for OpenMC integration errors."""
+
+
+class OpenMCNotFoundError(OpenMCError):
+    """Raised when OpenMC is not found."""
+
+
+class OpenMCValidationError(OpenMCError):
+    """Raised when OpenMC input validation fails."""
+
+
+class OpenMCExecutionError(OpenMCError):
+    """Raised when OpenMC simulation execution fails."""
+
+
 @dataclass
 class RetryPolicy:
     """Configuration for retry behavior."""

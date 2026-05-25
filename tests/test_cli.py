@@ -575,22 +575,6 @@ def test_schema_check_directory(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# list-plugins
-# ---------------------------------------------------------------------------
-
-
-def test_list_plugins_help():
-    result = runner.invoke(app, ["list-plugins", "--help"])
-    assert result.exit_code == 0
-
-
-def test_list_plugins_empty():
-    """list-plugins should succeed (may show empty table or plugins)."""
-    result = runner.invoke(app, ["list-plugins"])
-    assert result.exit_code == 0
-
-
-# ---------------------------------------------------------------------------
 # error paths
 # ---------------------------------------------------------------------------
 
@@ -610,7 +594,6 @@ def test_list_plugins_empty():
         ["optimize", "--help"],
         ["system-info", "--help"],
         ["schema-check", "--help"],
-        ["list-plugins", "--help"],
     ],
 )
 def test_all_commands_have_help(cmd):
