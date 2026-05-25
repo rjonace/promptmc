@@ -1,4 +1,4 @@
-"""Batch and parallel simulation runner for OpenMC."""
+"""Batch and parallel simulation execution for OpenMC."""
 
 from __future__ import annotations
 
@@ -21,10 +21,6 @@ from pathlib import Path
 import yaml
 
 from promptmc.openmc_integration import OpenMCIntegration
-
-# ---------------------------------------------------------------------------
-# Parallel primitives (formerly parallel.py)
-# ---------------------------------------------------------------------------
 
 
 class ParallelMode(Enum):

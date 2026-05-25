@@ -281,11 +281,6 @@ def parse_openmc_output_progress(line: str) -> SimulationProgress | None:
     return None
 
 
-# ---------------------------------------------------------------------------
-# Performance monitoring and optimization (formerly performance.py)
-# ---------------------------------------------------------------------------
-
-
 @dataclass
 class SystemInfo:
     """System hardware and software information."""
