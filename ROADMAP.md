@@ -29,12 +29,14 @@ This is the foundation. The pivot reuses ~70% of the existing code; almost nothi
 
 - [ ] `promptmc.mcp_server` module — MCP server exposing existing operations
 - [ ] Tools: `openmc_check_installation`, `openmc_validate`, `openmc_run`, `openmc_template`, `openmc_analyze`, `openmc_list_isotopes`, `openmc_check_cross_sections`
+- [ ] Tool enhancements: extend `openmc_validate` / `openmc_schema_check` with fail-fast geometry guards
 - [ ] Tool: `openmc_schema_check` (returns structured Pydantic issues, not text reports)
 - [ ] Tool: `openmc_run_async` for long-running simulations with status polling
 - [ ] Resource: cross-section data discovery (`OPENMC_CROSS_SECTIONS`)
 - [ ] Resource: simulation history per session
 - [ ] CLI entry: `promptmc-mcp` (stdio MCP server)
 - [ ] **Visual Verification:** Provide an `openmc_plot` tool that returns 2D `.png` cross-sections directly to the AI client to give engineers an immediate visual feedback loop.
+- [ ] **Cognitive load reducer:** Ship a `openmc_analyze` response schema that surfaces k-effective, tallies, and paths without manual HDF5 spelunking.
 - [ ] Demo: "AI assistant runs the UO₂ benchmark in one prompt"
 - [ ] Documentation: how to configure AI assistants (e.g., Windsurf, Claude Desktop, Cursor, VS Code with Copilot) to use it
 - [ ] Test coverage: 80%+ on the MCP layer

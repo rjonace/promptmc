@@ -13,10 +13,11 @@ OpenMC is powerful, but getting started can be challenging: you need to write XM
 
 - **Describing simulations in plain English** — Tell it what you want (`"make a shielding calculation with 1M particles"`) and get a validated plan
 - **Generating production-ready XML** — Automatically creates `settings.xml` with sensible defaults based on your description
-- **Validating before you run** — Schema validation catches errors before OpenMC even starts
+- **Fail-fast validation** — Schema and geometry checks catch impossible configurations before OpenMC ever runs
 - **Managing workflows** — Batch runs, parallel execution, progress tracking, and resource limits
 - **Observability built-in** — Distributed tracing and metrics via OpenTelemetry
 - **Inline Visual Verification** — Ask for a cross-section of your reactor core and view the 2D OpenMC slice plots directly inside your AI chat interface.
+- **Results at a glance** — Parse statepoint and tally outputs into structured summaries instead of spelunking HDF5 files
 
 Whether you're new to Monte Carlo or an experienced researcher, PromptMC reduces friction and lets you focus on physics, not configuration.
 
