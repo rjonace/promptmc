@@ -1,137 +1,34 @@
-# PromptMC Roadmap
+# PromptMC Technical Roadmap
 
 ## Vision
-
 **AI-native infrastructure for nuclear simulation.**
 
-PromptMC is repositioning from a Python/CLI wrapper around OpenMC into the canonical way for AI agents — and the engineers working alongside them — to design, validate, run, and reason about Monte Carlo nuclear simulations.
+PromptMC is a deterministic, highly validated layer for AI agents—and the engineers working alongside them—to design, validate, run, and reason about Monte Carlo nuclear simulations. 
 
-The thesis: OpenMC already has an excellent Python API for humans. The unmet need is a validated workflow layer that lets reactor physics work happen agentically — through MCP servers, structured generation against validated schemas, and reproducible compute — so that one engineer plus an AI agent can do the work that used to take a team.
-
-PromptMC is **not** an autonomous reactor designer. It is a human-in-the-loop workflow accelerator for OpenMC: validate first, visualize cheaply, run intentionally, and summarize results for engineering review.
-
-The goal customer for v2.x and beyond is the reactor physics team at an advanced reactor / SMR startup. The product is a productivity multiplier for scarce, expensive nuclear engineers.
+The goal is to provide a strictly typed, schema-driven Model Context Protocol (MCP) server that prevents AI hallucinations by enforcing physics and geometry constraints before the underlying OpenMC engine is ever invoked.
 
 ## Where we are
-
-**v1.2.1 (current, May 2026):**
+**v1.2.1 (current):**
 - Production-grade CLI wrapper around OpenMC (subprocess + Python API)
-- 12 commands, 190 tests, 83% coverage, full CI on Python 3.10/3.11/3.12
-- Clean architecture: `OpenMCInstaller` / `OpenMCValidator` / `OpenMCRunner` separation
-- Optional OpenTelemetry telemetry, optional LLM planning
-- Pydantic schema validation for `settings.xml`, `materials.xml`, `geometry.xml`
-- Working end-to-end UO₂ criticality example
-- Curated public API exposed from `promptmc/__init__.py`
+- 190 tests, 83% coverage, full CI on Python 3.10+
+- Clean architecture: `OpenMCInstaller` / `OpenMCValidator` / `OpenMCRunner`
+- Optional OpenTelemetry tracing
+- Pydantic schema validation for base XML configurations
 
-This is the foundation. The pivot reuses ~70% of the existing code; almost nothing is thrown away.
+## Next Sprint: Phase 5 — MCP Server (v2.0)
+**Goal:** Expose PromptMC's validation and execution logic directly to AI clients (Claude Desktop, Cursor) via MCP.
+- **Deliverable:** `promptmc-mcp` stdio server.
+- **Deliverable:** `openmc_validate` and `openmc_run` tools with strict Pydantic input/output schemas.
+- **Deliverable:** `openmc_plot` tool to return 2D slice plots natively to the chat client for immediate visual verification.
+- **Constraint:** No new CLI commands. The MCP layer parallels the CLI; it does not extend it.
 
-## Phase 5 — MCP Server (v2.0)
+## Future Horizon: Phase 6 — Structured Geometry (v2.5)
+**Goal:** Build comprehensive Pydantic models for OpenMC Constructive Solid Geometry (CSG) to act as constraint surfaces for LLM-driven structured generation.
+- **Deliverable:** Full schema coverage for Surfaces, Regions, Cells, and Materials.
+- **Deliverable:** Validation layer to catch unbounded geometries and cell overlaps pre-execution.
+- **Deliverable:** Open-source library of validated reference geometries (PWR pin, Godiva, ICSBEP cases).
 
-**Goal:** Make every PromptMC capability callable by an AI agent via the Model Context Protocol.
-
-- [ ] `promptmc.mcp_server` module — MCP server exposing existing operations
-- [ ] Tools: `openmc_check_installation`, `openmc_validate`, `openmc_run`, `openmc_template`, `openmc_analyze`, `openmc_list_isotopes`, `openmc_check_cross_sections`
-- [ ] Tool enhancements: extend `openmc_validate` / `openmc_schema_check` with fail-fast geometry guards
-- [ ] Tool: `openmc_schema_check` (returns structured Pydantic issues, not text reports)
-- [ ] Resource: cross-section data discovery (`OPENMC_CROSS_SECTIONS`)
-- [ ] Resource: simulation history per session
-- [ ] CLI entry: `promptmc-mcp` (stdio MCP server)
-- [ ] **Visual Verification:** Provide an `openmc_plot` tool that wraps OpenMC's native 2D plotting mode and returns `.png` cross-sections directly to the AI client.
-- [ ] **Geometry Debugging:** Add an optional `openmc_geometry_debug` flow, or equivalent `openmc_validate` mode, that runs OpenMC geometry-debug with low particle counts for stronger overlap checks.
-- [ ] **Cognitive load reducer:** Ship a `openmc_analyze` response schema that surfaces `StatePoint.keff`, tallies, runtime, particle counts, and paths without manual HDF5 spelunking.
-- [ ] Demo: "AI assistant runs the UO₂ benchmark in one prompt"
-- [ ] Documentation: how to configure AI assistants (e.g., Windsurf, Claude Desktop, Cursor, VS Code with Copilot) to use it
-- [ ] Test coverage: 80%+ on the MCP layer
-
-**Acceptance:** A user can install `pip install promptmc[mcp]`, drop a config block into their AI assistant, and have it run, validate, and analyze an OpenMC simulation end-to-end without writing Python.
-
-**Next steps (tracked for v2.0):**
-- Implement `openmc_plot` vertical slice returning base64 PNGs from the bundled UO₂ example. Inputs should include `basis`, `origin`, `width`, `pixels`, `color_by`, and `show_overlaps`.
-- Treat `openmc_plot` as visual sanity checking only; formal overlap detection should use OpenMC geometry-debug mode because plotting resolution can miss small overlaps.
-- Harden `openmc_validate` / `openmc_schema_check` with geometry guards (overlap, bounds, missing fills, negative densities) and OpenMC parser compatibility checks.
-- Define and lock `openmc_analyze` Pydantic response using modern `StatePoint.keff` rather than deprecated `k_combined`, including tallies, runtime, `n_batches`, `n_particles`, `tallies_present`, and statepoint/tally paths.
-- Require clear OpenMC version reporting; recommend OpenMC `>=0.15.1` for overlap plotting and modern plotting behavior.
-- Add MCP extras (`promptmc-mcp` entrypoint) and schemas for all tools.
-- Integration test: spawn MCP server, `tools/list`, and `tools/call` a noop.
-
-**Explicit v2.0 scope cuts:** no async simulation orchestration, no cloud job state, no generated geometry, no interactive web UI. `openmc_plot` means 2D PNGs from existing XML only. PromptMC does not replace `openmc-dev/plotter`; it provides chat-native snapshots while engineers can still use OpenMC Plot Explorer for interactive debugging.
-
-## Phase 6 — Structured Geometry Generation (v2.5)
-
-**Goal:** Solve the *actual* hard part of OpenMC — geometry, materials, and tallies — using Pydantic schemas as a constraint surface for LLM generation.
-
-- [ ] `promptmc.geometry` package
-  - [ ] Pydantic models for OpenMC CSG primitives (`Surface`, `HalfSpace`, `Region`, `Cell`, `Universe`, `Lattice`, `Material`, `Tally`)
-  - [ ] Validators that enforce physical/geometric correctness (closed regions, non-overlapping cells, valid material refs)
-  - [ ] XML serializer producing `geometry.xml` / `materials.xml` / `tallies.xml`
-  - [ ] Round-trip property tests (model → XML → parsed → model)
-- [ ] `promptmc.benchmarks` — library of validated reference geometries
-  - [ ] PWR pin cell (Mosteller benchmark)
-  - [ ] BWR pin cell
-  - [ ] Godiva (HEU sphere)
-  - [ ] Jezebel (Pu sphere)
-  - [ ] 3×3 PWR fuel mini-assembly
-  - [ ] ICSBEP HEU-MET-FAST-001 case
-- [ ] `promptmc.generation` — constrained LLM pipeline
-  - [ ] OpenAI / Anthropic / local-LLM agnostic interface
-  - [ ] JSON-schema-mode generation against the Pydantic models
-  - [ ] Self-validation loop: emit → validate → repair → re-emit
-  - [ ] Confidence scoring grounded in validation, not heuristics
-- [ ] CLI: rebuild `promptmc ask` on top of structured generation; remove keyword router
-- [ ] MCP tool: `openmc_design(description: str) -> GeometryModel`
-
-**Acceptance:** A user can say "design a PWR pin cell with 4.95% UO₂ at 0.41 cm radius" and get a runnable, validated, physics-checked OpenMC input set.
-
-## Phase 7 — Hosted Compute (v3.0)
-
-**Goal:** Customers don't have to manage HPC. Submit a model, get results.
-
-- [ ] `promptmc-cloud` service (Python FastAPI backend)
-- [ ] Authentication, billing, usage metering
-- [ ] Compute backend: Coreweave / AWS Batch / RunPod / Lambda Cloud (pluggable)
-- [ ] Cross-section data hosting and version-pinning (TENDL, ENDF/B-VIII.0, JEFF)
-- [ ] Reproducibility: every simulation gets a content-addressed hash including code, data, and inputs
-- [ ] CLI: `promptmc cloud submit ./input/` and `promptmc cloud results <id>`
-- [ ] MCP tool: `openmc_run_cloud` for agents
-- [ ] Web UI (minimal): job list, status, log streaming, statepoint download
-
-**Acceptance:** An SMR startup can sign up, drop a credit card, and run their first cloud OpenMC simulation in under 10 minutes with no IT setup.
-
-## Phase 8 — Team & Enterprise (v4.0)
-
-**Goal:** Move from per-seat to team plans. Lock in customers with workflow features they can't easily replace.
-
-- [ ] Team workspaces with shared geometry libraries
-- [ ] Design version control (every model is a git-like commit)
-- [ ] Simulation history with diffing and comparison
-- [ ] Audit trail: every cross-section data version, every input change, every result, immutable
-- [ ] Verification suite: automated runs against ICSBEP / Mosteller / Kord benchmarks for any new design
-- [ ] Compliance scaffolding for NRC Part 50/52/53 documentation
-- [ ] On-prem / VPC deployment option for security-conscious customers
-- [ ] SAML / SSO
-
-**Acceptance:** A 20-engineer SMR startup can use PromptMC as the system of record for their reactor physics work. Switching cost is high enough that they don't want to leave.
-
-## Long-term horizons (beyond v4)
-
-- **Adjacent markets:** medical isotope production (shielding, dosimetry), space nuclear (NTP, fission surface power), fusion neutronics
-- **Multi-physics coupling:** integrate with thermal-hydraulics (e.g., Cardinal/MOOSE), depletion (OpenMC + ORIGEN)
-- **Regulatory tooling:** NRC Part 53 application generation
-- **Open core wedge:** keep the library and MCP server open, monetize hosting + team features (Sentry / GitLab model)
-
-## What we are explicitly *not* doing
-
-- Not building a Next.js / React 3D web app as the primary interface (that was the v1 vision; rejected — the market wants programmatic and agentic, not UI)
-- Not chasing utilities, regulators, or national labs as the first paying customer (wrong velocity, wrong decade)
-- Not competing with Westinghouse / Framatome / SCALE / MCNP head-on; we serve the segment they don't
-- Not generating reactor designs autonomously without human-in-the-loop verification (liability)
-- Not adding features to the v1 CLI beyond what supports v2+ (CLI is now a thin adapter, not the product)
-
-## Success metrics by phase
-
-| Phase | Lead metric | Lag metric |
-|---|---|---|
-| v2.0 | MCP installs / week | Demo videos shipped |
-| v2.5 | Reference geometries validated against ICSBEP | Design-partner pilots signed |
-| v3.0 | Time-to-first-simulation for new signup | Paying customers > 0 |
-| v4.0 | Sims/customer/month | ARR |
+## Architectural Constraints (What we are explicitly *not* doing)
+- **No Web UI:** We are not building a 3D visualization web app. Visual verification will be handled natively via the AI chat client using 2D slice plots.
+- **No Autonomous Reactor Design:** The system acts as an engineering assist tool with human-in-the-loop verification. It does not natively generate autonomous designs.
+- **No Loose LLM Calls:** All LLM interactions must be routed through strict, schema-validated tool definitions.
