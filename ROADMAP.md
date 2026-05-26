@@ -15,14 +15,14 @@ The goal is to provide a strictly typed, schema-driven Model Context Protocol (M
 - Optional OpenTelemetry tracing
 - Pydantic schema validation for base XML configurations
 
-## Next Sprint: Phase 5 — MCP Server (v2.0)
+## Next Sprint: — MCP Server (v2.0)
 **Goal:** Expose PromptMC's validation and execution logic directly to AI clients (Claude Desktop, Cursor) via MCP.
 - **Deliverable:** `promptmc-mcp` stdio server.
 - **Deliverable:** `openmc_validate` and `openmc_run` tools with strict Pydantic input/output schemas.
 - **Deliverable:** `openmc_plot` tool to return 2D slice plots natively to the chat client for immediate visual verification.
 - **Constraint:** No new CLI commands. The MCP layer parallels the CLI; it does not extend it.
 
-## Future Horizon: Phase 6 — Structured Geometry (v2.5)
+## Future Horizon: — uStructured Geometry (v2.5)
 **Goal:** Build comprehensive Pydantic models for OpenMC Constructive Solid Geometry (CSG) to act as constraint surfaces for LLM-driven structured generation.
 - **Deliverable:** Full schema coverage for Surfaces, Regions, Cells, and Materials.
 - **Deliverable:** Validation layer to catch unbounded geometries and cell overlaps pre-execution.
