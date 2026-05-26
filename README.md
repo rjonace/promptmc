@@ -2,7 +2,8 @@
 
 Production-grade, AI-enabled Python wrapper for OpenMC Monte Carlo particle transport simulations.
 
-> **Project Vision:** We are building `PromptMC` to be an advanced web-based SaaS platform that wraps the `OpenMC` nuclear physics engine. It translates natural language into complex Monte Carlo simulations, visualizes them, optimizes them autonomously, and orchestrates the heavy compute on the cloud.
+> **PromptMC** is an AI-native infrastructure layer for OpenMC nuclear simulations.
+> It provides a **Model Context Protocol (MCP) server** that exposes OpenMC operations directly to AI agents like Claude Desktop and Cursor. Instead of writing complex constructive solid geometry (CSG) in Python, engineers can describe their reactor core in natural language, and PromptMC's strict Pydantic validation schemas ensure the AI generates physically accurate, runnable simulation code.
 
 ## Overview
 
@@ -56,6 +57,22 @@ Whether you're new to Monte Carlo or an experienced researcher, PromptMC reduces
 - **Type Safety**: Full type hints, `from __future__ import annotations`, Python 3.10+
 - **Quality Assurance**: 190 tests, 83% coverage, and zero ruff warnings
 - **Production-Ready**: Strict dependency management with Poetry
+- **Strict Physics Validation**: LLMs hallucinate overlapping boundaries and negative material densities. PromptMC forces all AI output through a rigorous Pydantic validation layer to catch geometric impossibilities *before* the C++ execution engine ever touches them.
+
+## 🔌 Connecting to Claude Desktop (MCP)
+
+To let Claude autonomously write, validate, and run OpenMC simulations locally on your machine, add PromptMC to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "promptmc": {
+      "command": "promptmc-mcp",
+      "args": []
+    }
+  }
+}
+```
 
 ## Installation
 
