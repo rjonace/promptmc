@@ -32,8 +32,11 @@ Whether you're new to Monte Carlo or an experienced researcher, PromptMC reduces
 | Batch runs, progress reporting, and resource checks | Available in v1.x |
 | XML schema validation and result parsing | Available in v1.x |
 | MCP server (`promptmc-mcp`) | Planned for v2.0 |
-| Chat-native 2D plotting via `openmc_plot` | Planned for v2.0 |
+| Chat-native 2D plotting via `openmc_plot` | Planned for v2.0; uses OpenMC's native plotting mode |
+| OpenMC geometry-debug integration | Planned for v2.0 validation hardening |
 | Structured geometry generation with stronger physics guards | Planned for v2.5 |
+
+`openmc_plot` is intended as a fast visual sanity check, not a replacement for formal geometry debugging. For interactive model exploration, engineers should still use OpenMC's Plot Explorer from `openmc-dev/plotter`.
 
 ### Agent workflow
 

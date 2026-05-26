@@ -36,8 +36,9 @@ This is the foundation. The pivot reuses ~70% of the existing code; almost nothi
 - [ ] Resource: cross-section data discovery (`OPENMC_CROSS_SECTIONS`)
 - [ ] Resource: simulation history per session
 - [ ] CLI entry: `promptmc-mcp` (stdio MCP server)
-- [ ] **Visual Verification:** Provide an `openmc_plot` tool that returns 2D `.png` cross-sections directly to the AI client to give engineers an immediate visual feedback loop.
-- [ ] **Cognitive load reducer:** Ship a `openmc_analyze` response schema that surfaces k-effective, tallies, and paths without manual HDF5 spelunking.
+- [ ] **Visual Verification:** Provide an `openmc_plot` tool that wraps OpenMC's native 2D plotting mode and returns `.png` cross-sections directly to the AI client.
+- [ ] **Geometry Debugging:** Add an optional `openmc_geometry_debug` flow, or equivalent `openmc_validate` mode, that runs OpenMC geometry-debug with low particle counts for stronger overlap checks.
+- [ ] **Cognitive load reducer:** Ship a `openmc_analyze` response schema that surfaces `StatePoint.keff`, tallies, runtime, particle counts, and paths without manual HDF5 spelunking.
 - [ ] Demo: "AI assistant runs the UO₂ benchmark in one prompt"
 - [ ] Documentation: how to configure AI assistants (e.g., Windsurf, Claude Desktop, Cursor, VS Code with Copilot) to use it
 - [ ] Test coverage: 80%+ on the MCP layer
@@ -45,13 +46,15 @@ This is the foundation. The pivot reuses ~70% of the existing code; almost nothi
 **Acceptance:** A user can install `pip install promptmc[mcp]`, drop a config block into their AI assistant, and have it run, validate, and analyze an OpenMC simulation end-to-end without writing Python.
 
 **Next steps (tracked for v2.0):**
-- Implement `openmc_plot` vertical slice returning base64 PNGs from the bundled UO₂ example.
-- Harden `openmc_validate` / `openmc_schema_check` with geometry guards (overlap, bounds, missing fills, negative densities).
-- Define and lock `openmc_analyze` Pydantic response with k-eff, tallies, statepoint/tally paths.
+- Implement `openmc_plot` vertical slice returning base64 PNGs from the bundled UO₂ example. Inputs should include `basis`, `origin`, `width`, `pixels`, `color_by`, and `show_overlaps`.
+- Treat `openmc_plot` as visual sanity checking only; formal overlap detection should use OpenMC geometry-debug mode because plotting resolution can miss small overlaps.
+- Harden `openmc_validate` / `openmc_schema_check` with geometry guards (overlap, bounds, missing fills, negative densities) and OpenMC parser compatibility checks.
+- Define and lock `openmc_analyze` Pydantic response using modern `StatePoint.keff` rather than deprecated `k_combined`, including tallies, runtime, `n_batches`, `n_particles`, `tallies_present`, and statepoint/tally paths.
+- Require clear OpenMC version reporting; recommend OpenMC `>=0.15.1` for overlap plotting and modern plotting behavior.
 - Add MCP extras (`promptmc-mcp` entrypoint) and schemas for all tools.
 - Integration test: spawn MCP server, `tools/list`, and `tools/call` a noop.
 
-**Explicit v2.0 scope cuts:** no async simulation orchestration, no cloud job state, no generated geometry, no interactive web UI. `openmc_plot` means 2D PNGs from existing XML only.
+**Explicit v2.0 scope cuts:** no async simulation orchestration, no cloud job state, no generated geometry, no interactive web UI. `openmc_plot` means 2D PNGs from existing XML only. PromptMC does not replace `openmc-dev/plotter`; it provides chat-native snapshots while engineers can still use OpenMC Plot Explorer for interactive debugging.
 
 ## Phase 6 — Structured Geometry Generation (v2.5)
 
