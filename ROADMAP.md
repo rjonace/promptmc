@@ -6,7 +6,9 @@
 
 PromptMC is repositioning from a Python/CLI wrapper around OpenMC into the canonical way for AI agents — and the engineers working alongside them — to design, validate, run, and reason about Monte Carlo nuclear simulations.
 
-The thesis: OpenMC already has an excellent Python API for humans. The unmet need is a layer that lets reactor physics work happen agentically — through MCP servers, structured generation against validated schemas, and reproducible compute — so that one engineer plus an AI agent can do the work that used to take a team.
+The thesis: OpenMC already has an excellent Python API for humans. The unmet need is a guardrailed layer that lets reactor physics work happen agentically — through MCP servers, structured generation against validated schemas, and reproducible compute — so that one engineer plus an AI agent can do the work that used to take a team.
+
+PromptMC is **not** an autonomous reactor designer. It is a human-in-the-loop workflow accelerator for OpenMC: validate first, visualize cheaply, run intentionally, and summarize results for engineering review.
 
 The goal customer for v2.x and beyond is the reactor physics team at an advanced reactor / SMR startup. The product is a productivity multiplier for scarce, expensive nuclear engineers.
 
@@ -31,7 +33,6 @@ This is the foundation. The pivot reuses ~70% of the existing code; almost nothi
 - [ ] Tools: `openmc_check_installation`, `openmc_validate`, `openmc_run`, `openmc_template`, `openmc_analyze`, `openmc_list_isotopes`, `openmc_check_cross_sections`
 - [ ] Tool enhancements: extend `openmc_validate` / `openmc_schema_check` with fail-fast geometry guards
 - [ ] Tool: `openmc_schema_check` (returns structured Pydantic issues, not text reports)
-- [ ] Tool: `openmc_run_async` for long-running simulations with status polling
 - [ ] Resource: cross-section data discovery (`OPENMC_CROSS_SECTIONS`)
 - [ ] Resource: simulation history per session
 - [ ] CLI entry: `promptmc-mcp` (stdio MCP server)
@@ -42,6 +43,15 @@ This is the foundation. The pivot reuses ~70% of the existing code; almost nothi
 - [ ] Test coverage: 80%+ on the MCP layer
 
 **Acceptance:** A user can install `pip install promptmc[mcp]`, drop a config block into their AI assistant, and have it run, validate, and analyze an OpenMC simulation end-to-end without writing Python.
+
+**Next steps (tracked for v2.0):**
+- Implement `openmc_plot` vertical slice returning base64 PNGs from the bundled UO₂ example.
+- Harden `openmc_validate` / `openmc_schema_check` with geometry guards (overlap, bounds, missing fills, negative densities).
+- Define and lock `openmc_analyze` Pydantic response with k-eff, tallies, statepoint/tally paths.
+- Add MCP extras (`promptmc-mcp` entrypoint) and schemas for all tools.
+- Integration test: spawn MCP server, `tools/list`, and `tools/call` a noop.
+
+**Explicit v2.0 scope cuts:** no async simulation orchestration, no cloud job state, no generated geometry, no interactive web UI. `openmc_plot` means 2D PNGs from existing XML only.
 
 ## Phase 6 — Structured Geometry Generation (v2.5)
 

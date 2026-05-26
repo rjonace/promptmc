@@ -1,25 +1,53 @@
 # PromptMC
 
-Production-grade, AI-enabled Python wrapper for OpenMC Monte Carlo particle transport simulations.
+Guardrailed OpenMC workflows for AI-assisted reactor physics.
 
 > **PromptMC** is an AI-native infrastructure layer for OpenMC nuclear simulations.
-> It translates natural language into validated OpenMC configurations, manages simulation workflows, and provides a foundation for agentic programming in nuclear engineering.
+> It helps engineers build, validate, run, and analyze Monte Carlo workflows with strict human-in-the-loop guardrails. The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
 
 ## Overview
 
 OpenMC is powerful, but getting started can be challenging: you need to write XML configuration files, understand dozens of parameters, and manage simulation workflows manually.
 
-**PromptMC solves this by:**
+**PromptMC reduces this friction through current and planned guardrails:**
 
 - **Describing simulations in plain English** — Tell it what you want (`"make a shielding calculation with 1M particles"`) and get a validated plan
 - **Generating production-ready XML** — Automatically creates `settings.xml` with sensible defaults based on your description
-- **Fail-fast validation** — Schema and geometry checks catch impossible configurations before OpenMC ever runs
+- **Fail-fast validation** — Schema checks today, with stronger geometry guards planned to catch impossible configurations before OpenMC ever runs
 - **Managing workflows** — Batch runs, parallel execution, progress tracking, and resource limits
 - **Observability built-in** — Distributed tracing and metrics via OpenTelemetry
-- **Inline Visual Verification** — Ask for a cross-section of your reactor core and view the 2D OpenMC slice plots directly inside your AI chat interface.
+- **Inline Visual Verification** — Planned v2.0 support for asking for a cross-section and viewing 2D OpenMC slice plots directly inside your AI chat interface
 - **Results at a glance** — Parse statepoint and tally outputs into structured summaries instead of spelunking HDF5 files
 
 Whether you're new to Monte Carlo or an experienced researcher, PromptMC reduces friction and lets you focus on physics, not configuration.
+
+**Current status:** The CLI and Python APIs are stable in v1.x. The MCP server and agent-facing tools (`promptmc-mcp`, `openmc_plot`, fail-fast validation upgrades) are actively under development for v2.0.
+
+### What exists today vs. planned
+
+| Capability | Status |
+|---|---|
+| CLI and Python API for OpenMC workflows | Available in v1.x |
+| Natural-language planning via `promptmc ask` | Available in v1.x |
+| Batch runs, progress reporting, and resource checks | Available in v1.x |
+| XML schema validation and result parsing | Available in v1.x |
+| MCP server (`promptmc-mcp`) | Planned for v2.0 |
+| Chat-native 2D plotting via `openmc_plot` | Planned for v2.0 |
+| Structured geometry generation with stronger physics guards | Planned for v2.5 |
+
+### Agent workflow
+
+```
+Human engineer
+    ↓
+AI assistant
+    ↓
+PromptMC tools: validate → plot → run → analyze
+    ↓
+OpenMC
+    ↓
+Structured results reviewed by the human engineer
+```
 
 ### Architecture
 
