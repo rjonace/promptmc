@@ -3,7 +3,7 @@
 Production-grade, AI-enabled Python wrapper for OpenMC Monte Carlo particle transport simulations.
 
 > **PromptMC** is an AI-native infrastructure layer for OpenMC nuclear simulations.
-> It provides a **Model Context Protocol (MCP) server** that exposes OpenMC operations directly to AI agents like Claude Desktop and Cursor. Instead of writing complex constructive solid geometry (CSG) in Python, engineers can describe their reactor core in natural language, and PromptMC's strict Pydantic validation schemas ensure the AI generates physically accurate, runnable simulation code.
+> It translates natural language into validated OpenMC configurations, manages simulation workflows, and provides a foundation for agentic programming in nuclear engineering.
 
 ## Overview
 
@@ -57,22 +57,6 @@ Whether you're new to Monte Carlo or an experienced researcher, PromptMC reduces
 - **Type Safety**: Full type hints, `from __future__ import annotations`, Python 3.10+
 - **Quality Assurance**: 190 tests, 83% coverage, and zero ruff warnings
 - **Production-Ready**: Strict dependency management with Poetry
-- **Strict Physics Validation**: LLMs hallucinate overlapping boundaries and negative material densities. PromptMC forces all AI output through a rigorous Pydantic validation layer to catch geometric impossibilities *before* the C++ execution engine ever touches them.
-
-## 🔌 Connecting to Claude Desktop (MCP)
-
-To let Claude autonomously write, validate, and run OpenMC simulations locally on your machine, add PromptMC to your `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "promptmc": {
-      "command": "promptmc-mcp",
-      "args": []
-    }
-  }
-}
-```
 
 ## Installation
 
@@ -135,12 +119,6 @@ pip install -e ".[telemetry]"
 
 # Install development dependencies (optional)
 pip install pytest pytest-cov mypy ruff pre-commit bandit types-PyYAML types-psutil types-defusedxml
-```
-
-### Install as a Package (when published)
-
-```bash
-pip install promptmc
 ```
 
 ## Quick Start
