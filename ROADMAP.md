@@ -34,6 +34,7 @@ This is the foundation. The pivot reuses ~70% of the existing code; almost nothi
 - [ ] Resource: cross-section data discovery (`OPENMC_CROSS_SECTIONS`)
 - [ ] Resource: simulation history per session
 - [ ] CLI entry: `promptmc-mcp` (stdio MCP server)
+- [ ] **Visual Verification:** Provide an `openmc_plot` tool that returns 2D `.png` cross-sections directly to the AI client to give engineers an immediate visual feedback loop.
 - [ ] Demo: "AI assistant runs the UO₂ benchmark in one prompt"
 - [ ] Documentation: how to configure AI assistants (e.g., Windsurf, Claude Desktop, Cursor, VS Code with Copilot) to use it
 - [ ] Test coverage: 80%+ on the MCP layer

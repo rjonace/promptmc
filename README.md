@@ -16,6 +16,7 @@ OpenMC is powerful, but getting started can be challenging: you need to write XM
 - **Validating before you run** — Schema validation catches errors before OpenMC even starts
 - **Managing workflows** — Batch runs, parallel execution, progress tracking, and resource limits
 - **Observability built-in** — Distributed tracing and metrics via OpenTelemetry
+- **Inline Visual Verification** — Ask for a cross-section of your reactor core and view the 2D OpenMC slice plots directly inside your AI chat interface.
 
 Whether you're new to Monte Carlo or an experienced researcher, PromptMC reduces friction and lets you focus on physics, not configuration.
 
