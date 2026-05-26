@@ -34,11 +34,11 @@ This is the foundation. The pivot reuses ~70% of the existing code; almost nothi
 - [ ] Resource: cross-section data discovery (`OPENMC_CROSS_SECTIONS`)
 - [ ] Resource: simulation history per session
 - [ ] CLI entry: `promptmc-mcp` (stdio MCP server)
-- [ ] Demo: "Claude Desktop runs the UO₂ benchmark in one prompt"
-- [ ] Documentation: how to configure Claude Desktop / Cursor / Cascade to use it
+- [ ] Demo: "AI assistant runs the UO₂ benchmark in one prompt"
+- [ ] Documentation: how to configure AI assistants (e.g., Windsurf, Claude Desktop, Cursor, VS Code with Copilot) to use it
 - [ ] Test coverage: 80%+ on the MCP layer
 
-**Acceptance:** A user can install `pip install promptmc[mcp]`, drop a config block into Claude Desktop, and have Claude run, validate, and analyze an OpenMC simulation end-to-end without writing Python.
+**Acceptance:** A user can install `pip install promptmc[mcp]`, drop a config block into their AI assistant, and have it run, validate, and analyze an OpenMC simulation end-to-end without writing Python.
 
 ## Phase 6 — Structured Geometry Generation (v2.5)
 
