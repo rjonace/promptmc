@@ -6,7 +6,7 @@
 
 PromptMC is repositioning from a Python/CLI wrapper around OpenMC into the canonical way for AI agents — and the engineers working alongside them — to design, validate, run, and reason about Monte Carlo nuclear simulations.
 
-The thesis: OpenMC already has an excellent Python API for humans. The unmet need is a guardrailed layer that lets reactor physics work happen agentically — through MCP servers, structured generation against validated schemas, and reproducible compute — so that one engineer plus an AI agent can do the work that used to take a team.
+The thesis: OpenMC already has an excellent Python API for humans. The unmet need is a validated workflow layer that lets reactor physics work happen agentically — through MCP servers, structured generation against validated schemas, and reproducible compute — so that one engineer plus an AI agent can do the work that used to take a team.
 
 PromptMC is **not** an autonomous reactor designer. It is a human-in-the-loop workflow accelerator for OpenMC: validate first, visualize cheaply, run intentionally, and summarize results for engineering review.
 

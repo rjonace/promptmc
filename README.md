@@ -1,15 +1,15 @@
 # PromptMC
 
-Guardrailed OpenMC workflows for AI-assisted reactor physics.
+Validated OpenMC workflows for AI-assisted reactor physics.
 
 > **PromptMC** is an AI-native infrastructure layer for OpenMC nuclear simulations.
-> It helps engineers build, validate, run, and analyze Monte Carlo workflows with strict human-in-the-loop guardrails. The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
+> It helps engineers build, validate, run, and analyze Monte Carlo workflows with human-in-the-loop validation. The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
 
 ## Overview
 
 OpenMC is powerful, but getting started can be challenging: you need to write XML configuration files, understand dozens of parameters, and manage simulation workflows manually.
 
-**PromptMC reduces this friction through current and planned guardrails:**
+**PromptMC reduces this friction through current and planned validation-first tools:**
 
 - **Describing simulations in plain English** — Tell it what you want (`"make a shielding calculation with 1M particles"`) and get a validated plan
 - **Generating production-ready XML** — Automatically creates `settings.xml` with sensible defaults based on your description
