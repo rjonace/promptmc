@@ -14,6 +14,7 @@ from typing import Any
 
 from pydantic import AnyUrl
 
+from promptmc.errors import MCPError
 from promptmc.mcp.resources import (
     CROSS_SECTIONS_URI,
     HISTORY_URI,
@@ -62,7 +63,7 @@ def build_server() -> Server:  # pragma: no cover
     async def _call_tool(
         name: str, arguments: dict[str, Any]
     ) -> dict[str, Any]:
-        return dispatch(name, arguments)
+        return await asyncio.to_thread(dispatch, name, arguments)
 
     @server.list_resources()
     async def _list_resources() -> list[types.Resource]:
@@ -88,10 +89,10 @@ def build_server() -> Server:  # pragma: no cover
         ]
 
     @server.read_resource()
-    async def _read_resource(uri: Any) -> Iterable[ReadResourceContents]:
+    async def _read_resource(uri: AnyUrl) -> Iterable[ReadResourceContents]:
         reader = RESOURCE_READERS.get(str(uri))
         if reader is None:
-            raise KeyError(f"Unknown resource: {uri}")
+            raise MCPError(f"Unknown resource: {uri}")
         return [
             ReadResourceContents(content=reader(), mime_type=RESOURCE_MIME_TYPE)
         ]

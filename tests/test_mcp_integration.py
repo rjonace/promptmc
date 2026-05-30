@@ -14,6 +14,7 @@ from mcp.client.stdio import (  # noqa: E402
     StdioServerParameters,
     stdio_client,
 )
+from pydantic import AnyUrl  # noqa: E402
 
 EXPECTED_TOOLS = {
     "openmc_check_installation",
@@ -51,7 +52,17 @@ async def _exercise_server() -> None:
 
         resources_result = await session.list_resources()
         resource_uris = {str(r.uri) for r in resources_result.resources}
-        assert "promptmc://cross-sections" in resource_uris
+        assert {
+            "promptmc://cross-sections",
+            "promptmc://history",
+            "promptmc://examples/uo2_criticality",
+        } <= resource_uris
+
+        read_result = await session.read_resource(
+            AnyUrl("promptmc://cross-sections")
+        )
+        assert read_result.contents
+        assert "configured" in read_result.contents[0].text
 
 
 @pytest.mark.integration

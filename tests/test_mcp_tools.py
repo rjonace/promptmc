@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import base64
+import subprocess
 from subprocess import CompletedProcess
 from unittest.mock import MagicMock, patch
 
 import pytest
 from promptmc.errors import (
+    ConfigurationError,
+    MCPError,
     OpenMCExecutionError,
     OpenMCNotFoundError,
     OpenMCValidationError,
@@ -66,7 +70,7 @@ def test_check_installation_not_found(mock_cls):
         "missing"
     )
     result = tools.check_installation(CheckInstallationInput())
-    assert result.version == "not found"
+    assert result.version == ""
     assert result.python_available is False
     assert result.error is not None
 
@@ -158,6 +162,25 @@ def test_schema_check_error(mock_cls, tmp_path):
     assert result.error == "nope"
 
 
+@patch("promptmc.mcp.tools.SchemaValidator")
+def test_schema_check_promptmc_error(mock_cls, tmp_path):
+    mock_cls.return_value.validate_directory.side_effect = ConfigurationError(
+        "bad schema"
+    )
+    result = tools.schema_check(SchemaCheckInput(input_path=str(tmp_path)))
+    assert result.is_valid is False
+    assert result.error == "bad schema"
+
+
+def test_schema_check_unrecognized_file(tmp_path):
+    geometry = tmp_path / "geometry.xml"
+    geometry.write_text("<geometry/>")
+    result = tools.schema_check(SchemaCheckInput(input_path=str(geometry)))
+    assert result.is_valid is False
+    assert result.error is not None
+    assert "Unrecognized" in result.error
+
+
 def _fake_metadata():
     return TemplateMetadata(
         name="Criticality",
@@ -185,11 +208,21 @@ def test_render_template_success(mock_get, tmp_path):
 
 
 @patch("promptmc.mcp.tools.get_template")
-def test_render_template_unknown(mock_get):
-    mock_get.side_effect = KeyError("no such template")
-    result = tools.render_template(TemplateInput(template="bogus"))
-    assert result.error is not None
-    assert result.template_metadata.template_type == "bogus"
+def test_render_template_error(mock_get):
+    mock_get.side_effect = ConfigurationError("render failed")
+    result = tools.render_template(TemplateInput(template="criticality"))
+    assert result.error == "render failed"
+    assert result.template_metadata is None
+
+
+@patch("promptmc.mcp.tools.get_template")
+def test_render_template_unexpected_error(mock_get):
+    template = MagicMock()
+    template.render.side_effect = RuntimeError("disk full")
+    mock_get.return_value = template
+    result = tools.render_template(TemplateInput(template="criticality"))
+    assert result.error == "disk full"
+    assert result.template_metadata is None
 
 
 @patch("promptmc.mcp.tools.registry_list_templates")
@@ -205,6 +238,13 @@ def test_list_templates_error(mock_list):
     mock_list.side_effect = RuntimeError("boom")
     result = tools.list_templates(ListTemplatesInput())
     assert result.error == "boom"
+
+
+@patch("promptmc.mcp.tools.registry_list_templates")
+def test_list_templates_promptmc_error(mock_list):
+    mock_list.side_effect = ConfigurationError("bad registry")
+    result = tools.list_templates(ListTemplatesInput())
+    assert result.error == "bad registry"
 
 
 @patch("promptmc.mcp.tools.OpenMCRunner")
@@ -232,6 +272,14 @@ def test_run_simulation_failure(mock_cls):
     assert result.error == "crash"
 
 
+@patch("promptmc.mcp.tools.OpenMCRunner")
+def test_run_simulation_unexpected_error(mock_cls):
+    mock_cls.return_value.run_simulation.side_effect = RuntimeError("kaboom")
+    result = tools.run_simulation(RunSimulationInput(input_path="/tmp/case"))
+    assert result.success is False
+    assert result.error == "kaboom"
+
+
 @patch("promptmc.mcp.tools.ResultParser")
 def test_analyze_results_success(mock_cls):
     mock_cls.return_value.parse_results.return_value = DataclassSimResult(
@@ -253,6 +301,13 @@ def test_analyze_results_error(mock_cls):
     mock_cls.return_value.parse_results.side_effect = OSError("no dir")
     result = tools.analyze_results(AnalyzeInput(output_path="/tmp/out"))
     assert result.error == "no dir"
+
+
+@patch("promptmc.mcp.tools.ResultParser")
+def test_analyze_results_promptmc_error(mock_cls):
+    mock_cls.return_value.parse_results.side_effect = ConfigurationError("nope")
+    result = tools.analyze_results(AnalyzeInput(output_path="/tmp/out"))
+    assert result.error == "nope"
 
 
 def test_check_cross_sections_found(tmp_path, monkeypatch):
@@ -326,6 +381,60 @@ def test_geometry_debug_os_error(mock_which, mock_run):
     assert result.error == "boom"
 
 
+@patch(
+    "promptmc.mcp.tools.subprocess.run",
+    side_effect=subprocess.TimeoutExpired(cmd="openmc", timeout=300),
+)
+@patch("promptmc.mcp.tools.shutil.which", return_value="/usr/bin/openmc")
+def test_geometry_debug_timeout(mock_which, mock_run):
+    result = tools.geometry_debug(GeometryDebugInput(input_path="/tmp/case"))
+    assert result.success is False
+    assert result.error is not None
+
+
+@patch("promptmc.mcp.tools.subprocess.run")
+@patch("promptmc.mcp.tools.shutil.which", return_value="/usr/bin/openmc")
+def test_geometry_debug_records_command(mock_which, mock_run):
+    mock_run.return_value = CompletedProcess(
+        args=["openmc"], returncode=0, stdout="ok", stderr=""
+    )
+    result = tools.geometry_debug(GeometryDebugInput(input_path="/tmp/case"))
+    assert result.command == "/usr/bin/openmc --geometry-debug"
+    assert result.error is None
+
+
+def test_encode_png_success(tmp_path):
+    image = tmp_path / "plot.png"
+    image.write_bytes(b"fake-png-bytes")
+    result = tools._encode_png(image)
+    assert result.error is None
+    assert base64.b64decode(result.base64_png) == b"fake-png-bytes"
+    assert result.image_path == str(image)
+
+
+def test_encode_png_missing(tmp_path):
+    result = tools._encode_png(tmp_path / "absent.png")
+    assert result.base64_png == ""
+    assert result.error is not None
+
+
+def test_encode_png_too_large(tmp_path, monkeypatch):
+    monkeypatch.setattr(tools, "_MAX_PLOT_PNG_BYTES", 4)
+    image = tmp_path / "plot.png"
+    image.write_bytes(b"too-many-bytes")
+    result = tools._encode_png(image)
+    assert result.base64_png == ""
+    assert result.error is not None
+    assert "exceeds" in result.error
+
+
+def test_plot_geometry_missing_api(monkeypatch):
+    monkeypatch.setattr(tools, "_openmc", None)
+    result = tools.plot_geometry(PlotInput(geometry_xml_path="/tmp/case"))
+    assert result.base64_png == ""
+    assert result.error is not None
+
+
 def test_registry_has_ten_tools():
     assert len(tools.TOOL_REGISTRY) == 10
     expected = {
@@ -361,5 +470,12 @@ def test_dispatch_records_failure(mock_which):
 
 
 def test_dispatch_unknown_tool():
-    with pytest.raises(KeyError):
+    with pytest.raises(MCPError):
         tools.dispatch("openmc_nonexistent", {})
+
+
+def test_history_is_bounded():
+    tools.clear_session_history()
+    for _ in range(tools._HISTORY_MAX_ENTRIES + 50):
+        tools.record_history("openmc_validate", {}, True)
+    assert len(tools.get_session_history()) == tools._HISTORY_MAX_ENTRIES

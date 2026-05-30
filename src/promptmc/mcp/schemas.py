@@ -1,28 +1,48 @@
 """Pydantic input/output schemas for PromptMC MCP tools.
 
 These models are the external boundary contracts for every MCP tool. Each
-tool consumes one input model and produces one output model. Output models
-carry an optional ``error`` field so failures are surfaced as structured
-data rather than propagating exceptions to the MCP layer.
+tool consumes one input model and produces one output model. Every output
+model inherits :class:`ToolOutput`, which carries an optional ``error``
+field so failures are surfaced as structured data rather than propagating
+exceptions to the MCP layer.
 """
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
+
+ExecutionModeName = Literal["auto", "api", "subprocess"]
+PlotBasis = Literal["xy", "xz", "yz"]
+PlotColorBy = Literal["material", "cell"]
+TemplateName = Literal[
+    "criticality", "fixed_source", "shielding", "reactor_pin", "depletion"
+]
+
+
+class ToolOutput(BaseModel):
+    """Base class for every MCP tool output model.
+
+    Attributes:
+        error: Human-readable message set when the tool hit an unexpected
+            internal failure; ``None`` on a normal (non-crashing) return.
+    """
+
+    error: str | None = None
 
 
 class CheckInstallationInput(BaseModel):
     """Input for openmc_check_installation tool."""
 
 
-class OpenMCInstallationStatus(BaseModel):
+class OpenMCInstallationStatus(ToolOutput):
     """Output for openmc_check_installation tool."""
 
-    version: str
-    executable_path: str
-    python_available: bool
-    subprocess_available: bool
-    error: str | None = None
+    version: str = ""
+    executable_path: str = ""
+    python_available: bool = False
+    subprocess_available: bool = False
 
 
 class ValidateInput(BaseModel):
@@ -33,20 +53,19 @@ class ValidateInput(BaseModel):
     )
 
 
-class ValidationResult(BaseModel):
+class ValidationResult(ToolOutput):
     """Output for openmc_validate tool."""
 
-    is_valid: bool
-    message: str
+    is_valid: bool = False
+    message: str = ""
     errors: list[str] = Field(default_factory=list)
-    error: str | None = None
 
 
 class SchemaCheckInput(BaseModel):
     """Input for openmc_schema_check tool."""
 
     input_path: str = Field(
-        description="Path to settings.xml or input directory"
+        description="Path to settings.xml, materials.xml, or a directory"
     )
 
 
@@ -59,25 +78,19 @@ class SchemaIssueResult(BaseModel):
     file_path: str | None = None
 
 
-class SchemaValidationResult(BaseModel):
+class SchemaValidationResult(ToolOutput):
     """Output for openmc_schema_check tool."""
 
-    is_valid: bool
+    is_valid: bool = False
     issues: list[SchemaIssueResult] = Field(default_factory=list)
     error_count: int = 0
     warning_count: int = 0
-    error: str | None = None
 
 
 class TemplateInput(BaseModel):
     """Input for openmc_template tool."""
 
-    template: str = Field(
-        description=(
-            "Template type: criticality, fixed_source, shielding, "
-            "reactor_pin, depletion"
-        )
-    )
+    template: TemplateName = Field(description="Template type to render")
     output_path: str = Field(default="settings.xml")
     particles: int | None = None
     batches: int | None = None
@@ -95,23 +108,21 @@ class TemplateMetadataResult(BaseModel):
     default_inactive: int
 
 
-class TemplateOutput(BaseModel):
+class TemplateOutput(ToolOutput):
     """Output for openmc_template tool."""
 
-    output_path: str
-    template_metadata: TemplateMetadataResult
-    error: str | None = None
+    output_path: str = ""
+    template_metadata: TemplateMetadataResult | None = None
 
 
 class ListTemplatesInput(BaseModel):
     """Input for openmc_list_templates tool."""
 
 
-class ListTemplatesOutput(BaseModel):
+class ListTemplatesOutput(ToolOutput):
     """Output for openmc_list_templates tool."""
 
     templates: list[TemplateMetadataResult] = Field(default_factory=list)
-    error: str | None = None
 
 
 class RunSimulationInput(BaseModel):
@@ -122,22 +133,21 @@ class RunSimulationInput(BaseModel):
     )
     threads: int = Field(default=1, ge=1)
     output_path: str | None = None
-    mode: str = Field(
+    mode: ExecutionModeName = Field(
         default="auto",
         description="Execution mode: auto, api, or subprocess",
     )
 
 
-class SimulationRunResult(BaseModel):
+class SimulationRunResult(ToolOutput):
     """Output for openmc_run tool."""
 
-    success: bool
-    return_code: int
+    success: bool = False
+    return_code: int = -1
     stdout: str = ""
     stderr: str = ""
-    input_path: str
-    mode: str
-    error: str | None = None
+    input_path: str = ""
+    mode: str = ""
 
 
 class AnalyzeInput(BaseModel):
@@ -146,7 +156,7 @@ class AnalyzeInput(BaseModel):
     output_path: str = Field(description="Path to OpenMC output directory")
 
 
-class SimulationResult(BaseModel):
+class AnalysisResult(ToolOutput):
     """Output for openmc_analyze tool."""
 
     statepoint_path: str | None = None
@@ -158,19 +168,17 @@ class SimulationResult(BaseModel):
     n_particles: int = 0
     runtime_seconds: float = 0.0
     tallies_present: bool = False
-    error: str | None = None
 
 
 class CrossSectionCheckInput(BaseModel):
     """Input for openmc_check_cross_sections tool."""
 
 
-class CrossSectionCheckResult(BaseModel):
+class CrossSectionCheckResult(ToolOutput):
     """Output for openmc_check_cross_sections tool."""
 
-    found: bool
+    found: bool = False
     path: str | None = None
-    error: str | None = None
 
 
 class PlotInput(BaseModel):
@@ -179,36 +187,33 @@ class PlotInput(BaseModel):
     geometry_xml_path: str = Field(
         description="Path to directory containing geometry.xml"
     )
-    basis: str = Field(default="xy", description="Plot basis: xy, xz, or yz")
+    basis: PlotBasis = Field(default="xy", description="Plot slice basis")
     origin: tuple[float, float, float] = Field(default=(0.0, 0.0, 0.0))
     width: tuple[float, float] = Field(default=(10.0, 10.0))
     pixels: tuple[int, int] = Field(default=(400, 400))
-    color_by: str = Field(
-        default="material", description="Color by: material or cell"
+    color_by: PlotColorBy = Field(
+        default="material", description="Color cells by material or cell"
     )
     show_overlaps: bool = False
 
 
-class PlotOutput(BaseModel):
+class PlotOutput(ToolOutput):
     """Output for openmc_plot tool."""
 
     image_path: str = ""
     base64_png: str = ""
-    error: str | None = None
 
 
 class GeometryDebugInput(BaseModel):
     """Input for openmc_geometry_debug tool."""
 
     input_path: str = Field(description="Path to OpenMC input directory")
-    particles: int = Field(default=100, ge=1)
 
 
-class GeometryDebugResult(BaseModel):
+class GeometryDebugResult(ToolOutput):
     """Output for openmc_geometry_debug tool."""
 
-    success: bool
+    success: bool = False
     overlaps_found: bool = False
-    message: str = ""
+    command: str = ""
     overlap_details: list[str] = Field(default_factory=list)
-    error: str | None = None

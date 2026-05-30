@@ -59,6 +59,17 @@ def test_read_uo2_example_missing(monkeypatch):
     assert payload["files"] == []
 
 
+def test_uo2_example_dir_honors_env_override(tmp_path, monkeypatch):
+    example = tmp_path / "uo2_criticality"
+    example.mkdir()
+    (example / "geometry.xml").write_text("<geometry/>")
+    monkeypatch.setenv("PROMPTMC_EXAMPLES_DIR", str(tmp_path))
+    payload = json.loads(resources.read_uo2_example())
+    assert payload["available"] is True
+    assert payload["path"] == str(example)
+    assert "geometry.xml" in payload["files"]
+
+
 def test_resource_readers_cover_all_uris():
     assert set(resources.RESOURCE_READERS) == {
         resources.CROSS_SECTIONS_URI,

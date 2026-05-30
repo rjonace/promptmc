@@ -1,11 +1,11 @@
 """MCP tool implementations for PromptMC.
 
-Each tool is a pure function that accepts a Pydantic input model, calls
-existing PromptMC code, and returns a Pydantic output model. These
-functions intentionally have no dependency on the MCP SDK so they can be
-unit-tested in isolation and reused outside an MCP context.
+Each tool is a function that accepts a Pydantic input model, calls existing
+PromptMC code, and returns a Pydantic output model. These functions
+intentionally have no dependency on the MCP SDK so they can be unit-tested
+in isolation and reused outside an MCP context.
 
-A small in-memory session history records every dispatched tool call for
+A bounded, in-memory session history records every dispatched tool call for
 the lifetime of the process; it backs the ``promptmc://history`` resource.
 """
 
@@ -13,20 +13,24 @@ from __future__ import annotations
 
 import base64
 import json
+import logging
 import os
 import shlex
 import shutil
 import subprocess  # nosec B404
+from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from types import ModuleType
+from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel
 
-from promptmc.errors import PromptMCError
+from promptmc.errors import MCPError, PromptMCError
 from promptmc.mcp.schemas import (
+    AnalysisResult,
     AnalyzeInput,
     CheckInstallationInput,
     CrossSectionCheckInput,
@@ -42,11 +46,11 @@ from promptmc.mcp.schemas import (
     SchemaCheckInput,
     SchemaIssueResult,
     SchemaValidationResult,
-    SimulationResult,
     SimulationRunResult,
     TemplateInput,
     TemplateMetadataResult,
     TemplateOutput,
+    ToolOutput,
     ValidateInput,
     ValidationResult,
 )
@@ -57,31 +61,45 @@ from promptmc.openmc_integration import (
     OpenMCValidator,
 )
 from promptmc.schema import SchemaSeverity, SchemaValidator
-from promptmc.templates import get_template
+from promptmc.schema import SchemaValidationResult as InternalSchemaResult
+from promptmc.templates import TemplateMetadata, get_template
 from promptmc.templates import list_templates as registry_list_templates
 from promptmc.visualization import ResultParser
 
-_MODE_MAP = {
+try:
+    import openmc as _openmc
+except ImportError:  # pragma: no cover - the openmc extra is optional
+    _openmc = None
+
+logger = logging.getLogger(__name__)
+
+_MODE_MAP: dict[str, ExecutionMode] = {
     "auto": ExecutionMode.AUTO,
     "api": ExecutionMode.API,
     "subprocess": ExecutionMode.SUBPROCESS,
 }
 
+_GEOMETRY_DEBUG_TIMEOUT_SECONDS = 300
+_MAX_PLOT_PNG_BYTES = 8 * 1024 * 1024
+_HISTORY_MAX_ENTRIES = 1000
+
 
 def check_installation(
-    data: CheckInstallationInput,
+    _data: CheckInstallationInput,
 ) -> OpenMCInstallationStatus:
-    """Report the local OpenMC installation status."""
+    """Report the local OpenMC installation status.
+
+    Args:
+        _data: Empty input model; this tool takes no parameters.
+
+    Returns:
+        The detected installation details, or an ``error`` when OpenMC
+        cannot be located.
+    """
     try:
         info = OpenMCInstaller().check_installation()
     except PromptMCError as exc:
-        return OpenMCInstallationStatus(
-            version="not found",
-            executable_path="",
-            python_available=False,
-            subprocess_available=False,
-            error=str(exc),
-        )
+        return OpenMCInstallationStatus(error=str(exc))
     return OpenMCInstallationStatus(
         version=info.version,
         executable_path=info.executable_path,
@@ -91,7 +109,15 @@ def check_installation(
 
 
 def validate_input(data: ValidateInput) -> ValidationResult:
-    """Validate an OpenMC XML input file or directory."""
+    """Validate an OpenMC XML input file or directory.
+
+    Args:
+        data: The path to validate.
+
+    Returns:
+        A result describing whether the input is valid. Validation failures
+        populate ``errors``; unexpected internal failures also set ``error``.
+    """
     try:
         OpenMCValidator().validate_input_file(data.input_path)
     except PromptMCError as exc:
@@ -99,6 +125,7 @@ def validate_input(data: ValidateInput) -> ValidationResult:
             is_valid=False, message=str(exc), errors=[str(exc)]
         )
     except Exception as exc:
+        logger.exception("openmc_validate failed unexpectedly")
         return ValidationResult(
             is_valid=False,
             message=str(exc),
@@ -109,19 +136,30 @@ def validate_input(data: ValidateInput) -> ValidationResult:
 
 
 def schema_check(data: SchemaCheckInput) -> SchemaValidationResult:
-    """Run Pydantic schema validation over OpenMC input files."""
-    try:
-        validator = SchemaValidator()
-        path = Path(data.input_path)
-        if path.is_dir():
-            result = validator.validate_directory(path)
-        elif path.name == "materials.xml":
-            result = validator.validate_materials(path)
-        else:
-            result = validator.validate_settings(path)
-    except Exception as exc:
-        return SchemaValidationResult(is_valid=False, error=str(exc))
+    """Run Pydantic schema validation over OpenMC input files.
 
+    Args:
+        data: The path to a directory, ``settings.xml``, or ``materials.xml``.
+
+    Returns:
+        The schema validation outcome, or an ``error`` when the path is
+        unrecognized or validation fails unexpectedly.
+    """
+    path = Path(data.input_path)
+    try:
+        result = _run_schema_validation(path)
+    except PromptMCError as exc:
+        return SchemaValidationResult(error=str(exc))
+    except Exception as exc:
+        logger.exception("openmc_schema_check failed unexpectedly")
+        return SchemaValidationResult(error=str(exc))
+    if result is None:
+        return SchemaValidationResult(
+            error=(
+                "Unrecognized input: expected a directory, settings.xml, "
+                "or materials.xml"
+            )
+        )
     issues = [
         SchemaIssueResult(
             severity=issue.severity.value,
@@ -145,8 +183,36 @@ def schema_check(data: SchemaCheckInput) -> SchemaValidationResult:
     )
 
 
+def _run_schema_validation(path: Path) -> InternalSchemaResult | None:
+    """Route a path to the matching schema validator.
+
+    Args:
+        path: The directory or XML file to validate.
+
+    Returns:
+        The internal validation result, or ``None`` when the path is neither
+        a directory nor a recognized OpenMC input filename.
+    """
+    validator = SchemaValidator()
+    if path.is_dir():
+        return validator.validate_directory(path)
+    if path.name == "materials.xml":
+        return validator.validate_materials(path)
+    if path.name == "settings.xml":
+        return validator.validate_settings(path)
+    return None
+
+
 def render_template(data: TemplateInput) -> TemplateOutput:
-    """Render a settings.xml file from a named template."""
+    """Render a settings.xml file from a named template.
+
+    Args:
+        data: The template name and optional particle/batch overrides.
+
+    Returns:
+        The rendered output path and template metadata, or an ``error`` with
+        ``template_metadata`` left as ``None`` on failure.
+    """
     try:
         template = get_template(data.template)
         output = template.render(
@@ -155,30 +221,32 @@ def render_template(data: TemplateInput) -> TemplateOutput:
             batches=data.batches,
             inactive=data.inactive,
         )
-        metadata = _template_metadata(template.metadata)
-        return TemplateOutput(
-            output_path=str(output), template_metadata=metadata
-        )
+    except PromptMCError as exc:
+        return TemplateOutput(output_path=data.output_path, error=str(exc))
     except Exception as exc:
-        return TemplateOutput(
-            output_path=data.output_path,
-            template_metadata=TemplateMetadataResult(
-                name="",
-                template_type=data.template,
-                description="",
-                default_particles=0,
-                default_batches=0,
-                default_inactive=0,
-            ),
-            error=str(exc),
-        )
+        logger.exception("openmc_template failed unexpectedly")
+        return TemplateOutput(output_path=data.output_path, error=str(exc))
+    return TemplateOutput(
+        output_path=str(output),
+        template_metadata=_template_metadata(template.metadata),
+    )
 
 
-def list_templates(data: ListTemplatesInput) -> ListTemplatesOutput:
-    """List the available configuration templates."""
+def list_templates(_data: ListTemplatesInput) -> ListTemplatesOutput:
+    """List the available configuration templates.
+
+    Args:
+        _data: Empty input model; this tool takes no parameters.
+
+    Returns:
+        The available template metadata, or an ``error`` on failure.
+    """
     try:
         metadata = registry_list_templates()
+    except PromptMCError as exc:
+        return ListTemplatesOutput(error=str(exc))
     except Exception as exc:
+        logger.exception("openmc_list_templates failed unexpectedly")
         return ListTemplatesOutput(error=str(exc))
     return ListTemplatesOutput(
         templates=[_template_metadata(m) for m in metadata]
@@ -186,8 +254,16 @@ def list_templates(data: ListTemplatesInput) -> ListTemplatesOutput:
 
 
 def run_simulation(data: RunSimulationInput) -> SimulationRunResult:
-    """Run an OpenMC simulation and capture the result."""
-    mode = _MODE_MAP.get(data.mode.lower(), ExecutionMode.AUTO)
+    """Run an OpenMC simulation and capture the result.
+
+    Args:
+        data: The input path, thread count, output path, and execution mode.
+
+    Returns:
+        The process outcome, or a failed result carrying ``error`` when the
+        run cannot complete.
+    """
+    mode = _MODE_MAP[data.mode]
     try:
         runner = OpenMCRunner(execution_mode=mode)
         completed = runner.run_simulation(
@@ -195,15 +271,11 @@ def run_simulation(data: RunSimulationInput) -> SimulationRunResult:
             threads=data.threads,
             output_path=data.output_path,
         )
+    except PromptMCError as exc:
+        return _run_failure(data, exc)
     except Exception as exc:
-        return SimulationRunResult(
-            success=False,
-            return_code=-1,
-            stderr=str(exc),
-            input_path=data.input_path,
-            mode=data.mode,
-            error=str(exc),
-        )
+        logger.exception("openmc_run failed unexpectedly")
+        return _run_failure(data, exc)
     return SimulationRunResult(
         success=completed.returncode == 0,
         return_code=completed.returncode,
@@ -214,13 +286,45 @@ def run_simulation(data: RunSimulationInput) -> SimulationRunResult:
     )
 
 
-def analyze_results(data: AnalyzeInput) -> SimulationResult:
-    """Parse simulation outputs into a structured summary."""
+def _run_failure(
+    data: RunSimulationInput, exc: Exception
+) -> SimulationRunResult:
+    """Build a failed simulation result from an exception.
+
+    Args:
+        data: The originating run input, echoed back in the result.
+        exc: The exception that aborted the run.
+
+    Returns:
+        A result with ``success`` false and ``error`` set.
+    """
+    return SimulationRunResult(
+        success=False,
+        return_code=-1,
+        stderr=str(exc),
+        input_path=data.input_path,
+        mode=data.mode,
+        error=str(exc),
+    )
+
+
+def analyze_results(data: AnalyzeInput) -> AnalysisResult:
+    """Parse simulation outputs into a structured summary.
+
+    Args:
+        data: The path to the OpenMC output directory.
+
+    Returns:
+        The parsed analysis summary, or an ``error`` on failure.
+    """
     try:
         parsed = ResultParser().parse_results(data.output_path)
+    except PromptMCError as exc:
+        return AnalysisResult(error=str(exc))
     except Exception as exc:
-        return SimulationResult(error=str(exc))
-    return SimulationResult(
+        logger.exception("openmc_analyze failed unexpectedly")
+        return AnalysisResult(error=str(exc))
+    return AnalysisResult(
         statepoint_path=_path_str(parsed.statepoint_path),
         summary_path=_path_str(parsed.summary_path),
         tallies_path=_path_str(parsed.tallies_path),
@@ -234,9 +338,16 @@ def analyze_results(data: AnalyzeInput) -> SimulationResult:
 
 
 def check_cross_sections(
-    data: CrossSectionCheckInput,
+    _data: CrossSectionCheckInput,
 ) -> CrossSectionCheckResult:
-    """Check whether OpenMC cross-section data is configured."""
+    """Check whether OpenMC cross-section data is configured.
+
+    Args:
+        _data: Empty input model; this tool takes no parameters.
+
+    Returns:
+        Whether ``OPENMC_CROSS_SECTIONS`` points at an existing file.
+    """
     value = os.environ.get("OPENMC_CROSS_SECTIONS")
     if value and Path(value).exists():
         return CrossSectionCheckResult(found=True, path=value)
@@ -244,25 +355,37 @@ def check_cross_sections(
 
 
 def plot_geometry(data: PlotInput) -> PlotOutput:
-    """Render a 2D geometry slice as a base64-encoded PNG."""
-    try:
-        import openmc
-    except ImportError as exc:
-        return PlotOutput(error=f"OpenMC Python API not available: {exc}")
+    """Render a 2D geometry slice as a base64-encoded PNG.
+
+    Args:
+        data: The geometry directory and plot parameters.
+
+    Returns:
+        The encoded image, or an ``error`` when OpenMC's Python API is
+        unavailable or rendering fails.
+    """
+    if _openmc is None:
+        return PlotOutput(error="OpenMC Python API not available")
     try:  # pragma: no cover - requires the optional openmc dependency
-        return _render_plot(openmc, data)
-    except Exception as exc:
+        return _render_plot(_openmc, data)
+    except Exception as exc:  # pragma: no cover - requires openmc
+        logger.exception("openmc_plot failed unexpectedly")
         return PlotOutput(error=str(exc))
 
 
 def geometry_debug(data: GeometryDebugInput) -> GeometryDebugResult:
-    """Run OpenMC geometry overlap detection via subprocess."""
+    """Run OpenMC geometry overlap detection via subprocess.
+
+    Args:
+        data: The OpenMC input directory to debug.
+
+    Returns:
+        Whether overlaps were detected, the command run, and any matching
+        log lines, or an ``error`` when OpenMC is missing or the run fails.
+    """
     executable = shutil.which("openmc")
     if executable is None:
-        message = "OpenMC executable not found in PATH"
-        return GeometryDebugResult(
-            success=False, message=message, error=message
-        )
+        return GeometryDebugResult(error="OpenMC executable not found in PATH")
     command = [executable, "--geometry-debug"]
     try:
         completed = subprocess.run(  # nosec B603
@@ -271,11 +394,10 @@ def geometry_debug(data: GeometryDebugInput) -> GeometryDebugResult:
             capture_output=True,
             text=True,
             check=False,
+            timeout=_GEOMETRY_DEBUG_TIMEOUT_SECONDS,
         )
-    except OSError as exc:
-        return GeometryDebugResult(
-            success=False, message=str(exc), error=str(exc)
-        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return GeometryDebugResult(error=str(exc))
     combined = f"{completed.stdout}\n{completed.stderr}"
     overlaps = [
         line for line in combined.splitlines() if "overlap" in line.lower()
@@ -283,15 +405,23 @@ def geometry_debug(data: GeometryDebugInput) -> GeometryDebugResult:
     return GeometryDebugResult(
         success=completed.returncode == 0,
         overlaps_found=bool(overlaps),
-        message=shlex.join(command),
+        command=shlex.join(command),
         overlap_details=overlaps,
     )
 
 
 def _render_plot(
-    openmc: Any, data: PlotInput
-) -> PlotOutput:  # pragma: no cover
-    """Generate a geometry plot PNG using the OpenMC Python API."""
+    openmc: ModuleType, data: PlotInput
+) -> PlotOutput:  # pragma: no cover - requires the optional openmc dependency
+    """Generate a geometry plot PNG using the OpenMC Python API.
+
+    Args:
+        openmc: The imported ``openmc`` module.
+        data: Validated plot parameters.
+
+    Returns:
+        A PlotOutput with the encoded PNG or an error from :func:`_encode_png`.
+    """
     geometry_dir = Path(data.geometry_xml_path)
     plot = openmc.Plot()
     plot.basis = data.basis
@@ -307,13 +437,40 @@ def _render_plot(
     plots.export_to_xml(geometry_dir)
     openmc.plot_geometry(cwd=str(geometry_dir))
 
-    image_path = geometry_dir / "promptmc_plot.png"
-    encoded = base64.b64encode(image_path.read_bytes()).decode()
+    return _encode_png(geometry_dir / "promptmc_plot.png")
+
+
+def _encode_png(image_path: Path) -> PlotOutput:
+    """Read a rendered PNG and return it base64-encoded.
+
+    Args:
+        image_path: Path to the PNG produced by the OpenMC plotter.
+
+    Returns:
+        A PlotOutput with the base64 payload, or an ``error`` when the file
+        is missing or exceeds :data:`_MAX_PLOT_PNG_BYTES`.
+    """
+    if not image_path.is_file():
+        return PlotOutput(error=f"Plot image not generated: {image_path}")
+    raw = image_path.read_bytes()
+    if len(raw) > _MAX_PLOT_PNG_BYTES:
+        return PlotOutput(
+            image_path=str(image_path),
+            error=f"Plot image exceeds {_MAX_PLOT_PNG_BYTES} bytes",
+        )
+    encoded = base64.b64encode(raw).decode()
     return PlotOutput(image_path=str(image_path), base64_png=encoded)
 
 
-def _template_metadata(metadata: Any) -> TemplateMetadataResult:
-    """Convert internal template metadata to the output schema."""
+def _template_metadata(metadata: TemplateMetadata) -> TemplateMetadataResult:
+    """Convert internal template metadata to the output schema.
+
+    Args:
+        metadata: The internal template metadata record.
+
+    Returns:
+        The equivalent output-schema metadata model.
+    """
     return TemplateMetadataResult(
         name=metadata.name,
         template_type=metadata.template_type.value,
@@ -324,23 +481,39 @@ def _template_metadata(metadata: Any) -> TemplateMetadataResult:
     )
 
 
-def _path_str(value: Any) -> str | None:
-    """Return ``str(value)`` or None when value is falsy."""
+def _path_str(value: Path | None) -> str | None:
+    """Return ``str(value)`` or ``None`` when value is falsy.
+
+    Args:
+        value: A path or ``None``.
+
+    Returns:
+        The string form of the path, or ``None``.
+    """
     return str(value) if value else None
 
 
-@dataclass
-class ToolSpec:
-    """Internal registration record for a single MCP tool."""
+InputT = TypeVar("InputT", bound=BaseModel)
+OutputT = TypeVar("OutputT", bound=ToolOutput)
+
+
+@dataclass(frozen=True)
+class ToolSpec(Generic[InputT, OutputT]):
+    """Registration record binding a tool to its input and output models.
+
+    The generic parameters statically tie ``handler`` to ``input_model`` and
+    ``output_model`` at construction, so a handler cannot be registered
+    against a mismatched schema.
+    """
 
     name: str
     description: str
-    input_model: type[BaseModel]
-    output_model: type[BaseModel]
-    handler: Callable[[Any], BaseModel]
+    input_model: type[InputT]
+    output_model: type[OutputT]
+    handler: Callable[[InputT], OutputT]
 
 
-TOOL_REGISTRY: dict[str, ToolSpec] = {
+TOOL_REGISTRY: dict[str, ToolSpec[Any, Any]] = {
     "openmc_check_installation": ToolSpec(
         name="openmc_check_installation",
         description="Check OpenMC installation status",
@@ -387,7 +560,7 @@ TOOL_REGISTRY: dict[str, ToolSpec] = {
         name="openmc_analyze",
         description="Parse simulation results",
         input_model=AnalyzeInput,
-        output_model=SimulationResult,
+        output_model=AnalysisResult,
         handler=analyze_results,
     ),
     "openmc_check_cross_sections": ToolSpec(
@@ -416,7 +589,13 @@ TOOL_REGISTRY: dict[str, ToolSpec] = {
 
 @dataclass
 class HistoryEntry:
-    """A single recorded tool invocation in the MCP session."""
+    """A single recorded tool invocation in the MCP session.
+
+    Attributes:
+        success: ``True`` when the tool returned without an unexpected
+            internal error (``output.error is None``). A domain failure such
+            as an invalid input still counts as a successful invocation.
+    """
 
     tool: str
     timestamp: str
@@ -424,11 +603,18 @@ class HistoryEntry:
     success: bool
 
 
-_SESSION_HISTORY: list[HistoryEntry] = []
+_SESSION_HISTORY: deque[HistoryEntry] = deque(maxlen=_HISTORY_MAX_ENTRIES)
 
 
 def record_history(tool: str, arguments: dict[str, Any], success: bool) -> None:
-    """Append a tool invocation to the in-memory session history."""
+    """Append a tool invocation to the bounded session history.
+
+    Args:
+        tool: The dispatched tool name.
+        arguments: The raw argument mapping, truncated when serialized.
+        success: Whether the tool returned without an internal error; see
+            :class:`HistoryEntry`.
+    """
     summary = json.dumps(arguments, default=str)[:200]
     _SESSION_HISTORY.append(
         HistoryEntry(
@@ -441,7 +627,11 @@ def record_history(tool: str, arguments: dict[str, Any], success: bool) -> None:
 
 
 def get_session_history() -> list[HistoryEntry]:
-    """Return a copy of the current session history."""
+    """Return a snapshot copy of the current session history.
+
+    Returns:
+        The recorded entries, oldest first.
+    """
     return list(_SESSION_HISTORY)
 
 
@@ -461,13 +651,12 @@ def dispatch(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         The tool output model serialized to a JSON-compatible dict.
 
     Raises:
-        KeyError: If the tool name is not registered.
+        MCPError: If the tool name is not registered.
     """
     spec = TOOL_REGISTRY.get(name)
     if spec is None:
-        raise KeyError(f"Unknown tool: {name}")
+        raise MCPError(f"Unknown tool: {name}")
     data = spec.input_model.model_validate(arguments)
-    result = spec.handler(data)
-    success = getattr(result, "error", None) is None
-    record_history(name, arguments, success)
-    return result.model_dump(mode="json")
+    output: ToolOutput = spec.handler(data)
+    record_history(name, arguments, success=output.error is None)
+    return output.model_dump(mode="json")

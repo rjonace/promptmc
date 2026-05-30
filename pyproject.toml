@@ -6,6 +6,7 @@ authors = ["PromptMC Contributors"]
 license = "MIT"
 readme = "README.md"
 packages = [{include = "promptmc", from = "src"}]
+include = [{ path = "examples", format = ["sdist", "wheel"] }]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -79,7 +80,6 @@ convention = "google"
 "src/promptmc/cli.py" = ["ARG001", "D103", "E501"]
 "src/promptmc/templates.py" = ["ARG002"]
 "src/promptmc/openmc_integration.py" = ["ARG002"]
-"src/promptmc/mcp/*.py" = ["ARG001", "D103"]
 "tests/*" = ["ARG001", "ARG002", "D100", "D101", "D102", "D103"]
 
 [tool.ruff.format]

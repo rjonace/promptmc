@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+from collections.abc import Callable
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
@@ -56,12 +57,29 @@ def read_uo2_example() -> str:
 
 
 def _uo2_example_dir() -> Path:
-    """Locate the bundled UO2 example directory relative to the repo."""
-    repo_root = Path(__file__).resolve().parents[3]
-    return repo_root / "examples" / "uo2_criticality"
+    """Locate the bundled UO2 criticality example directory.
+
+    Resolution order: the ``PROMPTMC_EXAMPLES_DIR`` environment variable,
+    then the first ``examples/uo2_criticality`` directory found while
+    walking up from this file. The walk handles both editable installs and
+    wheels that ship ``examples`` as bundled data, so the resource resolves
+    regardless of how PromptMC was installed.
+
+    Returns:
+        The resolved example directory path, which may not exist.
+    """
+    override = os.environ.get("PROMPTMC_EXAMPLES_DIR")
+    if override:
+        return Path(override) / "uo2_criticality"
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        candidate = parent / "examples" / "uo2_criticality"
+        if candidate.is_dir():
+            return candidate
+    return here.parents[3] / "examples" / "uo2_criticality"
 
 
-RESOURCE_READERS: dict[str, Any] = {
+RESOURCE_READERS: dict[str, Callable[[], str]] = {
     CROSS_SECTIONS_URI: read_cross_sections,
     HISTORY_URI: read_history,
     UO2_EXAMPLE_URI: read_uo2_example,

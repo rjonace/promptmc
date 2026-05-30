@@ -125,6 +125,10 @@ class OpenMCExecutionError(OpenMCError):
     """Raised when OpenMC simulation execution fails."""
 
 
+class MCPError(PromptMCError):
+    """Raised for MCP protocol errors such as an unknown tool or resource."""
+
+
 def default_retry() -> Callable[..., Any]:
     """Default retry decorator using tenacity."""
     return tenacity.retry(

@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import pytest
 from promptmc.mcp.schemas import (
+    AnalysisResult,
     GeometryDebugInput,
     PlotInput,
     RunSimulationInput,
     SchemaValidationResult,
-    SimulationResult,
     TemplateInput,
     ValidateInput,
 )
@@ -37,9 +37,24 @@ def test_run_simulation_rejects_zero_threads():
         RunSimulationInput(input_path="/tmp/case", threads=0)
 
 
-def test_geometry_debug_rejects_zero_particles():
+def test_geometry_debug_requires_path():
     with pytest.raises(ValidationError):
-        GeometryDebugInput(input_path="/tmp/case", particles=0)
+        GeometryDebugInput()
+
+
+def test_run_simulation_rejects_invalid_mode():
+    with pytest.raises(ValidationError):
+        RunSimulationInput(input_path="/tmp/case", mode="gpu")
+
+
+def test_plot_rejects_invalid_basis():
+    with pytest.raises(ValidationError):
+        PlotInput(geometry_xml_path="/tmp/case", basis="diagonal")
+
+
+def test_template_rejects_unknown_template():
+    with pytest.raises(ValidationError):
+        TemplateInput(template="bogus")
 
 
 def test_template_input_defaults():
@@ -66,8 +81,8 @@ def test_schema_validation_result_defaults():
     assert result.error is None
 
 
-def test_simulation_result_defaults():
-    result = SimulationResult()
+def test_analysis_result_defaults():
+    result = AnalysisResult()
     assert result.k_effective is None
     assert result.n_batches == 0
     assert result.tallies_present is False
