@@ -516,6 +516,18 @@ promptmc run input.xml
 
 See the [ROADMAP.md](ROADMAP.md) file for the project's development phases and current status.
 
+## Related Work & Ecosystem
+
+PromptMC is one tool in a rich OpenMC ecosystem (see [`openmc-dev/openmc-ecosystem`](https://github.com/openmc-dev/openmc-ecosystem)). It focuses on a specific, currently underserved layer: **natural-language authoring and fail-fast input validation, exposed to AI assistants via MCP.** It is designed to complement, not replace, the excellent existing tools:
+
+- **Model creation & templating** — [WATTS](https://github.com/watts-dev/watts) (Argonne) and ELSA (Idaho National Lab) help engineers build and template OpenMC models.
+- **Parametric CAD geometry** — [Paramak](https://github.com/fusion-energy/paramak) and ParaStell generate parametric 3D CAD → DAGMC models, primarily for fusion. PromptMC's planned structured geometry targets CSG for fission/light-water models.
+- **Design optimization** — [OpenNeoMC](https://github.com/XuboGU/OpenNeoMC) couples OpenMC with the NEORL optimizer for criticality search and design optimization. It consumes valid models — the kind PromptMC aims to help you author and validate.
+- **Verification & validation** — [JADE](https://github.com/JADE-V-V/JADE) is the established framework for V&V of nuclear data and transport codes. PromptMC performs *pre-run input validation*, which is **not** a substitute for V&V or qualification.
+- **Visualization** — the official [OpenMC Plotter](https://github.com/openmc-dev/plotter) GUI is the tool for interactive geometry debugging; `openmc_plot` provides quick chat-native snapshots.
+
+A natural workflow: **PromptMC authors and validates the model → hand it downstream to optimization (OpenNeoMC), coupling (Cardinal), or visualization tools.**
+
 ## About the Author / Motivation
 
 I studied nuclear engineering at MIT over 20 years ago and used MCNP 4 for my senior thesis project. I left during my senior year and didn't graduated but since then I've had 10 years as a software engineer at a major FAANG cloud provider.
