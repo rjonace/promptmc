@@ -1,7 +1,5 @@
 # PromptMC
 
-Validated OpenMC workflows for AI-assisted reactor physics.
-
 **PromptMC** is an AI-native infrastructure layer for OpenMC nuclear simulations. It helps engineers build, validate, run, and analyze Monte Carlo workflows with human-in-the-loop validation. The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
 
 > **Safety & scope.** PromptMC is an engineering-assist tool that keeps a human in the loop. It is **not** a substitute for professional engineering judgment, independent verification & validation, or regulatory review, and it is **not** intended for safety, licensing, or other regulated decisions. Reproducing a published benchmark is not qualification for safety analysis. The software is provided "as is", without warranty of any kind (see [LICENSE](LICENSE)).
