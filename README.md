@@ -64,7 +64,7 @@ pip install promptmc[mcp]
 }
 ```
 
-*For a full list of available MCP tools and resources, see the [Documentation Site](https://[your-docs-url]).*
+*For a full list of available MCP tools and resources, see [docs/cli-reference.md](docs/cli-reference.md).*
 
 ## Installation
 
@@ -128,7 +128,7 @@ promptmc run input.xml --threads 4
 promptmc analyze ./output --json results.json
 ```
 
-*For Advanced CLI usage, Python API examples, and the full Project Architecture, visit the **[PromptMC Documentation Site](https://[your-docs-url]**.*
+*For Advanced CLI usage, Python API examples, and the full Project Architecture, visit the **[Documentation](docs/)** folder. See [examples/](examples/) for working code examples.*
 
 ## Related Work & Ecosystem
 
