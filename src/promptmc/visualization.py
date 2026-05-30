@@ -22,8 +22,8 @@ class SimulationResult:
     n_batches: int = 0
     n_particles: int = 0
     runtime_seconds: float = 0.0
-    tallies: dict = field(default_factory=dict)
-    raw_data: dict = field(default_factory=dict)
+    tallies: dict[str, Any] = field(default_factory=dict)
+    raw_data: dict[str, Any] = field(default_factory=dict)
 
 
 class ResultParser:

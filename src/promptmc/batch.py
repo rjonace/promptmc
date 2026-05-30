@@ -17,6 +17,7 @@ from concurrent.futures import (
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -56,7 +57,7 @@ class SimulationJob:
     input_path: Path
     output_path: Path | None = None
     threads: int = 1
-    extra_args: dict = field(default_factory=dict)
+    extra_args: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -265,7 +266,7 @@ class BatchSpec:
     name: str
     base_input: Path
     output_root: Path
-    parameter_sweeps: list[dict] = field(default_factory=list)
+    parameter_sweeps: list[dict[str, Any]] = field(default_factory=list)
     threads_per_job: int = 1
     description: str = ""
 

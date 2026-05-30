@@ -6,14 +6,15 @@ repos:
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.10.0
+  - repo: local
     hooks:
       - id: mypy
-        additional_dependencies:
-          - pydantic
-          - types-requests
-        args: [--strict, src/]
+        name: mypy
+        entry: poetry run mypy
+        language: system
+        args: [src/]
+        pass_filenames: false
+        types: [python]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -28,3 +29,4 @@ repos:
     hooks:
       - id: bandit
         args: [-r, src/]
+        pass_filenames: false

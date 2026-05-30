@@ -31,7 +31,7 @@ class TemplateMetadata:
     default_particles: int = 10000
     default_batches: int = 100
     default_inactive: int = 10
-    parameters: dict = field(default_factory=dict)
+    parameters: dict[str, Any] = field(default_factory=dict)
 
 
 class ConfigurationTemplate:

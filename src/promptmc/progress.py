@@ -48,7 +48,7 @@ class ProgressEvent:
     message: str
     progress: float = 0.0  # 0.0 to 1.0
     timestamp: float = field(default_factory=time.time)
-    metadata: dict = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 ProgressCallback = Callable[[ProgressEvent], None]
@@ -160,7 +160,7 @@ class RichProgressDisplay:
         """Update the main progress task."""
         if self._progress is None or self._main_task is None:
             return
-        kwargs: dict = {}
+        kwargs: dict[str, Any] = {}
         if description is not None:
             kwargs["description"] = description
         if completed is not None:
@@ -189,7 +189,7 @@ class RichProgressDisplay:
         """Update a subtask."""
         if self._progress is None:
             return
-        kwargs: dict = {}
+        kwargs: dict[str, Any] = {}
         if description is not None:
             kwargs["description"] = description
         if completed is not None:
@@ -382,7 +382,7 @@ class PerformanceMonitor:
             sample_interval_seconds: How often to sample metrics.
         """
         self.sample_interval = sample_interval_seconds
-        self._samples: list[dict] = []
+        self._samples: list[dict[str, Any]] = []
         self._monitoring = False
 
     @contextmanager

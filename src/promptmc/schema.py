@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET  # nosec B405
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from defusedxml.ElementTree import parse as defused_parse
 from pydantic import (
@@ -216,9 +216,9 @@ class SchemaValidator:
             )
             return SchemaValidationResult(is_valid=False, issues=issues)
 
-        materials_data: list[dict] = []
+        materials_data: list[dict[str, Any]] = []
         for material_elem in root.findall("material"):
-            mat_dict: dict = {
+            mat_dict: dict[str, Any] = {
                 "id": int(material_elem.get("id", "0") or 0),
                 "name": material_elem.get("name"),
             }
@@ -283,7 +283,7 @@ class SchemaValidator:
             )
             return SchemaValidationResult(is_valid=False, issues=issues)
 
-        cells_data: list[dict] = []
+        cells_data: list[dict[str, Any]] = []
         for cell_elem in root.findall("cell"):
             cells_data.append(
                 {
@@ -309,7 +309,7 @@ class SchemaValidator:
     def _run_pydantic(
         self,
         schema_cls: type,
-        kwargs: dict,
+        kwargs: dict[str, Any],
         issues: list[SchemaIssue],
         xml_path: PathLike,
     ) -> None:
@@ -361,9 +361,9 @@ class SchemaValidator:
         )
 
     @staticmethod
-    def _settings_xml_to_dict(root: ET.Element) -> dict:
+    def _settings_xml_to_dict(root: ET.Element) -> dict[str, Any]:
         """Convert settings.xml root element to a flat dict."""
-        data: dict = {}
+        data: dict[str, Any] = {}
 
         for tag in ("run_mode", "batches", "inactive", "particles", "seed"):
             elem = root.find(tag)
