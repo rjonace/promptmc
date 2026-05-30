@@ -25,11 +25,22 @@ It provides a strictly typed, schema-driven Model Context Protocol (MCP) server 
 - **Shipped:** `openmc_geometry_debug` for overlap detection via OpenMC geometry-debug mode.
 - **Held to constraint:** No new CLI commands; the MCP layer parallels the CLI, it does not extend it.
 
-## Next Sprint: — Structured Geometry (v2.5)
-**Goal:** Build comprehensive Pydantic models for OpenMC Constructive Solid Geometry (CSG) to act as constraint surfaces for LLM-driven structured generation.
-- **Deliverable:** Full schema coverage for Surfaces, Regions, Cells, and Materials.
-- **Deliverable:** Validation layer to catch unbounded geometries and cell overlaps pre-execution.
-- **Deliverable:** Open-source library of validated reference geometries (PWR pin, Godiva, ICSBEP cases).
+## Next Sprints: — Structured Geometry (v2.1 → v2.5)
+Structured geometry ships as three sequential, independently-valuable releases with increasing risk — deterministic foundation first, LLM generation last.
+
+### v2.1 — CSG schema + serialization
+- **Deliverable:** Pydantic models for Surfaces, Regions, Cells, Materials, and Tallies.
+- **Deliverable:** Round-trip serialization to runnable OpenMC XML.
+- **Deliverable:** First two validated reference geometries (PWR pin, Godiva).
+
+### v2.2 — Validation layer + reference library
+- **Deliverable:** Pre-execution validation to catch unbounded geometries and cell overlaps.
+- **Deliverable:** Open-source library of ~6 validated reference geometries (PWR/BWR pin, Godiva, Jezebel, ICSBEP cases).
+- **Deliverable:** Deterministic `openmc_build_geometry` MCP tool.
+
+### v2.5 — Constrained generation
+- **Deliverable:** LLM-agnostic constrained-generation pipeline with a validate-and-repair loop.
+- **Deliverable:** `openmc_design` MCP tool (natural language → validated OpenMC input).
 
 ## Architectural Constraints (What we are explicitly *not* doing)
 - **No Web UI:** We are not building a 3D visualization web app. Visual verification will be handled natively via the AI chat client using 2D slice plots.
