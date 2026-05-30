@@ -90,7 +90,7 @@ ipython_config.py
 Pipfile.lock
 
 # poetry
-poetry.lock
+# poetry.lock  # Committed for Dependabot security updates
 
 # pdm
 .pdm.toml
