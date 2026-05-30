@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-05-30
+
+### Changed
+- **README safety/scope disclaimer** — added a prominent human-in-the-loop / not-for-licensing notice near the top of `README.md`.
+
+### Docs
+- **ROADMAP.md** — structured-geometry sprint split into three sequential releases: v2.1 (CSG schema + serialization), v2.2 (validation layer + reference library + deterministic MCP tool), v2.5 (constrained generation pipeline).
+
+## [2.0.0] - 2026-05-25
+
+### Added
+- **MCP server** (`src/promptmc/mcp/`) — a Model Context Protocol server that exposes PromptMC capabilities as agent-callable tools, allowing AI assistants (Windsurf, Claude Desktop, Cursor, VS Code with Copilot) to drive end-to-end OpenMC workflows without writing Python.
+  - `openmc_check_installation` — verify OpenMC installation status.
+  - `openmc_validate` — validate an OpenMC input file.
+  - `openmc_schema_check` — Pydantic schema validation for an input directory.
+  - `openmc_template` — render a named configuration template to XML.
+  - `openmc_run` — run an OpenMC simulation.
+  - `openmc_analyze` — parse statepoint HDF5 and return k-eff / tally results.
+  - `openmc_list_templates` — list all available configuration templates.
+  - `openmc_check_cross_sections` — verify cross-section data availability.
+  - `openmc_plot` — render a 2D geometry slice as a base64 PNG via OpenMC's native plot API.
+  - `openmc_geometry_debug` — run OpenMC geometry-debug mode for overlap detection.
+- **MCP resources**: `promptmc://cross-sections`, `promptmc://history`, `promptmc://examples/uo2_criticality`.
+- **`promptmc-mcp` CLI entry point** — starts the stdio MCP server.
+- **`mcp` optional extra** — `pip install promptmc[mcp]` installs the MCP SDK.
+- **Pydantic input/output schemas** for every MCP tool (`src/promptmc/mcp/schemas.py`).
+- **MCP test suite** — unit tests for each tool through the MCP layer; integration test spawning the server in a subprocess and exercising `tools/list` and `tools/call` round-trips.
+- **`mcp-tests` CI job** running on Python 3.12 in addition to the 3.10/3.11/3.12 matrix.
+- **Documentation** — README section on configuring AI assistants with PromptMC's MCP server; sample `claude_desktop_config.json` snippet.
+
+### Changed
+- Bumped version to `2.0.0`.
+- Coverage increased to **87%** (MCP package ≥80%).
+
 ## [1.2.0] - 2026-05-25
 
 ### Refactored
