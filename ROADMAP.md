@@ -37,6 +37,7 @@ Structured geometry ships as three sequential, independently-valuable releases w
 - **Deliverable:** Pre-execution validation to catch unbounded geometries and cell overlaps.
 - **Deliverable:** Open-source library of ~6 validated reference geometries (PWR/BWR pin, Godiva, Jezebel, ICSBEP cases).
 - **Deliverable:** Deterministic `openmc_build_geometry` MCP tool.
+- **Deliverable:** Deterministic AI audit logging. All MCP tool calls are wrapped in OpenTelemetry spans and written to a local `audit.jsonl` file to guarantee complete provenance of AI actions.
 
 ### v2.5 — Constrained generation
 - **Deliverable:** LLM-agnostic constrained-generation pipeline with a validate-and-repair loop.
