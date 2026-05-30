@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "promptmc"
-version = "1.2.2"
+version = "2.0.0"
 description = "AI Assistant and CLI for OpenMC simulation workflows"
 authors = ["PromptMC Contributors"]
 license = "MIT"
@@ -20,9 +20,11 @@ opentelemetry-api = {version = "^1.26.0", optional = true}
 opentelemetry-sdk = {version = "^1.26.0", optional = true}
 opentelemetry-exporter-otlp = {version = "^1.26.0", optional = true}
 tenacity = "^9.1.4"
+mcp = {version = ">=1.0.0", optional = true}
 
 [tool.poetry.extras]
 telemetry = ["opentelemetry-api", "opentelemetry-sdk", "opentelemetry-exporter-otlp"]
+mcp = ["mcp"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.0"
@@ -37,6 +39,7 @@ types-defusedxml = "^0.7.0"
 
 [tool.poetry.scripts]
 promptmc = "promptmc.cli:app"
+promptmc-mcp = "promptmc.mcp.server:main"
 
 [build-system]
 requires = ["poetry-core"]
@@ -76,6 +79,7 @@ convention = "google"
 "src/promptmc/cli.py" = ["ARG001", "D103", "E501"]
 "src/promptmc/templates.py" = ["ARG002"]
 "src/promptmc/openmc_integration.py" = ["ARG002"]
+"src/promptmc/mcp/*.py" = ["ARG001", "D103"]
 "tests/*" = ["ARG001", "ARG002", "D100", "D101", "D102", "D103"]
 
 [tool.ruff.format]
@@ -102,6 +106,7 @@ module = [
     "openmc.*",
     "h5py.*",
     "opentelemetry.*",
+    "mcp.*",
 ]
 ignore_missing_imports = true
 
@@ -120,6 +125,7 @@ addopts = [
     "--cov-report=html",
     "--strict-markers",
 ]
+markers = ["integration: MCP integration tests (may require mcp extra)"]
 
 [tool.coverage.run]
 source = ["src"]

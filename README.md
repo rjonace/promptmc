@@ -88,8 +88,78 @@ Structured results reviewed by the human engineer
 - **Modern CLI**: Extensible command-line interface built with Typer (12 commands)
 - **Optional Observability**: OpenTelemetry integration for distributed tracing and metrics (`pip install promptmc[telemetry]`)
 - **Type Safety**: Full type hints, `from __future__ import annotations`, Python 3.10+
-- **Quality Assurance**: 190 tests, 83% coverage, and zero ruff warnings
+- **Quality Assurance**: 235 tests, 85% coverage, and zero ruff warnings
 - **Production-Ready**: Strict dependency management with Poetry
+
+## MCP Server (v2.0)
+
+PromptMC exposes an MCP server so AI assistants can run OpenMC workflows directly.
+
+### Installation
+
+```bash
+pip install promptmc[mcp]
+```
+
+### Usage
+
+```bash
+promptmc-mcp
+```
+
+### AI Assistant Configuration
+
+#### Claude Desktop (`claude_desktop_config.json`)
+
+```json
+{
+  "mcpServers": {
+    "promptmc": {
+      "command": "promptmc-mcp",
+      "env": {
+        "OPENMC_CROSS_SECTIONS": "/path/to/cross_sections.xml"
+      }
+    }
+  }
+}
+```
+
+#### Windsurf / Cursor
+
+Add to your MCP server configuration:
+
+```json
+{
+  "promptmc": {
+    "command": "promptmc-mcp"
+  }
+}
+```
+
+### Available Tools
+
+| Tool | Description |
+|---|---|
+| `openmc_check_installation` | Check OpenMC installation status |
+| `openmc_validate` | Validate OpenMC XML input files |
+| `openmc_schema_check` | Run Pydantic schema validation |
+| `openmc_template` | Generate settings.xml from a template |
+| `openmc_list_templates` | List available templates |
+| `openmc_run` | Run an OpenMC simulation |
+| `openmc_analyze` | Parse simulation results |
+| `openmc_check_cross_sections` | Check cross-section data availability |
+| `openmc_plot` | Generate 2D geometry slice plot |
+| `openmc_geometry_debug` | Run geometry overlap detection |
+
+### Resources
+
+| Resource URI | Returns |
+|---|---|
+| `promptmc://cross-sections` | Configured `cross_sections.xml` location |
+| `promptmc://history` | Tool calls made during this MCP session |
+| `promptmc://examples/uo2_criticality` | File listing of the bundled UO2 example |
+
+See [`examples/mcp/`](examples/mcp/README.md) for a scripted walkthrough.
 
 ## Installation
 
