@@ -67,7 +67,7 @@ Structured results reviewed by the human engineer
 │                   OpenTelemetry Layer                       │
 │         (Distributed tracing & structured metrics)          │
 ├─────────────────────────────────────────────────────────────┤
-│                    OpenMC Integration                        │
+│                    OpenMC Integration                       │
 │           (Python API & subprocess invocation)              │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -261,25 +261,25 @@ validated XML files for production workflows.
 $ promptmc ask "make a concrete shielding calculation with 1 million particles"
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃               Natural-Language OpenMC Plan                      ┃
+┃               Natural-Language OpenMC Plan                     ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ Field          │ Value                                          │
-├────────────────┼────────────────────────────────────────────────┤
-│ Source         │ local                                          │
-│ Template       │ shielding                                      │
-│ Particles      │ 1,000,000                                      │
-│ Batches        │ 10                                             │
-│ Inactive       │ 0                                              │
-│ Confidence     │ 85%                                            │
-│ Command        │ promptmc template shielding --output     │
-│                │ settings.xml --particles 1000000 --batches 10  │
-└────────────────┴────────────────────────────────────────────────┘
+│ Field          │ Value                                         │
+├────────────────┼───────────────────────────────────────────────┤
+│ Source         │ local                                         │
+│ Template       │ shielding                                     │
+│ Particles      │ 1,000,000                                     │
+│ Batches        │ 10                                            │
+│ Inactive       │ 0                                             │
+│ Confidence     │ 85%                                           │
+│ Command        │ promptmc template shielding --output          │
+│                │ settings.xml --particles 1000000 --batches 10 │
+└────────────────┴───────────────────────────────────────────────┘
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Summary                                                       ┃
+┃ Summary                                                        ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ Use the shielding template with 1,000,000 particles and 10   │
-│ batches.                                                      │
+│ Use the shielding template with 1,000,000 particles and 10     │
+│ batches.                                                       │
 └────────────────────────────────────────────────────────────────┘
 
 Why this plan
@@ -512,7 +512,7 @@ See the [ROADMAP.md](ROADMAP.md) file for the project's development phases and c
 
 ## About the Author / Motivation
 
-I studied nuclear engineering at MIT over 20 years ago and used MCNP 4 for my senior thesis project. Since then, I've had 10 years of software engineering at a major FAANG cloud provider.
+I studied nuclear engineering at MIT over 20 years ago and used MCNP 4 for my senior thesis project. I left during my senior year and didn't graduated but since then I've had 10 years as a software engineer at a major FAANG cloud provider.
 
 This project is a personal exploration of agentic programming — using AI agents to build software. PromptMC seemed like the perfect test case: it combines my background in nuclear physics with modern software engineering practices. The goal was to see how much of a production-grade tool could be built through agentic coding, from architecture design to implementation, testing, and documentation.
 
