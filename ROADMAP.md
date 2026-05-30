@@ -5,24 +5,27 @@
 
 PromptMC is a deterministic, highly validated layer for AI agents—and the engineers working alongside them—to design, validate, run, and reason about Monte Carlo nuclear simulations. 
 
-The goal is to provide a strictly typed, schema-driven Model Context Protocol (MCP) server that prevents AI hallucinations by enforcing physics and geometry constraints before the underlying OpenMC engine is ever invoked.
+It provides a strictly typed, schema-driven Model Context Protocol (MCP) server that reduces AI hallucinations by validating inputs and exposing deterministic OpenMC workflows. The longer-term goal (v2.5) is to enforce physics and geometry constraints before the underlying OpenMC engine is ever invoked.
 
 ## Where we are
-**v1.2.1 (current):**
+**v2.0.0 (current):**
+- MCP server (`promptmc-mcp`) exposing 10 OpenMC tools and 3 resources to AI assistants
+- Chat-native 2D geometry plotting (`openmc_plot`) and geometry-debug validation
 - Production-grade CLI wrapper around OpenMC (subprocess + Python API)
-- 190 tests, 83% coverage, full CI on Python 3.10+
+- 260 tests, 87% coverage, full CI on Python 3.10–3.12
 - Clean architecture: `OpenMCInstaller` / `OpenMCValidator` / `OpenMCRunner`
+- Pydantic schema validation for base XML configurations and MCP tool I/O
 - Optional OpenTelemetry tracing
-- Pydantic schema validation for base XML configurations
 
-## Next Sprint: — MCP Server (v2.0)
-**Goal:** Expose PromptMC's validation and execution logic directly to AI clients (Claude Desktop, Cursor) via MCP.
-- **Deliverable:** `promptmc-mcp` stdio server.
-- **Deliverable:** `openmc_validate` and `openmc_run` tools with strict Pydantic input/output schemas.
-- **Deliverable:** `openmc_plot` tool to return 2D slice plots natively to the chat client for immediate visual verification.
-- **Constraint:** No new CLI commands. The MCP layer parallels the CLI; it does not extend it.
+## Shipped: — MCP Server (v2.0)
+**Goal (met):** Expose PromptMC's validation and execution logic directly to AI clients (Claude Desktop, Cursor, Windsurf) via MCP.
+- **Shipped:** `promptmc-mcp` stdio server (`pip install promptmc[mcp]`).
+- **Shipped:** 10 tools incl. `openmc_validate`, `openmc_run`, `openmc_analyze`, and `openmc_schema_check` with strict Pydantic input/output schemas.
+- **Shipped:** `openmc_plot` returning 2D slice plots (PNG + base64) natively to the chat client, using OpenMC's native plotting mode.
+- **Shipped:** `openmc_geometry_debug` for overlap detection via OpenMC geometry-debug mode.
+- **Held to constraint:** No new CLI commands; the MCP layer parallels the CLI, it does not extend it.
 
-## Future Horizon: — Structured Geometry (v2.5)
+## Next Sprint: — Structured Geometry (v2.5)
 **Goal:** Build comprehensive Pydantic models for OpenMC Constructive Solid Geometry (CSG) to act as constraint surfaces for LLM-driven structured generation.
 - **Deliverable:** Full schema coverage for Surfaces, Regions, Cells, and Materials.
 - **Deliverable:** Validation layer to catch unbounded geometries and cell overlaps pre-execution.

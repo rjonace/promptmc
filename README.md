@@ -16,12 +16,12 @@ OpenMC is powerful, but getting started can be challenging: you need to write XM
 - **Fail-fast validation** — Schema checks today, with stronger geometry guards planned to catch impossible configurations before OpenMC ever runs
 - **Managing workflows** — Batch runs, parallel execution, progress tracking, and resource limits
 - **Observability built-in** — Distributed tracing and metrics via OpenTelemetry
-- **Inline Visual Verification** — Planned v2.0 support for asking for a cross-section and viewing 2D OpenMC slice plots directly inside your AI chat interface
+- **Inline Visual Verification** — Ask for a cross-section and view 2D OpenMC slice plots directly inside your AI chat interface (v2.0, via `openmc_plot`)
 - **Results at a glance** — Parse statepoint and tally outputs into structured summaries instead of spelunking HDF5 files
 
 Whether you're new to Monte Carlo or an experienced researcher, PromptMC reduces friction and lets you focus on physics, not configuration.
 
-**Current status:** The CLI and Python APIs are stable in v1.x. The MCP server and agent-facing tools (`promptmc-mcp`, `openmc_plot`, fail-fast validation upgrades) are actively under development for v2.0.
+**Current status:** The CLI and Python APIs are stable, and v2.0 ships the MCP server and agent-facing tools (`promptmc-mcp`, `openmc_plot`, `openmc_geometry_debug`). Structured geometry generation with stronger physics guards is planned for v2.5.
 
 ### What exists today vs. planned
 
@@ -31,9 +31,9 @@ Whether you're new to Monte Carlo or an experienced researcher, PromptMC reduces
 | Natural-language planning via `promptmc ask` | Available in v1.x |
 | Batch runs, progress reporting, and resource checks | Available in v1.x |
 | XML schema validation and result parsing | Available in v1.x |
-| MCP server (`promptmc-mcp`) | Planned for v2.0 |
-| Chat-native 2D plotting via `openmc_plot` | Planned for v2.0; uses OpenMC's native plotting mode |
-| OpenMC geometry-debug integration | Planned for v2.0 validation hardening |
+| MCP server (`promptmc-mcp`) | Available in v2.0 |
+| Chat-native 2D plotting via `openmc_plot` | Available in v2.0; uses OpenMC's native plotting mode |
+| OpenMC geometry-debug integration | Available in v2.0 |
 | Structured geometry generation with stronger physics guards | Planned for v2.5 |
 
 `openmc_plot` is intended as a fast visual sanity check, not a replacement for formal geometry debugging. For interactive model exploration, engineers should still use OpenMC's Plot Explorer from `openmc-dev/plotter`.
@@ -88,7 +88,7 @@ Structured results reviewed by the human engineer
 - **Modern CLI**: Extensible command-line interface built with Typer (12 commands)
 - **Optional Observability**: OpenTelemetry integration for distributed tracing and metrics (`pip install promptmc[telemetry]`)
 - **Type Safety**: Full type hints, `from __future__ import annotations`, Python 3.10+
-- **Quality Assurance**: 235 tests, 85% coverage, and zero ruff warnings
+- **Quality Assurance**: 260 tests, 87% coverage, and zero ruff warnings
 - **Production-Ready**: Strict dependency management with Poetry
 
 ## MCP Server (v2.0)
@@ -439,7 +439,8 @@ promptmc/
 │   ├── schema.py                # Pydantic schema validation
 │   ├── errors.py                # Structured exceptions and retry logic
 │   ├── progress.py              # Progress reporting and performance monitoring
-│   └── resources.py             # Resource limits and workspace management
+│   ├── resources.py             # Resource limits and workspace management
+│   └── mcp/                     # MCP server: tools, resources, schemas, stdio server
 ├── tests/
 │   ├── test_cli.py               # CLI tests
 │   ├── test_assistant.py         # Natural-language assistant tests
@@ -453,7 +454,11 @@ promptmc/
 │   ├── test_schema.py            # Schema validation tests
 │   ├── test_errors.py            # Error handling tests
 │   ├── test_progress.py          # Progress reporting tests
-│   └── test_resources.py         # Resource management tests
+│   ├── test_resources.py         # Resource management tests
+│   ├── test_mcp_tools.py         # MCP tool unit tests
+│   ├── test_mcp_schemas.py       # MCP Pydantic schema tests
+│   ├── test_mcp_resources.py     # MCP resource handler tests
+│   └── test_mcp_integration.py   # MCP stdio round-trip integration test
 ├── examples/                    # Usage examples
 │   ├── batch_spec.yaml          # Example batch specification
 │   └── uo2_criticality/         # Full UO2 and Light Water criticality example
