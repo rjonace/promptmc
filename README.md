@@ -128,7 +128,7 @@ promptmc run input.xml --threads 4
 promptmc analyze ./output --json results.json
 ```
 
-*For Advanced CLI usage, Python API examples, and the full Project Architecture, visit the **[Documentation](docs/)** folder. See [examples/](examples/) for working code examples.*
+For Advanced CLI usage, Python API examples, and the full Project Architecture, visit the **[Documentation](docs/)** folder. See [examples/](examples/) for working code examples.
 
 ## Related Work and Ecosystem
 
@@ -143,7 +143,7 @@ A natural workflow: PromptMC authors and validates the model → hand it downstr
 
 ## About and Architecture
 
-I studied nuclear engineering at MIT over 20 years ago, running MCNP 4 for my senior thesis. Though I left during my senior year, I spent the next decade working as an infrastructure and site reliability engineer at a major FAANG cloud provider.
+I studied nuclear engineering at MIT over 20 years ago, running MCNP 4 for my senior thesis. Though I left during my senior year, I spent the last decade working as a software engineer at a major FAANG cloud provider.
 
 PromptMC bridges those two worlds. It is an exploration of agentic programming—using AI agents (Cascade, Claude, Gemini) to build software—held to strict infrastructure-grade SRE standards.
 
