@@ -157,7 +157,7 @@ class OpenMCRunner:
         threads: int = 1,
         output_path: PathLike | None = None,
         cwd: PathLike | None = None,
-    ) -> subprocess.CompletedProcess:
+    ) -> subprocess.CompletedProcess[str]:
         """Run an OpenMC simulation."""
         input_path = Path(input_path)
         resolved_input_dir = (
@@ -195,7 +195,7 @@ class OpenMCRunner:
         threads: int,
         output_path: Path,
         cwd: Path,
-    ) -> subprocess.CompletedProcess:
+    ) -> subprocess.CompletedProcess[str]:
         os.environ["OMP_NUM_THREADS"] = str(threads)
         try:
             from typing import Any, cast
@@ -223,7 +223,7 @@ class OpenMCRunner:
         threads: int,
         output_path: Path,
         cwd: Path,
-    ) -> subprocess.CompletedProcess:
+    ) -> subprocess.CompletedProcess[str]:
         cmd = ["openmc"]
         if output_path.resolve() != cwd.resolve():
             cmd.extend(["-s", str(output_path)])

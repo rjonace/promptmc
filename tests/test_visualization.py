@@ -3,7 +3,10 @@
 import json
 import tempfile
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
+import h5py
 from promptmc.visualization import (
     ResultParser,
     ResultVisualizer,
@@ -47,6 +50,82 @@ def test_parse_results_with_tallies():
         assert result.tallies_path == tallies_file
         assert "raw_content" in result.tallies
         assert result.tallies["line_count"] == 2
+
+
+def test_parse_statepoint_uses_openmc_keff(tmp_path):
+    statepoint = tmp_path / "statepoint.50.h5"
+    statepoint.write_bytes(b"")
+    fake_sp = MagicMock()
+    fake_sp.run_mode = "eigenvalue"
+    fake_sp.keff = SimpleNamespace(nominal_value=1.0052, std_dev=0.0011)
+    fake_sp.n_batches = 50
+    fake_sp.n_particles = 1000
+    fake_sp.runtime = {"total": 12.5}
+    fake_openmc = MagicMock()
+    fake_openmc.StatePoint.return_value = fake_sp
+
+    with patch("promptmc.visualization._openmc", fake_openmc):
+        result = ResultParser().parse_results(tmp_path)
+
+    assert result.k_effective == 1.0052
+    assert result.k_effective_std == 0.0011
+    assert result.n_batches == 50
+    assert result.n_particles == 1000
+    assert result.runtime_seconds == 12.5
+    fake_openmc.StatePoint.assert_called_once()
+    fake_sp.close.assert_called_once()
+
+
+def test_parse_statepoint_openmc_fixed_source_skips_keff(tmp_path):
+    statepoint = tmp_path / "statepoint.10.h5"
+    statepoint.write_bytes(b"")
+    fake_sp = MagicMock()
+    fake_sp.run_mode = "fixed source"
+    fake_sp.n_batches = 10
+    fake_sp.n_particles = 100
+    fake_sp.runtime = {}
+    fake_openmc = MagicMock()
+    fake_openmc.StatePoint.return_value = fake_sp
+
+    with patch("promptmc.visualization._openmc", fake_openmc):
+        result = ResultParser().parse_results(tmp_path)
+
+    assert result.k_effective is None
+    assert result.n_batches == 10
+    fake_sp.close.assert_called_once()
+
+
+def test_parse_statepoint_openmc_error_falls_back_to_h5py(tmp_path):
+    statepoint = tmp_path / "statepoint.1.h5"
+    with h5py.File(statepoint, "w") as f:
+        f.create_dataset("k_combined", data=[0.98, 0.003])
+        f.attrs["n_batches"] = 5
+        f.attrs["n_particles"] = 200
+    fake_openmc = MagicMock()
+    fake_openmc.StatePoint.side_effect = RuntimeError("corrupt statepoint")
+
+    with patch("promptmc.visualization._openmc", fake_openmc):
+        result = ResultParser().parse_results(tmp_path)
+
+    assert result.k_effective == 0.98
+    assert result.n_batches == 5
+    assert "corrupt statepoint" in result.raw_data["statepoint_error"]
+
+
+def test_parse_statepoint_h5py_fallback_without_openmc(tmp_path):
+    statepoint = tmp_path / "statepoint.3.h5"
+    with h5py.File(statepoint, "w") as f:
+        f.create_dataset("k_combined", data=[1.02, 0.004])
+        f.attrs["n_batches"] = 7
+        f.attrs["n_particles"] = 300
+
+    with patch("promptmc.visualization._openmc", None):
+        result = ResultParser().parse_results(tmp_path)
+
+    assert result.k_effective == 1.02
+    assert result.k_effective_std == 0.004
+    assert result.n_batches == 7
+    assert result.n_particles == 300
 
 
 def test_format_text_report_empty():

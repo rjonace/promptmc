@@ -9,6 +9,11 @@ from typing import Any
 
 from promptmc._typing import PathLike
 
+try:
+    import openmc as _openmc
+except ImportError:  # pragma: no cover - the openmc extra is optional
+    _openmc = None
+
 
 @dataclass
 class SimulationResult:
@@ -22,8 +27,8 @@ class SimulationResult:
     n_batches: int = 0
     n_particles: int = 0
     runtime_seconds: float = 0.0
-    tallies: dict = field(default_factory=dict)
-    raw_data: dict = field(default_factory=dict)
+    tallies: dict[str, Any] = field(default_factory=dict)
+    raw_data: dict[str, Any] = field(default_factory=dict)
 
 
 class ResultParser:
@@ -64,7 +69,58 @@ class ResultParser:
     def _parse_statepoint(
         self, statepoint_path: Path, result: SimulationResult
     ) -> None:
-        """Parse statepoint HDF5 file.
+        """Parse a statepoint file into ``result``.
+
+        Prefers the OpenMC ``StatePoint`` API (``keff`` superseded the
+        deprecated ``k_combined`` dataset in 0.13.1) and falls back to a
+        direct h5py read when the optional ``openmc`` package is absent.
+
+        Args:
+            statepoint_path: Path to statepoint file
+            result: Result object to populate
+        """
+        if self._parse_statepoint_via_openmc(statepoint_path, result):
+            return
+        self._parse_statepoint_via_h5py(statepoint_path, result)
+
+    def _parse_statepoint_via_openmc(
+        self, statepoint_path: Path, result: SimulationResult
+    ) -> bool:
+        """Parse a statepoint using the modern OpenMC ``StatePoint`` API.
+
+        Args:
+            statepoint_path: Path to statepoint file
+            result: Result object to populate
+
+        Returns:
+            ``True`` when OpenMC is available and the file was parsed,
+            otherwise ``False`` so the caller can fall back to h5py.
+        """
+        if _openmc is None:
+            return False
+        try:
+            statepoint = _openmc.StatePoint(statepoint_path)
+        except Exception as e:
+            result.raw_data["statepoint_error"] = str(e)
+            return False
+        try:
+            if statepoint.run_mode == "eigenvalue":
+                keff = statepoint.keff
+                result.k_effective = float(keff.nominal_value)
+                result.k_effective_std = float(keff.std_dev)
+            result.n_batches = int(statepoint.n_batches)
+            result.n_particles = int(statepoint.n_particles)
+            total = statepoint.runtime.get("total")
+            if total is not None:
+                result.runtime_seconds = float(total)
+        finally:
+            statepoint.close()
+        return True
+
+    def _parse_statepoint_via_h5py(
+        self, statepoint_path: Path, result: SimulationResult
+    ) -> None:
+        """Parse a statepoint by reading the HDF5 file directly.
 
         Args:
             statepoint_path: Path to statepoint file

@@ -48,10 +48,10 @@ class ErrorContext:
     category: ErrorCategory = ErrorCategory.UNKNOWN
     severity: ErrorSeverity = ErrorSeverity.ERROR
     correlation_id: str | None = None
-    metadata: dict = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     traceback_str: str | None = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize the context for logging or telemetry."""
         return {
             "operation": self.operation,
@@ -83,7 +83,7 @@ class PromptMCError(Exception):
                 )
             )
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize the error for logging or JSON export."""
         return {
             "type": type(self).__name__,
@@ -123,6 +123,10 @@ class OpenMCValidationError(OpenMCError):
 
 class OpenMCExecutionError(OpenMCError):
     """Raised when OpenMC simulation execution fails."""
+
+
+class MCPError(PromptMCError):
+    """Raised for MCP protocol errors such as an unknown tool or resource."""
 
 
 def default_retry() -> Callable[..., Any]:
@@ -172,7 +176,7 @@ class ErrorReporter:
         """Clear recorded errors."""
         self._errors.clear()
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize all errors as a dict."""
         return {
             "total": len(self._errors),
