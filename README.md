@@ -134,7 +134,7 @@ For Advanced CLI usage, Python API examples, and the full Project Architecture, 
 
 PromptMC focuses on a specific, currently underserved layer: **natural-language authoring and fail-fast input validation, exposed to AI assistants via MCP.** It is designed to complement, not replace, the excellent existing tools in the [OpenMC ecosystem](https://github.com/openmc-dev/openmc-ecosystem):
 
-- **Model creation and templating:** [WATTS](https://github.com/watts-dev/watts) and ELSA.
+- **Model creation and templating:** [WATTS](https://github.com/watts-dev/watts) and [ELSA](https://github.com/IdahoLabResearch/ELSA).
 - **Parametric CAD geometry:** [Paramak](https://github.com/fusion-energy/paramak) (primarily for fusion).
 - **Design optimization:** [OpenNeoMC](https://github.com/XuboGU/OpenNeoMC).
 - **Verification and validation:** [JADE](https://github.com/JADE-V-V/JADE).
