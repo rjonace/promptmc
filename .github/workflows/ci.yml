@@ -162,3 +162,26 @@ jobs:
         run: |
           source .venv/bin/activate
           bandit -r src/
+
+  mcp-tests:
+    name: MCP Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Install dependencies with MCP extra
+        run: poetry install --with dev --extras "telemetry mcp"
+      - name: Run MCP tests
+        run: |
+          source .venv/bin/activate
+          pytest tests/test_mcp_*.py -v --tb=short --no-cov
