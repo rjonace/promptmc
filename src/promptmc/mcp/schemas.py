@@ -179,6 +179,7 @@ class CrossSectionCheckResult(ToolOutput):
 
     found: bool = False
     path: str | None = None
+    isotopes: list[str] = Field(default_factory=list)
 
 
 class PlotInput(BaseModel):
@@ -208,6 +209,11 @@ class GeometryDebugInput(BaseModel):
     """Input for openmc_geometry_debug tool."""
 
     input_path: str = Field(description="Path to OpenMC input directory")
+    particles: int = Field(
+        default=100,
+        ge=1,
+        description="Particles per generation for the debug run",
+    )
 
 
 class GeometryDebugResult(ToolOutput):

@@ -42,6 +42,16 @@ def test_geometry_debug_requires_path():
         GeometryDebugInput()
 
 
+def test_geometry_debug_particles_default():
+    inp = GeometryDebugInput(input_path="/tmp/case")
+    assert inp.particles == 100
+
+
+def test_geometry_debug_rejects_zero_particles():
+    with pytest.raises(ValidationError):
+        GeometryDebugInput(input_path="/tmp/case", particles=0)
+
+
 def test_run_simulation_rejects_invalid_mode():
     with pytest.raises(ValidationError):
         RunSimulationInput(input_path="/tmp/case", mode="gpu")

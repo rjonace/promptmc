@@ -317,6 +317,31 @@ def test_check_cross_sections_found(tmp_path, monkeypatch):
     result = tools.check_cross_sections(CrossSectionCheckInput())
     assert result.found is True
     assert result.path == str(xs)
+    assert result.isotopes == []
+
+
+def test_check_cross_sections_lists_isotopes(tmp_path, monkeypatch):
+    xs = tmp_path / "cross_sections.xml"
+    xs.write_text(
+        "<cross_sections>"
+        '<library materials="U235" path="U235.h5" type="neutron"/>'
+        '<library materials="H1" path="H1.h5" type="neutron"/>'
+        '<library materials="c_H_in_H2O" path="t.h5" type="thermal"/>'
+        "</cross_sections>"
+    )
+    monkeypatch.setenv("OPENMC_CROSS_SECTIONS", str(xs))
+    result = tools.check_cross_sections(CrossSectionCheckInput())
+    assert result.found is True
+    assert result.isotopes == ["H1", "U235"]
+
+
+def test_check_cross_sections_malformed_xml(tmp_path, monkeypatch):
+    xs = tmp_path / "cross_sections.xml"
+    xs.write_text("<cross_sections>")
+    monkeypatch.setenv("OPENMC_CROSS_SECTIONS", str(xs))
+    result = tools.check_cross_sections(CrossSectionCheckInput())
+    assert result.found is True
+    assert result.isotopes == []
 
 
 def test_check_cross_sections_missing_file(tmp_path, monkeypatch):
@@ -333,7 +358,8 @@ def test_check_cross_sections_unset(monkeypatch):
     assert result.path is None
 
 
-def test_plot_geometry_openmc_missing():
+def test_plot_geometry_openmc_missing(monkeypatch):
+    monkeypatch.setattr(tools, "_openmc", None)
     result = tools.plot_geometry(PlotInput(geometry_xml_path="/tmp/case"))
     assert result.base64_png == ""
     assert result.error is not None
@@ -399,8 +425,27 @@ def test_geometry_debug_records_command(mock_which, mock_run):
         args=["openmc"], returncode=0, stdout="ok", stderr=""
     )
     result = tools.geometry_debug(GeometryDebugInput(input_path="/tmp/case"))
-    assert result.command == "/usr/bin/openmc --geometry-debug"
+    assert result.command == "/usr/bin/openmc --geometry-debug --particles 100"
     assert result.error is None
+
+
+@patch("promptmc.mcp.tools.subprocess.run")
+@patch("promptmc.mcp.tools.shutil.which", return_value="/usr/bin/openmc")
+def test_geometry_debug_threads_particle_count(mock_which, mock_run):
+    mock_run.return_value = CompletedProcess(
+        args=["openmc"], returncode=0, stdout="ok", stderr=""
+    )
+    result = tools.geometry_debug(
+        GeometryDebugInput(input_path="/tmp/case", particles=500)
+    )
+    command = mock_run.call_args.args[0]
+    assert command == [
+        "/usr/bin/openmc",
+        "--geometry-debug",
+        "--particles",
+        "500",
+    ]
+    assert result.command.endswith("--particles 500")
 
 
 def test_encode_png_success(tmp_path):
@@ -426,13 +471,6 @@ def test_encode_png_too_large(tmp_path, monkeypatch):
     assert result.base64_png == ""
     assert result.error is not None
     assert "exceeds" in result.error
-
-
-def test_plot_geometry_missing_api(monkeypatch):
-    monkeypatch.setattr(tools, "_openmc", None)
-    result = tools.plot_geometry(PlotInput(geometry_xml_path="/tmp/case"))
-    assert result.base64_png == ""
-    assert result.error is not None
 
 
 def test_registry_has_ten_tools():

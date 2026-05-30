@@ -26,6 +26,8 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, Generic, TypeVar
 
+from defusedxml.ElementTree import ParseError
+from defusedxml.ElementTree import parse as defused_parse
 from pydantic import BaseModel
 
 from promptmc.errors import MCPError, PromptMCError
@@ -350,8 +352,38 @@ def check_cross_sections(
     """
     value = os.environ.get("OPENMC_CROSS_SECTIONS")
     if value and Path(value).exists():
-        return CrossSectionCheckResult(found=True, path=value)
+        return CrossSectionCheckResult(
+            found=True,
+            path=value,
+            isotopes=_cross_section_isotopes(Path(value)),
+        )
     return CrossSectionCheckResult(found=False, path=value or None)
+
+
+def _cross_section_isotopes(path: Path) -> list[str]:
+    """Parse a cross_sections.xml file for available neutron nuclides.
+
+    Args:
+        path: Path to the OpenMC ``cross_sections.xml`` index.
+
+    Returns:
+        The sorted nuclide names listed for neutron libraries, or an empty
+        list when the file cannot be read or parsed.
+    """
+    try:
+        root = defused_parse(str(path)).getroot()
+    except (OSError, ParseError):
+        logger.exception("failed to parse cross_sections.xml at %s", path)
+        return []
+    if root is None:
+        return []
+    return sorted(
+        {
+            library.get("materials", "")
+            for library in root.findall("library")
+            if library.get("type") == "neutron" and library.get("materials")
+        }
+    )
 
 
 def plot_geometry(data: PlotInput) -> PlotOutput:
@@ -377,7 +409,8 @@ def geometry_debug(data: GeometryDebugInput) -> GeometryDebugResult:
     """Run OpenMC geometry overlap detection via subprocess.
 
     Args:
-        data: The OpenMC input directory to debug.
+        data: The OpenMC input directory to debug and the number of
+            particles per generation to drive the overlap check.
 
     Returns:
         Whether overlaps were detected, the command run, and any matching
@@ -386,7 +419,12 @@ def geometry_debug(data: GeometryDebugInput) -> GeometryDebugResult:
     executable = shutil.which("openmc")
     if executable is None:
         return GeometryDebugResult(error="OpenMC executable not found in PATH")
-    command = [executable, "--geometry-debug"]
+    command = [
+        executable,
+        "--geometry-debug",
+        "--particles",
+        str(data.particles),
+    ]
     try:
         completed = subprocess.run(  # nosec B603
             command,
