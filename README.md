@@ -269,17 +269,17 @@ $ promptmc ask "make a concrete shielding calculation with 1 million particles"
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃               Natural-Language OpenMC Plan                     ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ Field          │ Value                                          │
-├────────────────┼────────────────────────────────────────────────┤
-│ Source         │ local                                          │
-│ Template       │ shielding                                      │
-│ Particles      │ 1,000,000                                      │
-│ Batches        │ 10                                             │
-│ Inactive       │ 0                                              │
-│ Match score    │ 85%  (3 keywords matched)                      │
-│ Command        │ promptmc template shielding --output     │
-│                │ settings.xml --particles 1000000 --batches 10  │
-└────────────────┴────────────────────────────────────────────────┘
+│ Field          │ Value                                         │
+├────────────────┼───────────────────────────────────────────────┤
+│ Source         │ local                                         │
+│ Template       │ shielding                                     │
+│ Particles      │ 1,000,000                                     │
+│ Batches        │ 10                                            │
+│ Inactive       │ 0                                             │
+│ Match score    │ 85%  (3 keywords matched)                     │
+│ Command        │ promptmc template shielding --output          │
+│                │ settings.xml --particles 1000000 --batches 10 │
+└────────────────┴───────────────────────────────────────────────┘
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ Summary                                                        ┃
