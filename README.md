@@ -6,6 +6,8 @@ Validated OpenMC workflows for AI-assisted reactor physics.
 > It helps engineers build, validate, run, and analyze Monte Carlo workflows with human-in-the-loop validation. The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
 
 > **Safety & scope.** PromptMC is an engineering-assist tool that keeps a human in the loop. It is **not** a substitute for professional engineering judgment, independent verification & validation, or regulatory review, and it is **not** intended for safety, licensing, or other regulated decisions. Reproducing a published benchmark is not qualification for safety analysis. The software is provided "as is", without warranty of any kind (see [LICENSE](LICENSE)).
+>
+> **What PromptMC validation does:** checks that XML files are well-formed and conform to the OpenMC schema (correct element names, required attributes, value types), and that the local planner's keyword matching produced a recognizable template choice. **What it does not do:** verify physical correctness of your geometry, confirm that materials are meaningful for your application, check for geometry overlaps beyond calling OpenMC's own geometry-debug mode, or provide any assurance suitable for licensing, safety analysis, or regulatory submission. Every simulation output must be independently reviewed by a qualified nuclear engineer before any engineering decision is made.
 
 ## Overview
 
@@ -244,9 +246,14 @@ export OPENAI_API_KEY="..."
 promptmc ask "I need a high-statistics shielding model for a 14 MeV source" --llm --write
 ```
 
-`ask` is offline-first. Without an API key, it uses a deterministic local planner that maps
-plain-English domain language to built-in templates and safe defaults. With `--llm`, it can call an
-OpenAI-compatible chat completions endpoint configured by:
+`ask` is offline-first. Without an API key, it uses a **deterministic rule-based planner** that maps
+plain-English domain language to built-in templates and safe defaults — there is no machine learning
+involved in this path. The **Match score** shown in the output (e.g. 65%, 85%) is a count of how many
+domain keywords matched, converted to a fixed scale (`min(0.95, 0.55 + 0.1 × matches)`). It is **not**
+a probabilistic confidence interval — it reflects keyword coverage, not certainty about intent. With
+`--llm`, the score comes from the LLM's own response and may reflect genuine uncertainty.
+
+With `--llm`, it can call an OpenAI-compatible chat completions endpoint configured by:
 
 - **`OPENAI_API_KEY` or `PROMPTMC_LLM_API_KEY`**: API key
 - **`PROMPTMC_LLM_MODEL`**: model name, defaults to `gpt-4o-mini`
@@ -263,17 +270,17 @@ $ promptmc ask "make a concrete shielding calculation with 1 million particles"
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃               Natural-Language OpenMC Plan                     ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ Field          │ Value                                         │
-├────────────────┼───────────────────────────────────────────────┤
-│ Source         │ local                                         │
-│ Template       │ shielding                                     │
-│ Particles      │ 1,000,000                                     │
-│ Batches        │ 10                                            │
-│ Inactive       │ 0                                             │
-│ Confidence     │ 85%                                           │
-│ Command        │ promptmc template shielding --output          │
-│                │ settings.xml --particles 1000000 --batches 10 │
-└────────────────┴───────────────────────────────────────────────┘
+│ Field          │ Value                                          │
+├────────────────┼────────────────────────────────────────────────┤
+│ Source         │ local                                          │
+│ Template       │ shielding                                      │
+│ Particles      │ 1,000,000                                      │
+│ Batches        │ 10                                             │
+│ Inactive       │ 0                                              │
+│ Match score    │ 85%  (3 keywords matched)                      │
+│ Command        │ promptmc template shielding --output     │
+│                │ settings.xml --particles 1000000 --batches 10  │
+└────────────────┴────────────────────────────────────────────────┘
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ Summary                                                        ┃
@@ -521,6 +528,15 @@ The result is a fully functional, well-tested tool that I hope will be useful to
 ## Agentic Coding Disclaimer
 
 This project was developed using agentic programming techniques with AI coding assistants, specifically Cascade, Antigravity, and Gemini. While the code was generated through AI-human collaboration, it has been reviewed, tested, and validated for production use. The project demonstrates the potential of agentic workflows while maintaining software engineering best practices: comprehensive testing, linting, type checking, and documentation.
+
+A fair concern with AI-assisted development is that the test suite may share blind spots with the code that generated it — both written by the same agent, both subject to the same systematic gaps. To mitigate this, the following practices were applied:
+
+- **Manual review** of all test assertions against OpenMC documentation and known-good outputs, not just against the implementation.
+- **Integration tests against real OpenMC runs** (`examples/uo2_criticality/`) were used to verify end-to-end behavior independently of the unit test suite.
+- **Bandit, MyPy strict, and Ruff** provide independent static analysis channels not influenced by the agent's logic.
+- **Property-based inputs** (e.g. `tmp_path` fixtures, varied particle counts) exercise behavior the agent did not explicitly anticipate.
+
+None of this eliminates the risk entirely. If you find a case where a test passes but the behavior is wrong, please open an issue — that kind of feedback is the most valuable signal the project can get.
 
 ## Contributions
 

@@ -58,7 +58,7 @@ def ask(
     table.add_row("Particles", f"{plan.particles:,}")
     table.add_row("Batches", str(plan.batches))
     table.add_row("Inactive", str(plan.inactive))
-    table.add_row("Confidence", f"{plan.confidence:.0%}")
+    table.add_row("Match score", f"{plan.confidence:.0%}")
     table.add_row("Command", plan.command(output))
     console.print(table)
     console.print(Panel(plan.summary, title="Summary", border_style="blue"))
