@@ -5,15 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.1] - 2026-05-30
-
-### Changed
-- **README safety/scope disclaimer** — added a prominent human-in-the-loop / not-for-licensing notice near the top of `README.md`.
-
-### Docs
-- **ROADMAP.md** — structured-geometry sprint split into three sequential releases: v2.1 (CSG schema + serialization), v2.2 (validation layer + reference library + deterministic MCP tool), v2.5 (constrained generation pipeline).
-
-## [2.0.0] - 2026-05-25
+## [2.0.0] - 2026-05-30
 
 ### Added
 - **MCP server** (`src/promptmc/mcp/`) — a Model Context Protocol server that exposes PromptMC capabilities as agent-callable tools, allowing AI assistants (Windsurf, Claude Desktop, Cursor, VS Code with Copilot) to drive end-to-end OpenMC workflows without writing Python.
@@ -38,6 +30,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Bumped version to `2.0.0`.
 - Coverage increased to **87%** (MCP package ≥80%).
+- **README safety and scope disclaimer** — added a prominent human-in-the-loop / not-for-licensing notice near the top of `README.md`.
+- **ROADMAP.md** — structured-geometry sprint split into three sequential releases: v2.1 (CSG schema + serialization), v2.2 (validation layer + reference library + deterministic MCP tool), v2.5 (constrained generation pipeline).
+- **ROADMAP.md** — added AI audit logging deliverable to v2.2 (deterministic audit trails via OpenTelemetry).
+- **Documentation restructure** — trimmed README from 586 to 161 lines; created `docs/` folder with installation, CLI reference, Python API, and telemetry guides; added `CONTRIBUTING.md` with PR gate and scope guard.
+- **Style** — replaced all ampersands with 'and' in documentation text for consistency.
 
 ## [1.2.0] - 2026-05-25
 
