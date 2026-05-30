@@ -139,7 +139,7 @@ PromptMC focuses on a specific, currently underserved layer: **natural-language 
 - **Design optimization:** [OpenNeoMC](https://github.com/XuboGU/OpenNeoMC).
 - **Verification & validation:** [JADE](https://github.com/JADE-V-V/JADE).
 
-A natural workflow: **PromptMC authors and validates the model → hand it downstream to optimization (OpenNeoMC), coupling (Cardinal), or visualization tools.**
+A natural workflow: PromptMC authors and validates the model → hand it downstream to optimization (OpenNeoMC), coupling (Cardinal), or visualization tools.
 
 ## About & Architecture
 
