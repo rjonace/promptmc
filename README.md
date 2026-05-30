@@ -2,12 +2,13 @@
 
 Validated OpenMC workflows for AI-assisted reactor physics.
 
-> **PromptMC** is an AI-native infrastructure layer for OpenMC nuclear simulations.
-> It helps engineers build, validate, run, and analyze Monte Carlo workflows with human-in-the-loop validation. The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
+**PromptMC** is an AI-native infrastructure layer for OpenMC nuclear simulations. It helps engineers build, validate, run, and analyze Monte Carlo workflows with human-in-the-loop validation. The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
 
 > **Safety & scope.** PromptMC is an engineering-assist tool that keeps a human in the loop. It is **not** a substitute for professional engineering judgment, independent verification & validation, or regulatory review, and it is **not** intended for safety, licensing, or other regulated decisions. Reproducing a published benchmark is not qualification for safety analysis. The software is provided "as is", without warranty of any kind (see [LICENSE](LICENSE)).
->
-> **What PromptMC validation does:** checks that XML files are well-formed and conform to the OpenMC schema (correct element names, required attributes, value types), and that the local planner's keyword matching produced a recognizable template choice. **What it does not do:** verify physical correctness of your geometry, confirm that materials are meaningful for your application, check for geometry overlaps beyond calling OpenMC's own geometry-debug mode, or provide any assurance suitable for licensing, safety analysis, or regulatory submission. Every simulation output must be independently reviewed by a qualified nuclear engineer before any engineering decision is made.
+
+**What PromptMC validation does:** checks that XML files are well-formed and conform to the OpenMC schema (correct element names, required attributes, value types), and that the local planner's keyword matching produced a recognizable template choice.
+
+**What it does not do:** verify physical correctness of your geometry, confirm that materials are meaningful for your application, check for geometry overlaps beyond calling OpenMC's own geometry-debug mode, or provide any assurance suitable for licensing, safety analysis, or regulatory submission. Every simulation output must be independently reviewed by a qualified nuclear engineer before any engineering decision is made.
 
 ## Overview
 
