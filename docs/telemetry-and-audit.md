@@ -77,44 +77,6 @@ with telemetry.trace_operation("simulation_run", simulation_id="sim-001"):
 
 PromptMC maintains a deterministic audit trail of all AI actions through the MCP server. Every tool call is wrapped in an OpenTelemetry span and logged to a local `audit.jsonl` file.
 
-### MCP Client Tracking
-
-The MCP protocol automatically reveals the LLM client (e.g., Claude Desktop, Cursor, Windsurf) via the `initialize` request's `clientInfo` payload. This is captured and attached to all telemetry as the `llm_product` dimension.
-
-### Model and Provider Tracking
-
-The MCP protocol does not natively pass the specific AI model (e.g., `gpt-4o`, `claude-3.5-sonnet`) because the client app handles API keys and model routing. To track this for enterprise auditability, configure the following environment variables in your MCP client configuration:
-
-- `PROMPTMC_TRACKING_MODEL`: The specific model (e.g., "claude-3-5-sonnet")
-- `PROMPTMC_COMPANY_ID`: The AI provider (e.g., "Anthropic", "OpenAI")
-
-Example `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "promptmc": {
-      "command": "promptmc-mcp",
-      "env": {
-        "OPENMC_CROSS_SECTIONS": "/path/to/cross_sections.xml",
-        "PROMPTMC_TRACKING_MODEL": "claude-3-5-sonnet",
-        "PROMPTMC_COMPANY_ID": "Anthropic"
-      }
-    }
-  }
-}
-```
-
-### Metric Dimensions
-
-Every OpenTelemetry span includes three dimensions for complete AI provenance:
-
-- `llm_product`: The MCP client (from `clientInfo.name`)
-- `llm_model`: The specific model (from `PROMPTMC_TRACKING_MODEL`)
-- `llm_company`: The AI provider (from `PROMPTMC_COMPANY_ID`)
-
-This enables enterprise-grade audit trails: "Claude Desktop (using claude-3-5-sonnet) attempted to build 40 geometries this week, hallucinated 3 overlapping schemas, and successfully ran 37 simulations."
-
 ### Audit Log Location
 
 The audit log is written to `audit.jsonl` in the current working directory when the MCP server is running.
@@ -135,9 +97,6 @@ Each line in `audit.jsonl` is a JSON record containing:
     "success": true,
     "duration_ms": 123
   },
-  "llm_product": "Claude Desktop",
-  "llm_model": "claude-3-5-sonnet",
-  "llm_company": "Anthropic",
   "span_id": "abc123",
   "trace_id": "def456"
 }
@@ -181,8 +140,6 @@ For enterprise deployments, the audit log can be:
 - `OTEL_CONSOLE_EXPORT`: Set to "false" to disable console export
 - `OTEL_SERVICE_NAME`: Service name for telemetry (default: "promptmc")
 - `OTEL_RESOURCE_ATTRIBUTES`: Additional resource attributes
-- `PROMPTMC_TRACKING_MODEL`: Specific AI model for audit logging (e.g., "claude-3-5-sonnet")
-- `PROMPTMC_COMPANY_ID`: AI provider for audit logging (e.g., "Anthropic", "OpenAI")
 
 ## Performance Impact
 
