@@ -36,6 +36,7 @@ Structured geometry and generation ship as six sequential, independently-valuabl
 ### v2.1 — Core Data Engine I: CSG schema + serialization
 - **Deliverable:** Pydantic models for Surfaces, Regions, Cells, Materials, and Tallies.
 - **Deliverable:** Round-trip serialization to runnable OpenMC XML.
+- **Deliverable:** Dual-mode serialization: standard library XML generation when OpenMC is absent, OpenMC object serialization when available.
 - **Deliverable:** First two validated reference geometries (PWR pin, Godiva).
 
 ### v2.2 — Core Data Engine II: validation + reference library

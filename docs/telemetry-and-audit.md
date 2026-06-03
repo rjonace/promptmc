@@ -110,6 +110,39 @@ Watch the audit log in real-time:
 tail -f audit.jsonl
 ```
 
+### AI Provenance Tracking
+
+The OpenTelemetry implementation extracts the LLM product from the MCP initialization phase (`clientInfo`) and pairs it with tracking environment variables for comprehensive audit trail logging:
+
+- **MCP Client Tracking (Automatic):** The MCP protocol sends an `initialize` JSON-RPC request when an AI assistant connects. This request includes a `clientInfo` payload that identifies the LLM product/client (e.g., "Claude Desktop", "Cursor", "Windsurf", "Antigravity", "Codeium"). This is extracted at server startup and attached to all OpenTelemetry metrics as a dimension.
+
+- **Model and Provider Tracking (Environment Injection):** The MCP protocol does not natively pass the exact AI model (e.g., `gpt-4o`, `claude-3.5-sonnet`) because the client app handles API keys and model routing. To track this for enterprise auditability, clients can inject it via environment variables in their MCP configuration:
+  - `PROMPTMC_TRACKING_MODEL`: The specific model (e.g., "claude-3-5-sonnet")
+  - `PROMPTMC_COMPANY_ID`: The AI provider (e.g., "Anthropic", "OpenAI")
+
+  Example `claude_desktop_config.json`:
+  ```json
+  {
+    "mcpServers": {
+      "promptmc": {
+        "command": "promptmc-mcp",
+        "env": {
+          "OPENMC_CROSS_SECTIONS": "/path/to/cross_sections.xml",
+          "PROMPTMC_TRACKING_MODEL": "claude-3-5-sonnet",
+          "PROMPTMC_COMPANY_ID": "Anthropic"
+        }
+      }
+    }
+  }
+  ```
+
+- **Metric Dimensions:** Three dimensions are attached to every OpenTelemetry counter and span:
+  - `llm_product`: The MCP client (from `clientInfo.name`)
+  - `llm_model`: The specific model (from `PROMPTMC_TRACKING_MODEL`)
+  - `llm_company`: The AI provider (from `PROMPTMC_COMPANY_ID`)
+
+This enables enterprise-grade audit trails: "Claude Desktop (using claude-3-5-sonnet) attempted to build 40 geometries this week, hallucinated 3 overlapping schemas, and successfully ran 37 simulations."
+
 ### Audit Log for MCP Tools
 
 When using the MCP server with an AI assistant, every tool call is automatically logged:
