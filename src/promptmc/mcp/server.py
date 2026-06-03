@@ -55,7 +55,6 @@ def build_server() -> Server:  # pragma: no cover
                 name=spec.name,
                 description=spec.description,
                 inputSchema=spec.input_model.model_json_schema(),
-                outputSchema=spec.output_model.model_json_schema(),
             )
             for spec in TOOL_REGISTRY.values()
         ]

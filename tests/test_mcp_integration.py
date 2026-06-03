@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import sys
 
 import pytest
@@ -47,8 +48,9 @@ async def _exercise_server() -> None:
 
         call_result = await session.call_tool("openmc_check_cross_sections", {})
         assert call_result.isError is False
-        assert call_result.structuredContent is not None
-        assert "found" in call_result.structuredContent
+        content = call_result.content[0].text
+        result = json.loads(content)
+        assert "found" in result
 
         resources_result = await session.list_resources()
         resource_uris = {str(r.uri) for r in resources_result.resources}
