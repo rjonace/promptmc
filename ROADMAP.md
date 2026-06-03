@@ -46,12 +46,10 @@ Structured geometry and generation ship as six sequential, independently-valuabl
 ### v2.3 — Geometry composition + inspection
 - **Deliverable:** Deterministic `openmc_build_geometry` MCP tool (semantic JSON → validated geometry object).
 - **Deliverable:** Inspection and query tools: `openmc_query_geometry`, `openmc_list_cells`, `openmc_list_materials`, `openmc_trace_point`, `openmc_diff_geometry`, `openmc_describe_geometry`.
-- **Deliverable:** Reusable, pre-approved components (FuelPin, GuideTube, ControlRod, ReflectorBlock, WaterBox) and hexagonal-lattice support.
 
-### v2.4 — Observability + provenance
-- **Deliverable:** OpenTelemetry exporter library for agent usage metrics (tool-call volume, payload size, schema rejection rates).
-- **Deliverable:** AI provenance — capture the connecting MCP client from `clientInfo`, plus the model and provider via `PROMPTMC_TRACKING_MODEL` / `PROMPTMC_COMPANY_ID`.
-- **Deliverable:** Deterministic AI audit logging. All MCP tool calls are wrapped in OpenTelemetry spans and written to a local `audit.jsonl` file to guarantee complete provenance of AI actions.
+### v2.4 — Component library
+- **Deliverable:** Reusable, pre-approved components (FuelPin, GuideTube, ControlRod, ReflectorBlock, WaterBox).
+- **Deliverable:** Hexagonal-lattice support for specialized reactor types.
 
 ### v2.5 — Physics safety gate
 - **Deliverable:** Deterministic `promptmc validate` CLI and engine catching cell overlaps, invalid boundaries, and tracking inconsistencies before OpenMC runs.
@@ -61,3 +59,8 @@ Structured geometry and generation ship as six sequential, independently-valuabl
 - **Deliverable:** LLM-agnostic constrained-generation pipeline with a validate-and-repair loop.
 - **Deliverable:** `openmc_design` MCP tool (natural language → validated OpenMC input).
 - **Deliverable:** Closed-loop, multi-turn optimization that iterates on geometry within validated physics constraints. A human reviews and approves every output; never autonomous for licensing or safety-critical decisions.
+
+### v2.7 — Observability + provenance
+- **Deliverable:** OpenTelemetry exporter library for agent usage metrics (tool-call volume, payload size, schema rejection rates).
+- **Deliverable:** AI provenance — capture the connecting MCP client from `clientInfo`, plus the model and provider via `PROMPTMC_TRACKING_MODEL` / `PROMPTMC_COMPANY_ID`.
+- **Deliverable:** Deterministic AI audit logging. All MCP tool calls are wrapped in OpenTelemetry spans and written to a local `audit.jsonl` file to guarantee complete provenance of AI actions.
