@@ -4,6 +4,9 @@
 
 By combining deterministic schema validation, OpenMC tooling, and MCP integration, PromptMC helps engineers use AI assistants safely while keeping humans in control of every engineering decision. The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
 
+
+## Vision
+
 OpenMC is powerful, but getting started can be challenging. PromptMC reduces this friction through natural-language planning, automated XML generation, and fail-fast schema validation.
 
 PromptMC exposes a Model Context Protocol (MCP) server so AI assistants can securely run OpenMC workflows, validate schemas, and plot geometries directly.
