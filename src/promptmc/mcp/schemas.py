@@ -72,7 +72,7 @@ class SchemaCheckInput(BaseModel):
 class SchemaIssueResult(BaseModel):
     """A single schema validation issue."""
 
-    severity: str
+    severity: Literal["error", "warning", "info"]
     field: str
     message: str
     file_path: str | None = None

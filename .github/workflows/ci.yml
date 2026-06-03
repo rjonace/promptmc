@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     
     steps:
       - name: Checkout code
@@ -42,7 +42,7 @@ jobs:
           key: venv-v2-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
       
       - name: Install dependencies
-        run: poetry install --with dev --extras telemetry
+        run: poetry install --with dev --extras "telemetry mcp"
       
       - name: Run tests
         run: |
@@ -184,4 +184,4 @@ jobs:
       - name: Run MCP tests
         run: |
           source .venv/bin/activate
-          pytest tests/test_mcp_*.py -v --tb=short --no-cov
+          pytest tests/test_mcp_*.py -v --tb=short --cov=promptmc --cov-report=xml --cov-report=term-missing

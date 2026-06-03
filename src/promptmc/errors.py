@@ -225,10 +225,10 @@ def configure_logging(
     if format_string is None:
         format_string = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 
-    handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter(format_string))
-
     root_logger = logging.getLogger("promptmc")
+    if not root_logger.handlers:
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter(format_string))
+        root_logger.addHandler(handler)
     root_logger.setLevel(level)
-    root_logger.addHandler(handler)
     root_logger.propagate = False

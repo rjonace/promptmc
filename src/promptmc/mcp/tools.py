@@ -28,7 +28,7 @@ from typing import Any, Generic, TypeVar
 
 from defusedxml.ElementTree import ParseError
 from defusedxml.ElementTree import parse as defused_parse
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError as PydanticValidationError
 
 from promptmc.errors import MCPError, PromptMCError
 from promptmc.mcp.schemas import (
@@ -554,70 +554,140 @@ class ToolSpec(Generic[InputT, OutputT]):
 TOOL_REGISTRY: dict[str, ToolSpec[Any, Any]] = {
     "openmc_check_installation": ToolSpec(
         name="openmc_check_installation",
-        description="Check OpenMC installation status",
+        description=(
+            "Check whether OpenMC is installed and report"
+            " its version, executable path, and available"
+            " execution modes. Call this first to verify"
+            " the environment before running simulations."
+        ),
         input_model=CheckInstallationInput,
         output_model=OpenMCInstallationStatus,
         handler=check_installation,
     ),
     "openmc_validate": ToolSpec(
         name="openmc_validate",
-        description="Validate OpenMC XML input files",
+        description=(
+            "Validate that OpenMC XML input files are"
+            " well-formed and parseable. Returns errors"
+            " for malformed XML or missing required"
+            " files. Does NOT check physics correctness"
+            " or geometry overlaps \u2014 use"
+            " openmc_schema_check and"
+            " openmc_geometry_debug for deeper"
+            " validation."
+        ),
         input_model=ValidateInput,
         output_model=ValidationResult,
         handler=validate_input,
     ),
     "openmc_schema_check": ToolSpec(
         name="openmc_schema_check",
-        description="Run Pydantic schema validation",
+        description=(
+            "Run Pydantic schema validation against"
+            " OpenMC input files to catch structural"
+            " issues like invalid parameter values,"
+            " duplicate IDs, or constraint violations."
+            " Accepts a directory or individual"
+            " settings.xml / materials.xml. Use after"
+            " openmc_validate for deeper checks."
+        ),
         input_model=SchemaCheckInput,
         output_model=SchemaValidationResult,
         handler=schema_check,
     ),
     "openmc_template": ToolSpec(
         name="openmc_template",
-        description="Generate settings.xml from a template",
+        description=(
+            "Generate a settings.xml file from a named"
+            " template (criticality, fixed_source,"
+            " shielding, or reactor_pin). Optionally"
+            " override particle count, batches, and"
+            " inactive batches. Returns the output path"
+            " and template metadata."
+        ),
         input_model=TemplateInput,
         output_model=TemplateOutput,
         handler=render_template,
     ),
     "openmc_list_templates": ToolSpec(
         name="openmc_list_templates",
-        description="List available templates",
+        description=(
+            "List all available configuration templates"
+            " with their names, types, descriptions, and"
+            " default parameter values. Use this to"
+            " discover what templates exist before"
+            " calling openmc_template."
+        ),
         input_model=ListTemplatesInput,
         output_model=ListTemplatesOutput,
         handler=list_templates,
     ),
     "openmc_run": ToolSpec(
         name="openmc_run",
-        description="Run an OpenMC simulation",
+        description=(
+            "Run an OpenMC simulation. Requires valid"
+            " geometry.xml, materials.xml, and"
+            " settings.xml in the input directory, plus"
+            " configured cross-section data. Returns"
+            " stdout, stderr, and the exit code. Use"
+            " openmc_validate and openmc_schema_check"
+            " first."
+        ),
         input_model=RunSimulationInput,
         output_model=SimulationRunResult,
         handler=run_simulation,
     ),
     "openmc_analyze": ToolSpec(
         name="openmc_analyze",
-        description="Parse simulation results",
+        description=(
+            "Parse OpenMC simulation outputs (statepoint"
+            " and summary HDF5 files) and return"
+            " structured results including k-effective,"
+            " batch count, particle count, and runtime."
+            " Call this after a successful openmc_run."
+        ),
         input_model=AnalyzeInput,
         output_model=AnalysisResult,
         handler=analyze_results,
     ),
     "openmc_check_cross_sections": ToolSpec(
         name="openmc_check_cross_sections",
-        description="Check cross-section data availability",
+        description=(
+            "Check whether the OPENMC_CROSS_SECTIONS"
+            " environment variable is set and points to"
+            " an existing cross_sections.xml file. Lists"
+            " available isotopes if found. Call this"
+            " before openmc_run to diagnose missing"
+            " data."
+        ),
         input_model=CrossSectionCheckInput,
         output_model=CrossSectionCheckResult,
         handler=check_cross_sections,
     ),
     "openmc_plot": ToolSpec(
         name="openmc_plot",
-        description="Generate 2D geometry slice plot",
+        description=(
+            "Generate a 2D geometry slice plot as a"
+            " base64-encoded PNG image. Requires the"
+            " OpenMC Python API to be installed. Specify"
+            " the slice basis (xy, xz, yz), origin,"
+            " width, resolution, and coloring. Use for"
+            " visual geometry sanity checks."
+        ),
         input_model=PlotInput,
         output_model=PlotOutput,
         handler=plot_geometry,
     ),
     "openmc_geometry_debug": ToolSpec(
         name="openmc_geometry_debug",
-        description="Run geometry overlap detection",
+        description=(
+            "Run OpenMC geometry overlap detection via"
+            " the --geometry-debug flag. Reports whether"
+            " overlapping cells were found and includes"
+            " the relevant log lines. Use this to catch"
+            " geometry errors that schema validation"
+            " cannot detect."
+        ),
         input_model=GeometryDebugInput,
         output_model=GeometryDebugResult,
         handler=geometry_debug,
@@ -694,7 +764,12 @@ def dispatch(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
     spec = TOOL_REGISTRY.get(name)
     if spec is None:
         raise MCPError(f"Unknown tool: {name}")
-    data = spec.input_model.model_validate(arguments)
+    try:
+        data = spec.input_model.model_validate(arguments)
+    except PydanticValidationError as exc:
+        error_msg = f"Invalid arguments for {name}: {exc}"
+        record_history(name, arguments, success=False)
+        return {"error": error_msg}
     output: ToolOutput = spec.handler(data)
     record_history(name, arguments, success=output.error is None)
     return output.model_dump(mode="json")

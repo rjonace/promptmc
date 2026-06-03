@@ -9,6 +9,7 @@ not raise; :func:`build_server` reports a clear error in that case.
 from __future__ import annotations
 
 import asyncio
+import json
 from collections.abc import Iterable
 from typing import Any
 
@@ -62,8 +63,9 @@ def build_server() -> Server:  # pragma: no cover
     @server.call_tool()
     async def _call_tool(
         name: str, arguments: dict[str, Any]
-    ) -> dict[str, Any]:
-        return await asyncio.to_thread(dispatch, name, arguments)
+    ) -> list[types.TextContent]:
+        result = await asyncio.to_thread(dispatch, name, arguments)
+        return [types.TextContent(type="text", text=json.dumps(result))]
 
     @server.list_resources()
     async def _list_resources() -> list[types.Resource]:

@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET  # nosec B405
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from defusedxml.ElementTree import parse as defused_parse
 
@@ -196,10 +196,11 @@ class OpenMCRunner:
         output_path: Path,
         cwd: Path,
     ) -> subprocess.CompletedProcess[str]:
+        original_threads = os.environ.get("OMP_NUM_THREADS")
         os.environ["OMP_NUM_THREADS"] = str(threads)
         try:
-            from typing import Any, cast
-
+            # openmc is an optional dependency; import inline to allow
+            # the core library to function without it installed
             import openmc
 
             cast(Any, openmc).run(cwd=str(cwd), threads=threads)
@@ -216,6 +217,11 @@ class OpenMCRunner:
                 stdout="",
                 stderr=str(e),
             )
+        finally:
+            if original_threads is None:
+                os.environ.pop("OMP_NUM_THREADS", None)
+            else:
+                os.environ["OMP_NUM_THREADS"] = original_threads
 
     def _run_via_subprocess(
         self,
