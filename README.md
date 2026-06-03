@@ -1,6 +1,8 @@
 # PromptMC
 
-**PromptMC** is an AI-native infrastructure layer for OpenMC nuclear simulations. It helps engineers build, validate, run, and analyze Monte Carlo workflows with human-in-the-loop validation. The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
+**PromptMC** is an AI-native infrastructure layer for OpenMC that enables validated, reproducible, and auditable Monte Carlo workflows.
+
+By combining deterministic schema validation, OpenMC tooling, and MCP integration, PromptMC helps engineers use AI assistants safely while keeping humans in control of every engineering decision. The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
 
 OpenMC is powerful, but getting started can be challenging. PromptMC reduces this friction through natural-language planning, automated XML generation, and fail-fast schema validation.
 
