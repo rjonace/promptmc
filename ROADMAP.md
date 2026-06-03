@@ -30,16 +30,15 @@ It provides a strictly typed, schema-driven Model Context Protocol (MCP) server 
 - **Shipped:** `openmc_geometry_debug` for overlap detection via OpenMC geometry-debug mode.
 - **Held to constraint:** No new CLI commands; the MCP layer parallels the CLI, it does not extend it.
 
-## Next Sprints: — Structured Geometry and Generation (v2.1 → v2.6)
-Structured geometry and generation ship as six sequential, independently-valuable minor releases with increasing risk — deterministic foundation first, LLM generation last. **v2.1 and v2.2 are the committed near-term; v2.3–v2.6 are directional.**
+## Next Sprints
 
-### v2.1 — Core Data Engine I: CSG schema + serialization
+### v2.1 — CSG schema + serialization
 - **Deliverable:** Pydantic models for Surfaces, Regions, Cells, Materials, and Tallies.
 - **Deliverable:** Round-trip serialization to runnable OpenMC XML.
 - **Deliverable:** Dual-mode serialization: when OpenMC is available, serialize through OpenMC objects (`.export_to_xml()`); when absent, serialize Pydantic models to intermediate dicts and use a lightweight dict-to-xml utility to avoid double-maintenance.
 - **Deliverable:** First two validated reference geometries (PWR pin, Godiva).
 
-### v2.2 — Core Data Engine II: validation + reference library
+### v2.2 — Validation + reference library
 - **Deliverable:** Pre-execution validation to catch unbounded geometries and void cells.
 - **Deliverable:** Open-source library of ~6 validated reference geometries (PWR/BWR pin, Godiva, Jezebel, ICSBEP cases) — the structural moat.
 
