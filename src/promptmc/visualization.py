@@ -131,19 +131,12 @@ class ResultParser:
 
             with h5py.File(statepoint_path, "r") as f:
                 # Extract k-effective if available
-                k_key = (
-                    "keff" if "keff" in f else "k_combined"
-                )
+                k_key = "keff" if "keff" in f else "k_combined"
                 if k_key in f:
                     k_data = f[k_key][()]
-                    if (
-                        hasattr(k_data, "__len__")
-                        and len(k_data) >= 2
-                    ):
+                    if hasattr(k_data, "__len__") and len(k_data) >= 2:
                         result.k_effective = float(k_data[0])
-                        result.k_effective_std = float(
-                            k_data[1]
-                        )
+                        result.k_effective_std = float(k_data[1])
 
                 # Extract batch and particle counts
                 if "n_batches" in f.attrs:

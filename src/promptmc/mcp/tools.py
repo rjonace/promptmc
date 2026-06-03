@@ -28,7 +28,8 @@ from typing import Any, Generic, TypeVar
 
 from defusedxml.ElementTree import ParseError
 from defusedxml.ElementTree import parse as defused_parse
-from pydantic import BaseModel, ValidationError as PydanticValidationError
+from pydantic import BaseModel
+from pydantic import ValidationError as PydanticValidationError
 
 from promptmc.errors import MCPError, PromptMCError
 from promptmc.mcp.schemas import (
