@@ -73,7 +73,7 @@ with telemetry.trace_operation("simulation_run", simulation_id="sim-001"):
     pass
 ```
 
-## AI Audit Logging (v2.2+)
+## AI Audit Logging (v2.4+)
 
 PromptMC maintains a deterministic audit trail of all AI actions through the MCP server. Every tool call is wrapped in an OpenTelemetry span and logged to a local `audit.jsonl` file.
 
