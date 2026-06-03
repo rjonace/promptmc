@@ -20,7 +20,7 @@ The result is a fully functional, highly tested tool designed to make Monte Carl
 
 ### Prerequisites
 - Python 3.10 or higher
-- OpenMC installed and in your PATH. *(See the [Official OpenMC Installation Guide](https://docs.openmc.org/en/stable/quickstart.html))*
+- OpenMC installed and in your PATH. (See the [OpenMC Quick Install Guide](https://docs.openmc.org/en/stable/quickinstall.html))
 - Nuclear cross-section data
 
 ### Install Nuclear Data
