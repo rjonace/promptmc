@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "promptmc"
-version = "2.0.0"
+version = "2.0.1"
 description = "AI Assistant and CLI for OpenMC simulation workflows"
 authors = ["PromptMC Contributors"]
 license = "MIT"
