@@ -1,6 +1,6 @@
-# Telemetry and Audit Logging
+# Telemetry and Audit Roadmap
 
-PromptMC provides optional OpenTelemetry integration for observability and deterministic audit logging of AI actions.
+PromptMC currently provides optional OpenTelemetry integration for simulation observability. Deterministic AI audit logging is planned on the roadmap, but is not implemented yet.
 
 ## Installation
 
@@ -73,106 +73,28 @@ with telemetry.trace_operation("simulation_run", simulation_id="sim-001"):
     pass
 ```
 
-## AI Audit Logging (v2.4+)
+## Current MCP History Resource
 
-PromptMC maintains a deterministic audit trail of all AI actions through the MCP server. Every tool call is wrapped in an OpenTelemetry span and logged to a local `audit.jsonl` file.
+The MCP server keeps a bounded in-memory history for the lifetime of the server process. It backs the `promptmc://history` resource and is useful for inspecting tool calls made during the current session.
 
-### Audit Log Location
+This is not durable audit logging: it is not written to disk, does not capture model/provider identity, and is reset when the MCP server exits.
 
-The audit log is written to `audit.jsonl` in the current working directory when the MCP server is running.
+## Planned Audit Logging
 
-### Audit Log Format
+Durable AI audit logging is planned for the roadmap's provenance work. The intended shape is:
 
-Each line in `audit.jsonl` is a JSON record containing:
+- local `audit.jsonl` records for MCP tool calls
+- OpenTelemetry spans around tool execution
+- MCP client identity from `clientInfo`
+- model/provider metadata supplied by environment or client configuration
+- deterministic provenance for AI-authored actions
 
-```json
-{
-  "timestamp": "2026-05-30T12:34:56.789Z",
-  "tool_name": "openmc_validate",
-  "input_arguments": {
-    "input_path": "/path/to/input.xml",
-    "check_schema": true
-  },
-  "execution_result": {
-    "success": true,
-    "duration_ms": 123
-  },
-  "span_id": "abc123",
-  "trace_id": "def456"
-}
-```
-
-### Monitoring Audit Logs
-
-Watch the audit log in real-time:
-
-```bash
-tail -f audit.jsonl
-```
-
-### AI Provenance Tracking
-
-The OpenTelemetry implementation extracts the LLM product from the MCP initialization phase (`clientInfo`) and pairs it with tracking environment variables for comprehensive audit trail logging:
-
-- **MCP Client Tracking (Automatic):** The MCP protocol sends an `initialize` JSON-RPC request when an AI assistant connects. This request includes a `clientInfo` payload that identifies the LLM product/client (e.g., "Claude Desktop", "Cursor", "Windsurf", "Antigravity", "Codeium"). This is extracted at server startup and attached to all OpenTelemetry metrics as a dimension.
-
-- **Model and Provider Tracking (Environment Injection):** The MCP protocol does not natively pass the exact AI model (e.g., `gpt-4o`, `claude-3.5-sonnet`) because the client app handles API keys and model routing. To track this for enterprise auditability, clients can inject it via environment variables in their MCP configuration:
-  - `PROMPTMC_TRACKING_MODEL`: The specific model (e.g., "claude-3-5-sonnet")
-  - `PROMPTMC_COMPANY_ID`: The AI provider (e.g., "Anthropic", "OpenAI")
-
-  Example `claude_desktop_config.json`:
-  ```json
-  {
-    "mcpServers": {
-      "promptmc": {
-        "command": "promptmc-mcp",
-        "env": {
-          "OPENMC_CROSS_SECTIONS": "/path/to/cross_sections.xml",
-          "PROMPTMC_TRACKING_MODEL": "claude-3-5-sonnet",
-          "PROMPTMC_COMPANY_ID": "Anthropic"
-        }
-      }
-    }
-  }
-  ```
-
-- **Metric Dimensions:** Three dimensions are attached to every OpenTelemetry counter and span:
-  - `llm_product`: The MCP client (from `clientInfo.name`)
-  - `llm_model`: The specific model (from `PROMPTMC_TRACKING_MODEL`)
-  - `llm_company`: The AI provider (from `PROMPTMC_COMPANY_ID`)
-
-This enables enterprise-grade audit trails: "Claude Desktop (using claude-3-5-sonnet) attempted to build 40 geometries this week, hallucinated 3 overlapping schemas, and successfully ran 37 simulations."
-
-### Audit Log for MCP Tools
-
-When using the MCP server with an AI assistant, every tool call is automatically logged:
-
-- `openmc_validate` — validation attempts and results
-- `openmc_run` — simulation execution parameters
-- `openmc_analyze` — result parsing operations
-- `openmc_plot` — geometry plotting requests
-- `openmc_template` — template generation requests
-
-This provides complete provenance of what the AI agent attempted to do, enabling:
-
-- **Post-mortem analysis** of anomalous simulation results
-- **Compliance verification** for regulated workflows
-- **Debugging** of AI behavior without relying on chat history
-
-### Enterprise Use
-
-For enterprise deployments, the audit log can be:
-
-- Integrated with centralized logging systems (ELK, Splunk)
-- Exported to OTLP backends for distributed tracing
-- Used for compliance reporting and audit trails
+Until that ships, treat PromptMC telemetry as operational observability rather than compliance-grade audit logging.
 
 ## Environment Variables
 
 - `OTEL_EXPORTER_OTLP_ENDPOINT`: OTLP endpoint for telemetry export
 - `OTEL_CONSOLE_EXPORT`: Set to "false" to disable console export
-- `OTEL_SERVICE_NAME`: Service name for telemetry (default: "promptmc")
-- `OTEL_RESOURCE_ATTRIBUTES`: Additional resource attributes
 
 ## Performance Impact
 
@@ -180,7 +102,6 @@ Telemetry has minimal performance impact when disabled (no-op implementation). W
 
 ## Security Considerations
 
-- Audit logs may contain sensitive simulation parameters
-- Ensure proper access controls on `audit.jsonl` in production environments
-- Consider encryption for audit logs in regulated environments
+- Telemetry spans and metrics may contain simulation identifiers or operational metadata
 - OTLP endpoints should use TLS for secure transmission
+- Do not treat the current in-memory MCP history resource as a durable compliance record

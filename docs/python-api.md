@@ -31,6 +31,7 @@ Validate OpenMC input files and schemas.
 
 ```python
 from promptmc import OpenMCValidator
+from promptmc.schema import SchemaValidator
 
 # Validate input files
 validator = OpenMCValidator()
@@ -38,11 +39,12 @@ validator = OpenMCValidator()
 # Validate XML structure
 validator.validate_input_file("input.xml")
 
-# Validate with schema checking
-validator.validate_input_file("input.xml", check_schema=True)
+# Validate a directory for required OpenMC XML files
+validator.validate_input_file("./input_dir/")
 
-# Validate a directory
-validator.validate_directory("./input_dir/")
+# Run schema checks separately
+schema_validator = SchemaValidator()
+schema_validator.validate_directory("./input_dir/")
 ```
 
 ### OpenMCRunner
@@ -70,8 +72,8 @@ result = runner.run_simulation(
     output_path="results",
 )
 
-print(f"Simulation completed: {result.success}")
-print(f"Output path: {result.output_path}")
+print(f"Simulation completed: {result.returncode == 0}")
+print(result.stdout or result.stderr)
 ```
 
 ### ResultParser
@@ -79,7 +81,7 @@ print(f"Output path: {result.output_path}")
 Parse and analyze simulation outputs.
 
 ```python
-from promptmc.visualization import ResultParser
+from promptmc.visualization import ResultParser, ResultVisualizer
 
 # Parse output
 parser = ResultParser()
@@ -90,10 +92,8 @@ print(f"Statepoint: {results.statepoint_path}")
 print(f"Summary: {results.summary_path}")
 
 # Export to JSON
-results.export_json("results.json")
-
-# Export to text
-results.export_text("results.txt")
+visualizer = ResultVisualizer()
+visualizer.export_json(results, "results.json")
 ```
 
 ## Telemetry
@@ -137,24 +137,23 @@ with telemetry.trace_operation("simulation_run", simulation_id="sim-001"):
 Run parameter sweeps from YAML/JSON specifications.
 
 ```python
-from promptmc import BatchRunner
+from promptmc import BatchRunner, ParallelConfig, ParallelMode
+from promptmc.batch import load_batch_spec
 
 # Create batch runner
-runner = BatchRunner()
-
-# Load batch specification
-spec = runner.load_spec("batch_spec.yaml")
-
-# Run batch with thread-based parallelism
-results = runner.run_batch(
-    spec=spec,
-    parallel_mode="threads",
-    workers=4,
+runner = BatchRunner(
+    parallel_config=ParallelConfig(mode=ParallelMode.THREADS, max_workers=4)
 )
 
+# Load batch specification
+spec = load_batch_spec("batch_spec.yaml")
+
+# Run batch
+summary = runner.run_batch(spec)
+
 # Process results
-for result in results:
-    print(f"Simulation {result.simulation_id}: {result.status}")
+for result in summary.job_results:
+    print(f"Simulation {result.job_id}: {result.success}")
 ```
 
 ### ParallelExecutor
@@ -162,41 +161,56 @@ for result in results:
 Fine-grained control over parallel execution.
 
 ```python
-from promptmc import ParallelExecutor, ParallelMode
+from pathlib import Path
+
+from promptmc.batch import (
+    ParallelConfig,
+    ParallelExecutor,
+    ParallelMode,
+    SimulationJob,
+)
 
 # Create executor
-executor = ParallelExecutor(parallel_mode=ParallelMode.THREADS)
+executor = ParallelExecutor(
+    config=ParallelConfig(mode=ParallelMode.THREADS, max_workers=4)
+)
 
 # Run multiple simulations
 tasks = [
-    {"input_path": "sim1.xml", "output_path": "results1"},
-    {"input_path": "sim2.xml", "output_path": "results2"},
+    SimulationJob(
+        job_id="sim1",
+        input_path=Path("sim1"),
+        output_path=Path("results1"),
+    ),
+    SimulationJob(
+        job_id="sim2",
+        input_path=Path("sim2"),
+        output_path=Path("results2"),
+    ),
 ]
 
-results = executor.execute_tasks(tasks, workers=4)
+results = executor.execute_jobs(tasks)
 ```
 
 ## Configuration Templates
 
-### ConfigurationTemplate
+### Built-in templates
 
 Generate configurations from built-in templates.
 
 ```python
-from promptmc import ConfigurationTemplate, TemplateType
+from promptmc.templates import TemplateType, get_template
 
 # Create template
-template = ConfigurationTemplate(template_type=TemplateType.CRITICALITY)
+template = get_template(TemplateType.CRITICALITY)
 
-# Generate configuration
-config = template.render(
+# Generate and save configuration
+config_path = template.render(
+    output_path="settings.xml",
     particles=10000,
     batches=100,
     inactive=10,
 )
-
-# Save to file
-config.save("settings.xml")
 ```
 
 ## Error Handling
@@ -206,7 +220,7 @@ config.save("settings.xml")
 Base exception for all PromptMC errors.
 
 ```python
-from promptmc import PromptMCError
+from promptmc.errors import PromptMCError
 
 try:
     runner.run_simulation("input.xml")
@@ -217,10 +231,10 @@ except PromptMCError as e:
 ### Specific Error Types
 
 ```python
-from promptmc import (
+from promptmc.errors import (
     OpenMCNotFoundError,
     ValidationError,
-    SimulationError,
+    OpenMCExecutionError,
     ConfigurationError,
 )
 
@@ -230,7 +244,7 @@ except OpenMCNotFoundError:
     print("OpenMC not found in PATH")
 except ValidationError as e:
     print(f"Validation failed: {e}")
-except SimulationError as e:
+except OpenMCExecutionError as e:
     print(f"Simulation failed: {e}")
 except ConfigurationError as e:
     print(f"Configuration error: {e}")
@@ -242,12 +256,11 @@ All public APIs include type hints for IDE support and mypy validation.
 
 ```python
 from promptmc import OpenMCRunner, ExecutionMode
-from typing import Optional
 
 def run_simulation(
     input_path: str,
     threads: int = 4,
-    output_path: Optional[str] = None,
+    output_path: str | None = None,
 ) -> bool:
     runner = OpenMCRunner(execution_mode=ExecutionMode.AUTO)
     result = runner.run_simulation(
@@ -255,7 +268,7 @@ def run_simulation(
         threads=threads,
         output_path=output_path,
     )
-    return result.success
+    return result.returncode == 0
 ```
 
 ## Complete Example

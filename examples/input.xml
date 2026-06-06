@@ -5,13 +5,13 @@
   <batches>100</batches>
   <inactive>10</inactive>
   <particles>10000</particles>
-  
+
   <!-- Energy mode -->
   <energy_mode>
     <type>MG</type>
     <method>CE</method>
   </energy_mode>
-  
+
   <!-- Source definition -->
   <source>
     <type>point</type>
@@ -20,7 +20,7 @@
       <parameters>0 0 0</parameters>
     </space>
   </source>
-  
+
   <!-- Output settings -->
   <output>
     <path>results</path>

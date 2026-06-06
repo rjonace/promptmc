@@ -26,7 +26,7 @@ PromptMC has a focused scope. Please check [`ROADMAP.md`](ROADMAP.md) before sub
 **We are explicitly NOT building:**
 
 - 3D visualization web apps or UIs
-- Autonomous reactor design features
+- Unsupervised reactor design or licensing/safety sign-off
 - Replacements for OpenMC's native tools (Plot Explorer, etc.)
 
 **We ARE building:**
@@ -52,14 +52,14 @@ If you're unsure whether a feature fits the scope, open an issue first to discus
 
 - **Linting**: Ruff with strict rules (80 character line length)
 - **Type Checking**: MyPy in strict mode
-- **Testing**: pytest with coverage reporting (current bar: 87%)
+- **Testing**: pytest with coverage reporting (current bar: 88%)
 - **Security**: Bandit security scanning
 - **Formatting**: Ruff formatter
 
 ## Testing
 
 - New features require test coverage
-- Tests must pass on Python 3.10, 3.11, and 3.12
+- Tests must pass on Python 3.10, 3.11, 3.12, and 3.13
 - Integration tests should use real OpenMC runs where possible (see `examples/uo2_criticality/`)
 - Avoid relying solely on unit test mocks for critical paths
 

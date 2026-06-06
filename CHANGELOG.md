@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-06-06
+
+### Changed
+- Updated README and ROADMAP to match the current validation surface: planning and XML/schema validation work without OpenMC; simulation execution, geometry-debug checks, and plot rendering require OpenMC.
+- Fixed stale documentation links and refreshed quality metrics to 268 tests, 88% coverage, and CI on Python 3.10–3.13.
+- Added Python 3.13 to the supported/tested version set in documentation and CI.
+
 ## [2.0.0] - 2026-05-30
 
 ### Added

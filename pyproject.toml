@@ -5,6 +5,12 @@ description = "AI Assistant and CLI for OpenMC simulation workflows"
 authors = ["PromptMC Contributors"]
 license = "MIT"
 readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
 packages = [{include = "promptmc", from = "src"}]
 include = [{ path = "examples", format = ["sdist", "wheel"] }]
 

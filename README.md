@@ -78,10 +78,12 @@ Every output is reviewed by a human. PromptMC is an assistant, never an autonomo
 
 ## Documentation
 
+- [Installation](docs/installation.md) — setup paths for PromptMC, OpenMC, and nuclear data
 - [CLI reference](docs/cli-reference.md) — commands, flags, environment variables
 - [Python API](docs/python-api.md) — scripting PromptMC
 - [Templates](docs/cli-reference.md#templates) · [Telemetry](docs/telemetry-and-audit.md)
-- [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md)
+- [Examples](examples/uo2_criticality/README.md) · [MCP example](examples/mcp/README.md)
+- [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
 ---
 

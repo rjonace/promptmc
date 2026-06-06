@@ -149,11 +149,8 @@ Run schema-only check on files or directories.
 # Check a single file
 promptmc schema-check settings.xml
 
-# Check all XML files in a directory
+# Check all supported XML files in a directory
 promptmc schema-check ./input_dir/
-
-# Check recursively
-promptmc schema-check ./input_dir/ --recursive
 ```
 
 ## Simulation Execution
@@ -178,8 +175,6 @@ promptmc run input.xml --output results
 # Run with verbose output
 promptmc --verbose run input.xml
 
-# Run with custom particle count (overrides settings.xml)
-promptmc run input.xml --particles 100000
 ```
 
 ### `promptmc batch`
@@ -210,8 +205,6 @@ promptmc analyze ./output
 # Export results to JSON
 promptmc analyze ./output --json results.json
 
-# Export results to text
-promptmc analyze ./output --text results.txt
 ```
 
 ## Optimization
