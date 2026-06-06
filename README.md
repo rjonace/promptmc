@@ -4,7 +4,7 @@
 
 OpenMC is powerful and painful: you hand-write XML, manage batch runs, and read results out of HDF5. PromptMC is the infrastructure layer that reduces that friction — a validated CLI and MCP server.
 
-It works like a grammar checker between an AI assistant and OpenMC: the AI proposes a configuration, PromptMC validates XML structure and supported schema constraints before the simulator runs, and catches malformed inputs early.
+It works like a grammar checker between an AI LLM assistant and OpenMC: your AI proposes a configuration, PromptMC validates XML structure and supported schema constraints before the simulator runs, and catches malformed inputs early.
 
 Most planning and schema-validation workflows work without OpenMC installed; execution, geometry-debug checks, and 2D plot rendering require OpenMC.
 
@@ -137,11 +137,11 @@ PromptMC is an engineering-assist tool that keeps a human in the loop. It is not
 
 I studied nuclear engineering at MIT over 20 years ago, running MCNP 4 for my senior thesis. Though I left during my senior year, I eventually went back to university to get a degree in Computer Science, and I have spent the last 11 years working as a software engineer and site reliability engineer at a major FAANG cloud provider.
 
-PromptMC bridges those two worlds. It is also, for me, an exploration of using agentic programming to build software—held to strict infrastructure-grade SRE standards.
+PromptMC bridges those two worlds. It is also, for me, an exploration of using agentic programming to build software for fun but still holding professional production principles and standards.
 
 ## Contributions and Support
 
-We welcome contributions! Please ensure all checks pass (`pytest`, `ruff check`, `mypy src/`) before opening a PR.
+I welcome contributions! Please ensure all checks pass (`pytest`, `ruff check`, `mypy src/`) before opening a PR.
 - **License:** MIT
 - **Documentation:** [GitHub Repository](https://github.com/rjonace/promptmc)
 - **Issues and Discussions:** [GitHub Issues](https://github.com/rjonace/promptmc/issues)
