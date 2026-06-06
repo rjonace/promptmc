@@ -143,4 +143,4 @@ We welcome contributions! Please ensure all checks pass (`pytest`, `ruff check`,
 - **License:** MIT
 - **Documentation:** [GitHub Repository](https://github.com/rjonace/promptmc)
 - **Issues and Discussions:** [GitHub Issues](https://github.com/rjonace/promptmc/issues)
-- **Roadmap:** [ROADMAP.md](ROADMAP.md) for planned features and release timeline.
+- **Roadmap:** [ROADMAP.md](ROADMAP.md) for planned features and scope.

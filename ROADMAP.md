@@ -3,26 +3,42 @@
 ## Vision
 **AI-native infrastructure for nuclear simulation.**
 
-PromptMC is a deterministic, highly validated layer for AI agents—and the engineers working alongside them—to design, validate, run, and reason about Monte Carlo nuclear simulations. 
+PromptMC is a deterministic, validated infrastructure layer for OpenMC workflows: describe a simulation, generate inputs, validate them, run OpenMC when available, and interpret results.
 
-It provides a strictly typed, schema-driven Model Context Protocol (MCP) server that reduces AI hallucinations by validating inputs and exposing deterministic OpenMC workflows. The longer-term goal (v2.6) is to enforce physics and geometry constraints before the underlying OpenMC engine is ever invoked, culminating in constrained, human-reviewed autonomous generation.
+It provides a strictly typed, schema-driven Model Context Protocol (MCP) server so AI assistants can use OpenMC tooling without bypassing validation. The goal is not to replace engineering judgment; it is to make Monte Carlo simulation easier for students to start and faster for engineers to iterate.
 
-## Architectural Constraints (What we are explicitly *not* doing)
+## Who This Is For
+- **Students and researchers:** learn OpenMC with less configuration friction.
+- **Nuclear engineers at commercial startups:** run iterative design workflows faster.
+- **AI assistants:** use a validated, schema-driven interface to OpenMC tooling.
+
+Commercial nuclear companies are the near-term target; national labs are the long-term one.
+
+## What Works Without OpenMC
+- Natural-language planning (`promptmc ask`)
+- XML template generation and schema validation
+- MCP planning and validation tools
+- Result parsing for existing OpenMC output files
+
+OpenMC is required for simulation execution, geometry-debug checks, and plot rendering.
+
+## Architectural Constraints
 - **No Web UI:** We are not building a 3D visualization web app. Visual verification will be handled natively via the AI chat client using 2D slice plots.
-- **No Unsupervised Design for Licensing/Safety:** The system is an engineering-assist tool with human-in-the-loop verification. v2.6 autonomy is bounded exploration and optimization within validated physics constraints — a human reviews and approves every output. Never autonomous for licensing or safety-critical sign-off.
+- **No Unsupervised Design for Licensing/Safety:** The system is an engineering-assist tool with human-in-the-loop verification. A human reviews and approves every output. Never autonomous for licensing or safety-critical sign-off.
 - **No Loose LLM Calls:** All LLM interactions must be routed through strict, schema-validated tool definitions.
+- **MCP Parallels CLI:** The MCP layer should expose the same workflow surface as the CLI, not a separate hidden product.
 
-## Where we are
-**v2.0.0 (current):**
+## Where We Are
+**v2.0.1 (current):**
 - MCP server (`promptmc-mcp`) exposing 10 OpenMC tools and 3 resources to AI assistants
 - Chat-native 2D geometry plotting (`openmc_plot`) and geometry-debug validation
 - Production-grade CLI wrapper around OpenMC (subprocess + Python API)
-- 260 tests, 87% coverage, full CI on Python 3.10–3.12
+- 268 tests, 88% coverage, full CI on Python 3.10–3.13
 - Clean architecture: `OpenMCInstaller` / `OpenMCValidator` / `OpenMCRunner`
 - Pydantic schema validation for base XML configurations and MCP tool I/O
 - Optional OpenTelemetry tracing
 
-## Shipped: — MCP Server (v2.0)
+## Shipped — MCP Server (v2.0)
 **Goal (met):** Expose PromptMC's validation and execution logic directly to AI clients (Claude Desktop, Cursor, Windsurf, Antigravity) via MCP.
 - **Shipped:** `promptmc-mcp` stdio server (`pip install promptmc[mcp]`).
 - **Shipped:** 10 tools incl. `openmc_validate`, `openmc_run`, `openmc_analyze`, and `openmc_schema_check` with strict Pydantic input/output schemas.
@@ -32,34 +48,57 @@ It provides a strictly typed, schema-driven Model Context Protocol (MCP) server 
 
 ## Next Sprints
 
-### v2.1 — CSG schema + serialization
+### v2.1 — CSG Schema + Serialization
 - **Deliverable:** Pydantic models for Surfaces, Regions, Cells, Materials, and Tallies.
 - **Deliverable:** Round-trip serialization to runnable OpenMC XML.
 - **Deliverable:** Dual-mode serialization: when OpenMC is available, serialize through OpenMC objects (`.export_to_xml()`); when absent, serialize Pydantic models to intermediate dicts and use a lightweight dict-to-xml utility to avoid double-maintenance.
-- **Deliverable:** First two validated reference geometries (PWR pin, Godiva).
+- **Deliverable:** First two validated reference geometries (PWR pin, Godiva) as schema integration tests.
 
-### v2.2 — Validation + reference library
-- **Deliverable:** Pre-execution validation to catch unbounded geometries and void cells.
-- **Deliverable:** Open-source library of ~6 validated reference geometries (PWR/BWR pin, Godiva, Jezebel, ICSBEP cases) — the structural moat.
+### v2.2 — Reference Library
+- **Deliverable:** Open-source library of validated reference geometries: PWR pin, BWR pin, Godiva, Jezebel, and selected ICSBEP benchmark cases.
+- **Deliverable:** Each geometry is runnable, documented, and independently checked against known results.
+- **Release:** Treat as a community launch through OpenMC discussions, the OpenMC Google Group, and ANS forums.
 
-### v2.3 — Geometry composition + inspection
+The reference library is the trust asset. It ships before additional geometry automation.
+
+### v2.3 — Geometry Composition + Inspection
 - **Deliverable:** Deterministic `openmc_build_geometry` MCP tool (semantic JSON → validated geometry object).
-- **Deliverable:** Inspection and query tools: `openmc_query_geometry`, `openmc_list_cells`, `openmc_list_materials`, `openmc_trace_point`, `openmc_diff_geometry`, `openmc_describe_geometry`.
+- **Deliverable:** Lean inspection surface: `openmc_query_geometry`, `openmc_list_cells`, and `openmc_list_materials`.
+- **Deferred:** `openmc_trace_point` lands with the physics gate; `openmc_diff_geometry` lands with constrained generation/provenance.
 
-### v2.4 — Component library
+### v2.4 — Physics Safety Gate
+- **Deliverable:** Pre-execution validation for cell overlaps, unbounded geometries, void cells, and tracking inconsistencies.
+- **Deliverable:** Structured, human- and AI-readable failure explanations that feed exact fixes back into an agent's context.
+- **Deliverable:** `openmc_trace_point` to identify which cells claim a coordinate.
+- **Deliverable:** Extended `promptmc validate` CLI.
+- **Gate:** All v2.2 reference geometries must pass cleanly.
+
+### v2.5 — Component Library
 - **Deliverable:** Reusable, pre-approved components (FuelPin, GuideTube, ControlRod, ReflectorBlock, WaterBox).
 - **Deliverable:** Hexagonal-lattice support for specialized reactor types.
+- **Constraint:** Components are validated against the physics gate before they ship.
 
-### v2.5 — Physics safety gate
-- **Deliverable:** Deterministic `promptmc validate` CLI and engine catching cell overlaps, invalid boundaries, and tracking inconsistencies before OpenMC runs.
-- **Deliverable:** Structured, human- and AI-readable failure explanations (explainability) that feed exact fixes back into an agent's context.
+### v2.6 — Observability
+- **Deliverable:** OpenTelemetry exporter for agent usage metrics: tool-call volume, payload size, and schema rejection rates.
+- **Deliverable:** Distributed tracing across the tool surface.
 
-### v2.6 — Constrained + autonomous generation
+Instrument before shipping constrained generation, where behavior most needs inspection.
+
+### v2.7 — Constrained Generation
 - **Deliverable:** LLM-agnostic constrained-generation pipeline with a validate-and-repair loop.
-- **Deliverable:** `openmc_design` MCP tool (natural language → validated OpenMC input).
-- **Deliverable:** Closed-loop, multi-turn optimization that iterates on geometry within validated physics constraints. A human reviews and approves every output; never autonomous for licensing or safety-critical decisions.
+- **Deliverable:** Provider-agnostic model support with Google Gemini as the default and user-configurable alternatives.
+- **Deliverable:** `openmc_design` MCP tool: natural language → validated OpenMC input package.
+- **Deliverable:** Repair loop bounded by the v2.4 physics gate; either it passes the gate or exits with a structured failure.
+- **Deliverable:** `openmc_diff_geometry` to show exactly what the repair loop changed.
+- **Deliverable:** Minimal audit record for generated output: model used and artifact produced.
+- **Constraint:** Human reviews and approves every output. Never autonomous for licensing or safety-critical decisions.
 
-### v2.7 — Observability + provenance
-- **Deliverable:** OpenTelemetry exporter library for agent usage metrics (tool-call volume, payload size, schema rejection rates).
-- **Deliverable:** AI provenance — capture the connecting MCP client from `clientInfo`, plus the model and provider via `PROMPTMC_TRACKING_MODEL` / `PROMPTMC_COMPANY_ID`.
-- **Deliverable:** Deterministic AI audit logging. All MCP tool calls are wrapped in OpenTelemetry spans and written to a local `audit.jsonl` file to guarantee complete provenance of AI actions.
+### v2.8 — Provenance + Audit
+- **Deliverable:** Wrap MCP tool calls in OpenTelemetry spans and write a local `audit.jsonl`.
+- **Deliverable:** Capture MCP client identity via `clientInfo`; capture model/provider via `PROMPTMC_TRACKING_MODEL` and `PROMPTMC_COMPANY_ID`.
+- **Deliverable:** Deterministic record of AI-authored actions for review and provenance.
+
+## Not In This Roadmap
+- **Timeline:** timelines on a solo project are fiction.
+- **Commercialization:** that belongs in a separate document.
+- **v3.x:** this roadmap ends at a complete, validated, human-supervised generation pipeline with provenance.
