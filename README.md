@@ -2,9 +2,11 @@
 
 **Validated OpenMC workflows for AI-assisted reactor physics.**
 
-OpenMC is powerful and painful: you hand-write XML, manage batch runs, and read results out of HDF5. PromptMC is the infrastructure layer that removes that friction — a validated CLI and MCP server.
+OpenMC is powerful and painful: you hand-write XML, manage batch runs, and read results out of HDF5. PromptMC is the infrastructure layer that reduces that friction — a validated CLI and MCP server.
 
-It works like a grammar checker between an AI assistant and OpenMC: the AI proposes a configuration, PromptMC validates it against physical and geometric constraints before the simulator runs, and catches the impossible geometries that would otherwise crash it. Most of it works without OpenMC installed.
+It works like a grammar checker between an AI assistant and OpenMC: the AI proposes a configuration, PromptMC validates XML structure and supported schema constraints before the simulator runs, and catches malformed inputs early.
+
+Most planning and schema-validation workflows work without OpenMC installed; execution, geometry-debug checks, and 2D plot rendering require OpenMC.
 
 ---
 
@@ -12,12 +14,12 @@ It works like a grammar checker between an AI assistant and OpenMC: the AI propo
 
 **Without OpenMC:**
 - Describe a simulation in plain English → a validated plan and `settings.xml` (the default planner uses no generative AI)
-- Validate and schema-check OpenMC
-- Drive any of the above from an AI client via the MCP server
+- Validate XML structure and PromptMC's supported OpenMC schemas
+- Drive planning and schema validation from an AI client via the MCP server
 
 **With OpenMC:**
 - Run simulations (subprocess or Python API)
-- 2D geometry slice plots inside your AI chat client
+- Run geometry-debug overlap checks and generate 2D slice plots inside your AI chat client
 - Parse statepoint and tally outputs without touching HDF5
 
 ---
@@ -36,7 +38,9 @@ promptmc ask "pin cell criticality with 50k particles" --write
 ```
 
 By default, `ask` uses a deterministic local planner — no API key, no network, no generative AI. The optional `--llm` flag calls an external OpenAI-compatible model, configured through environment variables (`PROMPTMC_LLM_API_KEY`, `PROMPTMC_LLM_ENDPOINT`,
-`PROMPTMC_LLM_MODEL`); the key is read only from the environment. See the [CLI reference](docs/cli-reference.md) for provider setup.
+`PROMPTMC_LLM_MODEL`); the key is read only from the environment.
+
+See the [CLI reference](docs/cli-reference.md) for provider setup.
 
 ---
 
@@ -64,7 +68,9 @@ promptmc-mcp
 
 Also works with Cursor, Windsurf, and Google Antigravity.
 
-**Tools:** `openmc_validate`, `openmc_schema_check`, `openmc_template`, `openmc_list_templates`, `openmc_run`, `openmc_analyze`, `openmc_plot` (2D slice, returned to the chat client), `openmc_geometry_debug`, `openmc_check_installation`, `openmc_check_cross_sections`. Resources expose the configured cross-sections path, the session's tool-call history, and the bundled examples.
+**Tools:** `openmc_validate`, `openmc_schema_check`, `openmc_template`, `openmc_list_templates`, `openmc_run`, `openmc_analyze`, `openmc_plot` (2D slice, returned to the chat client), `openmc_geometry_debug`, `openmc_check_installation`, `openmc_check_cross_sections`.
+
+Resources expose the configured cross-sections path, the session's tool-call history, and the bundled examples.
 
 Every output is reviewed by a human. PromptMC is an assistant, never an autonomous designer.
 
@@ -74,7 +80,7 @@ Every output is reviewed by a human. PromptMC is an assistant, never an autonomo
 
 - [CLI reference](docs/cli-reference.md) — commands, flags, environment variables
 - [Python API](docs/python-api.md) — scripting PromptMC
-- [Templates](docs/templates.md) · [Telemetry](docs/telemetry.md)
+- [Templates](docs/cli-reference.md#templates) · [Telemetry](docs/telemetry-and-audit.md)
 - [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md)
 
 ---
@@ -87,7 +93,7 @@ pip install promptmc[mcp]         # + MCP server
 pip install promptmc[telemetry]   # + OpenTelemetry tracing
 ```
 
-**OpenMC** (required only for simulation execution) is not on PyPI — build from source per [docs.openmc.org](https://docs.openmc.org/en/stable/quickstart.html). Planning, validation, and geometry work without it.
+**OpenMC** (required for simulation execution, geometry-debug checks, and plot rendering) is not on PyPI — build from source per [docs.openmc.org](https://docs.openmc.org/en/stable/quickstart.html). Planning and XML/schema validation work without it.
 
 **Cross-section data** (for running simulations):
 
@@ -117,7 +123,7 @@ Full options in the [CLI reference](docs/cli-reference.md).
 
 ## Quality
 
-260 tests · 87% coverage · CI on Python 3.10–3.12 · strict MyPy · zero Ruff warnings · Bandit scanning.
+268 tests · 88% coverage · CI on Python 3.10–3.13 · strict MyPy · zero Ruff warnings · Bandit scanning.
 
 ---
 
@@ -125,24 +131,11 @@ Full options in the [CLI reference](docs/cli-reference.md).
 
 PromptMC is an engineering-assist tool that keeps a human in the loop. It is not a substitute for professional engineering judgment, independent verification and validation, or regulatory review, and is not for safety, licensing, or other regulated decisions. Reproducing a published benchmark is not qualification for safety analysis. Provided as-is (see [LICENSE](LICENSE)).
 
-## Related Work and Ecosystem
+## About
 
-PromptMC focuses on a specific, currently underserved layer: **natural-language authoring and fail-fast input validation, exposed to AI assistants via MCP.** It is designed to complement, not replace, the excellent existing tools in the [OpenMC ecosystem](https://github.com/openmc-dev/openmc-ecosystem):
+I studied nuclear engineering at MIT over 20 years ago, running MCNP 4 for my senior thesis. Though I left during my senior year, I eventually went back to university to get a degree in Computer Science, and I have spent the last 11 years working as a software engineer and site reliability engineer at a major FAANG cloud provider.
 
-- **Model creation and templating:** [WATTS](https://github.com/watts-dev/watts) and [ELSA](https://github.com/IdahoLabResearch/ELSA).
-- **Parametric CAD geometry:** [Paramak](https://github.com/fusion-energy/paramak) (primarily for fusion).
-- **Design optimization:** [OpenNeoMC](https://github.com/XuboGU/OpenNeoMC).
-- **Verification and validation:** [JADE](https://github.com/JADE-V-V/JADE).
-
-**A natural workflow:**
-
-PromptMC authors and validates the model → hand it downstream to optimization (OpenNeoMC), coupling (Cardinal), or visualization tools.
-
-## About the Author
-
-I studied nuclear engineering at MIT over 20 years ago, running MCNP 4 for my senior thesis. Though I left during my senior year, I eventually went back to univeristy to get a degree in Computer Science and I have spent the last 11 years working as a software engineer and site reliability at a major FAANG cloud provider.
-
-PromptMC bridges those two worlds. It also for me an exploration of using agentic programming to build software—held to strict infrastructure-grade SRE standards.
+PromptMC bridges those two worlds. It is also, for me, an exploration of using agentic programming to build software—held to strict infrastructure-grade SRE standards.
 
 ## Contributions and Support
 
