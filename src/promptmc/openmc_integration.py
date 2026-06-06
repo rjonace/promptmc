@@ -1,3 +1,5 @@
+"""Core OpenMC integration: installation checks, input validation, and execution."""
+
 from __future__ import annotations
 
 import os
