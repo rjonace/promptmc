@@ -11,7 +11,7 @@ promptmc-mcp
 
 Then connect an MCP-capable AI assistant (Claude Desktop, Windsurf, Cursor,
 Antigravity, VS Code with Copilot) using the configuration in the main
-[README](../../README.md#ai-assistant-configuration).
+[README](../../README.md#mcp-server).
 
 ## Steps (as performed by an AI assistant)
 

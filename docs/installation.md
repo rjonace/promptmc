@@ -1,16 +1,34 @@
 # Installation Guide
 
-This guide covers detailed installation instructions for OpenMC and PromptMC, including building OpenMC from source.
+This guide covers PromptMC installation plus the optional OpenMC setup required for simulation execution, geometry-debug checks, and plot rendering.
 
 ## Prerequisites
 
-- Python 3.10 or higher (required for OpenMC Python API compatibility)
-- OpenMC (built from source or executable in PATH)
-- Nuclear cross-section data (for running simulations)
+- Python 3.10, 3.11, 3.12, or 3.13
+- OpenMC, built from source or executable in `PATH`, for running simulations
+- Nuclear cross-section data for running simulations
+
+PromptMC planning, template generation, XML validation, and schema validation work without OpenMC installed.
+
+## Install PromptMC
+
+```bash
+pip install promptmc
+pip install promptmc[mcp]         # optional MCP server
+pip install promptmc[telemetry]   # optional OpenTelemetry support
+```
+
+For editable development:
+
+```bash
+git clone https://github.com/rjonace/promptmc.git
+cd promptmc
+poetry install --with dev --extras "telemetry mcp"
+```
 
 ## Install OpenMC
 
-OpenMC is not available via pip. Build from source:
+OpenMC is not available via pip. Build from source when you need execution, plotting, or geometry-debug workflows:
 
 ### macOS with Homebrew
 
@@ -71,36 +89,15 @@ export OPENMC_CROSS_SECTIONS=$(pwd)/cross_sections/cross_sections.xml
 
 You can also download cross-section data directly from the [IAEA Nuclear Data Section](https://www-nds.iaea.org/endf/) or [TENDL](https://tendl.web.psi.ch/tendl_2019/tendl2019.html) and place them in a directory, then set the `OPENMC_CROSS_SECTIONS` environment variable to point to the `cross_sections.xml` file.
 
-## Install PromptMC
-
-```bash
-# Clone the repository
-git clone https://github.com/rjonace/promptmc.git
-cd promptmc
-
-# Create virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# Install in editable mode
-pip install -e .
-
-# Install with optional telemetry support
-pip install -e ".[telemetry]"
-
-# Install development dependencies (optional)
-pip install pytest pytest-cov mypy ruff pre-commit bandit types-PyYAML types-psutil types-defusedxml
-```
-
 ## Verify Installation
 
 ```bash
-# Check OpenMC installation
+# Check PromptMC and OpenMC installation status
 promptmc info
 
 # Check system info
 promptmc system-info
 
-# Run a quick validation test
+# Run a quick command check
 promptmc validate --help
 ```
