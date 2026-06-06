@@ -9,6 +9,7 @@ from typing import Any
 
 from promptmc._typing import PathLike
 
+_openmc: Any
 try:
     import openmc as _openmc
 except ImportError:  # pragma: no cover - the openmc extra is optional

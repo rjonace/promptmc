@@ -69,6 +69,7 @@ from promptmc.templates import TemplateMetadata, get_template
 from promptmc.templates import list_templates as registry_list_templates
 from promptmc.visualization import ResultParser
 
+_openmc: Any
 try:
     import openmc as _openmc
 except ImportError:  # pragma: no cover - the openmc extra is optional
