@@ -1,35 +1,95 @@
 # PromptMC
 
-**PromptMC** is an AI-native infrastructure layer for OpenMC that enables validated, reproducible, and auditable Monte Carlo workflows.
+**Validated OpenMC workflows for AI-assisted reactor physics.**
 
-By combining deterministic schema validation, OpenMC tooling, and MCP integration, PromptMC helps engineers use AI assistants safely while keeping humans in control of every engineering decision. The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
+OpenMC is powerful and painful: you hand-write XML, manage batch runs, and read results out of HDF5. PromptMC is the infrastructure layer that removes that friction — a validated CLI and MCP server.
 
+It works like a grammar checker between an AI assistant and OpenMC: the AI proposes a configuration, PromptMC validates it against physical and geometric constraints before the simulator runs, and catches the impossible geometries that would otherwise crash it. Most of it works without OpenMC installed.
 
-## Vision
+---
 
-OpenMC is powerful, but getting started can be challenging. PromptMC reduces this friction through natural-language planning, automated XML generation, and fail-fast schema validation.
+## What you can do
 
-PromptMC exposes a Model Context Protocol (MCP) server so AI assistants can securely run OpenMC workflows, validate schemas, and plot geometries directly.
+**Without OpenMC:**
+- Describe a simulation in plain English → a validated plan and `settings.xml` (the default planner uses no generative AI)
+- Validate and schema-check OpenMC
+- Drive any of the above from an AI client via the MCP server
 
-Whether you're new to Monte Carlo or an experienced researcher, PromptMC lets you focus on physics, not configuration.
+**With OpenMC:**
+- Run simulations (subprocess or Python API)
+- 2D geometry slice plots inside your AI chat client
+- Parse statepoint and tally outputs without touching HDF5
 
-Because AI hallucination is a valid concern in reactor physics, the system is designed with deterministic blast walls. We do not blindly trust the AI:
+---
 
-- **Fail-Fast Schemas:** All AI interactions are routed through strict Pydantic schemas. The AI cannot touch OpenMC directly.
-- **Manual Review and Integration Tests:** Tests are verified against real OpenMC runs (`examples/uo2_criticality/`), not just unit test mocks.
-- **Static Analysis:** Bandit, strict MyPy, and Ruff provide independent validation untouched by the agent.
+## Quick start
 
-The result is a fully functional, highly tested tool designed to make Monte Carlo iteration safer and faster.
+```bash
+pip install promptmc
+```
+
+No OpenMC needed:
+
+```bash
+promptmc ask "concrete shielding calculation with 1 million particles"
+promptmc ask "pin cell criticality with 50k particles" --write
+```
+
+By default, `ask` uses a deterministic local planner — no API key, no network, no generative AI. The optional `--llm` flag calls an external OpenAI-compatible model, configured through environment variables (`PROMPTMC_LLM_API_KEY`, `PROMPTMC_LLM_ENDPOINT`,
+`PROMPTMC_LLM_MODEL`); the key is read only from the environment. See the [CLI reference](docs/cli-reference.md) for provider setup.
+
+---
+
+## MCP server
+
+PromptMC exposes a Model Context Protocol server so AI assistants can run OpenMC workflows natively — validation, plotting, execution, and result parsing from inside your LLM chat client.
+
+```bash
+pip install promptmc[mcp]
+promptmc-mcp
+```
+
+**Claude Desktop:**
+
+```json
+{
+  "mcpServers": {
+    "promptmc": {
+      "command": "promptmc-mcp",
+      "env": { "OPENMC_CROSS_SECTIONS": "/path/to/cross_sections.xml" }
+    }
+  }
+}
+```
+
+Also works with Cursor, Windsurf, and Google Antigravity.
+
+**Tools:** `openmc_validate`, `openmc_schema_check`, `openmc_template`, `openmc_list_templates`, `openmc_run`, `openmc_analyze`, `openmc_plot` (2D slice, returned to the chat client), `openmc_geometry_debug`, `openmc_check_installation`, `openmc_check_cross_sections`. Resources expose the configured cross-sections path, the session's tool-call history, and the bundled examples.
+
+Every output is reviewed by a human. PromptMC is an assistant, never an autonomous designer.
+
+---
+
+## Documentation
+
+- [CLI reference](docs/cli-reference.md) — commands, flags, environment variables
+- [Python API](docs/python-api.md) — scripting PromptMC
+- [Templates](docs/templates.md) · [Telemetry](docs/telemetry.md)
+- [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md)
+
+---
 
 ## Installation
 
-### Prerequisites
-- Python 3.10 or higher
-- OpenMC installed and in your PATH. (See the [OpenMC Quick Install Guide](https://docs.openmc.org/en/stable/quickinstall.html))
-- Nuclear cross-section data
+```bash
+pip install promptmc              # core
+pip install promptmc[mcp]         # + MCP server
+pip install promptmc[telemetry]   # + OpenTelemetry tracing
+```
 
-### Install Nuclear Data
-The easiest way to get cross-section data is using the `openmc_data_downloader` package:
+**OpenMC** (required only for simulation execution) is not on PyPI — build from source per [docs.openmc.org](https://docs.openmc.org/en/stable/quickstart.html). Planning, validation, and geometry work without it.
+
+**Cross-section data** (for running simulations):
 
 ```bash
 pip install openmc-data-downloader
@@ -37,94 +97,33 @@ openmc_data_downloader -l TENDL-2019 -i U235 U238 O16 H1 -d cross_sections
 export OPENMC_CROSS_SECTIONS=$(pwd)/cross_sections/cross_sections.xml
 ```
 
-### Install PromptMC
+---
+
+## CLI at a glance
 
 ```bash
-git clone https://github.com/rjonace/promptmc.git
-cd promptmc
-python3 -m venv .venv
-source .venv/bin/activate
-
-# Install in editable mode (add [telemetry] for OpenTelemetry support)
-pip install -e .
-```
-
-### Install MCP
-
-```bash
-pip install promptmc[mcp]
-```
-
-### AI Assistant Configuration
-
-**Claude Desktop (`claude_desktop_config.json`):**
-```json
-{
-  "mcpServers": {
-    "promptmc": {
-      "command": "promptmc-mcp",
-      "env": {
-        "OPENMC_CROSS_SECTIONS": "/path/to/cross_sections.xml"
-      }
-    }
-  }
-}
-```
-
-**Windsurf / Cursor:**
-```json
-{
-  "promptmc": {
-    "command": "promptmc-mcp"
-  }
-}
-```
-
-*For a full list of available MCP tools and resources, see [docs/cli-reference.md](docs/cli-reference.md).*
-
-## Quick Start
-
-### Natural-Language Workflow
-
-Describe what you want in plain English. `ask` is offline-first and uses a deterministic rule-based planner to map domain language to built-in templates and safe defaults.
-
-```bash
-# Generate a plan and output settings.xml directly
-promptmc ask "make a concrete shielding calculation with 1 million particles" --write
-```
-*Output: PromptMC identifies the `shielding` template, maps 1,000,000 particles and 10 batches, and generates the validated `settings.xml` file.*
-
-Use an OpenAI-compatible LLM for richer interpretation:
-```bash
-export OPENAI_API_KEY="..."
-promptmc ask "I need a high-statistics shielding model for a 14 MeV source" --llm --write
-```
-
-### CLI Usage
-
-```bash
-# Validate XML structure + schema (Pydantic)
-promptmc validate input.xml --schema
-
-# Run a schema-only check on a directory
-promptmc schema-check ./input_dir/
-
-# Run a simulation (auto-detects API or subprocess)
-promptmc run input.xml --threads 4
-
-# Analyze simulation results
+promptmc ask "criticality run with 100k particles" --write   # plan (no OpenMC)
+promptmc template criticality --particles 10000              # generate settings.xml
+promptmc validate input.xml --schema                         # validate
+promptmc run input.xml --threads 4                           # run (needs OpenMC)
+promptmc batch batch_spec.yaml --parallel threads --workers 4
 promptmc analyze ./output --json results.json
+promptmc info                                                # environment status
 ```
 
-For Advanced CLI usage, Python API examples, and the full Project Architecture, visit the **[Documentation](docs/)** folder. See [examples/](examples/) for working code examples.
+Full options in the [CLI reference](docs/cli-reference.md).
 
-## Safety and Scope
+---
 
-PromptMC is an engineering-assist tool that keeps a human in the loop. It is **not** a substitute for professional engineering judgment, independent verification and validation, or regulatory review, and it is **not** intended for safety, licensing, or other regulated decisions. Reproducing a published benchmark is not qualification for safety analysis. The software is provided "as is", without warranty of any kind (see [LICENSE](LICENSE)).
+## Quality
 
-**What PromptMC validation does:** checks that XML files are well-formed and conform to the OpenMC schema (correct element names, required attributes, value types), and that the local planner's keyword matching produced a recognizable template choice.
+260 tests · 87% coverage · CI on Python 3.10–3.12 · strict MyPy · zero Ruff warnings · Bandit scanning.
 
-**What it does not do:** verify physical correctness of your geometry, confirm that materials are meaningful for your application, check for geometry overlaps beyond calling OpenMC's own geometry-debug mode, or provide any assurance suitable for licensing, safety analysis, or regulatory submission. Every simulation output must be independently reviewed by a qualified nuclear engineer before any engineering decision is made.
+---
+
+## Safety
+
+PromptMC is an engineering-assist tool that keeps a human in the loop. It is not a substitute for professional engineering judgment, independent verification and validation, or regulatory review, and is not for safety, licensing, or other regulated decisions. Reproducing a published benchmark is not qualification for safety analysis. Provided as-is (see [LICENSE](LICENSE)).
 
 ## Related Work and Ecosystem
 
@@ -141,9 +140,9 @@ PromptMC authors and validates the model → hand it downstream to optimization 
 
 ## About the Author
 
-I studied nuclear engineering at MIT over 20 years ago, running MCNP 4 for my senior thesis. Though I left during my senior year, I spent the last decade working as a software engineer at a major FAANG cloud provider.
+I studied nuclear engineering at MIT over 20 years ago, running MCNP 4 for my senior thesis. Though I left during my senior year, I eventually went back to univeristy to get a degree in Computer Science and I have spent the last 11 years working as a software engineer and site reliability at a major FAANG cloud provider.
 
-PromptMC bridges those two worlds. It is an exploration of agentic programming—using AI agents (Cascade, Claude, Gemini) to build software—held to strict infrastructure-grade SRE standards.
+PromptMC bridges those two worlds. It also for me an exploration of using agentic programming to build software—held to strict infrastructure-grade SRE standards.
 
 ## Contributions and Support
 
@@ -151,4 +150,4 @@ We welcome contributions! Please ensure all checks pass (`pytest`, `ruff check`,
 - **License:** MIT
 - **Documentation:** [GitHub Repository](https://github.com/rjonace/promptmc)
 - **Issues and Discussions:** [GitHub Issues](https://github.com/rjonace/promptmc/issues)
-- **Roadmap:** [ROADMAP.md](ROADMAP.md) for planned features and release timeline
+- **Roadmap:** [ROADMAP.md](ROADMAP.md) for planned features and release timeline.
