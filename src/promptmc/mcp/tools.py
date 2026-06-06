@@ -69,11 +69,12 @@ from promptmc.templates import TemplateMetadata, get_template
 from promptmc.templates import list_templates as registry_list_templates
 from promptmc.visualization import ResultParser
 
-_openmc: Any = None
 try:  # noqa: SIM105
-    import openmc as _openmc
+    import openmc
+
+    _openmc: Any = openmc
 except ImportError:  # pragma: no cover - the openmc extra is optional
-    pass
+    _openmc = None
 
 logger = logging.getLogger(__name__)
 
