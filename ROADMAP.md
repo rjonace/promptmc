@@ -97,8 +97,3 @@ Instrument before shipping constrained generation, where behavior most needs ins
 - **Deliverable:** Wrap MCP tool calls in OpenTelemetry spans and write a local `audit.jsonl`.
 - **Deliverable:** Capture MCP client identity via `clientInfo`; capture model/provider via `PROMPTMC_TRACKING_MODEL` and `PROMPTMC_COMPANY_ID`.
 - **Deliverable:** Deterministic record of AI-authored actions for review and provenance.
-
-## Not In This Roadmap
-- **Timeline:** timelines on a solo project are fiction.
-- **Commercialization:** that belongs in a separate document.
-- **v3.x:** this roadmap ends at a complete, validated, human-supervised generation pipeline with provenance.
