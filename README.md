@@ -14,8 +14,6 @@ Because AI hallucination is a valid concern in reactor physics, the system is de
 
 The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
 
----
-
 ## What you can do
 
 Most planning and schema-validation workflows work without OpenMC installed; execution, geometry-debug checks, and 2D plot rendering require OpenMC.
@@ -30,50 +28,13 @@ Most planning and schema-validation workflows work without OpenMC installed; exe
 - Run geometry-debug overlap checks and generate 2D slice plots inside your AI chat client
 - Parse statepoint and tally outputs without touching HDF5
 
----
-
-## Quick start
-
-```bash
-pip install promptmc
-```
-
-No OpenMC needed:
-
-```bash
-promptmc plan "concrete shielding calculation with 1 million particles"
-promptmc plan "pin cell criticality with 50k particles" --write
-promptmc plan "create a Godiva critical assembly benchmark with U-235 metal sphere geometry"
-```
-
-By default, `plan` uses a deterministic local planner, needing no API key, no network, no generative AI. The optional `--llm` flag calls Google Gemini (set GEMINI_API_KEY), which can interpret more open-ended natural-language requests. Customize the model name with GEMINI_MODEL (defaults to gemini-3.5-flash).
-
-See the [CLI reference](docs/cli-reference.md) for provider setup.
-
----
-
-## MCP server
-
-PromptMC exposes a Model Context Protocol server so AI assistants can run OpenMC workflows natively — validation, plotting, execution, and result parsing from inside your LLM chat client, such as Claude Desktop, Cursor, Windsurf, and Google Antigravity.
-
-**Tools:** `openmc_validate`, `openmc_schema_check`, `openmc_template`, `openmc_list_templates`, `openmc_run`, `openmc_analyze`, `openmc_plot` (2D slice, returned to the chat client), `openmc_geometry_debug`, `openmc_check_installation`, `openmc_check_cross_sections`.
-
-Resources expose the configured cross-sections path, the session's tool-call history, and the bundled examples.
-
----
-
-## Documentation
-
-- [Installation](docs/installation.md) — setup paths for PromptMC, OpenMC, and nuclear data
-- [CLI reference](docs/cli-reference.md) — commands, flags, environment variables
-- [Python API](docs/python-api.md) — scripting PromptMC
-- [Templates](docs/cli-reference.md#templates) · [Telemetry](docs/telemetry-and-audit.md)
-- [Examples](examples/uo2_criticality/README.md) · [MCP example](examples/mcp/README.md)
-- [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
-
----
-
 ## Installation
+
+**Prerequisites:**
+- Python 3.10 or higher
+- Pip
+
+**PromptMC** can be installed using pip. Use the following commands to install PromptMC:
 
 ```bash
 pip install promptmc              # core (includes CLI, MCP server, and Gemini planner)
@@ -90,15 +51,18 @@ openmc_data_downloader -l TENDL-2019 -i U235 U238 O16 H1 -d cross_sections
 export OPENMC_CROSS_SECTIONS=$(pwd)/cross_sections/cross_sections.xml
 ```
 
----
+See [installation](docs/installation.md) for more details.
 
-## CLI at a glance
+## CLI
+
+By default, `plan` uses a deterministic local planner, needing no API key, no network, no generative AI. The optional `--llm` flag calls Google Gemini (set GEMINI_API_KEY), which can interpret more open-ended natural-language requests. Customize the model name with GEMINI_MODEL (defaults to gemini-3.5-flash).
 
 ```bash
-promptmc plan "criticality run with 100k particles" --write     # plan (no OpenMC)
+promptmc plan "concrete shielding calculation with 1 million particles"
+promptmc plan "pin cell criticality with 50k particles" --write
 promptmc template criticality --particles 10000                 # generate settings.xml
-promptmc validate input.xml --schema                            # validate
-promptmc run input.xml --threads 4                              # run (needs OpenMC)
+promptmc validate input.xml --schema
+promptmc run input.xml --threads 4                              # needs OpenMC
 promptmc batch batch_spec.yaml --parallel threads --workers 4
 promptmc analyze ./output --json results.json
 promptmc info                                                   # environment status
@@ -106,13 +70,17 @@ promptmc info                                                   # environment st
 
 Full options in the [CLI reference](docs/cli-reference.md).
 
----
+## MCP server
+
+PromptMC exposes a Model Context Protocol server so AI assistants can run OpenMC workflows natively — validation, plotting, execution, and result parsing from inside your LLM chat client, such as Claude Desktop, Cursor, Windsurf, and Google Antigravity.
+
+**Tools:** `openmc_validate`, `openmc_schema_check`, `openmc_template`, `openmc_list_templates`, `openmc_run`, `openmc_analyze`, `openmc_plot` (2D slice, returned to the chat client), `openmc_geometry_debug`, `openmc_check_installation`, `openmc_check_cross_sections`.
+
+Resources expose the configured cross-sections path, the session's tool-call history, and the bundled examples.
 
 ## Quality
 
 279 tests · 87% coverage · CI on Python 3.10–3.13 · strict MyPy · zero Ruff warnings · Bandit scanning.
-
----
 
 ## Safety
 
@@ -123,6 +91,15 @@ PromptMC is an engineering-assist tool that keeps a human in the loop. It is not
 I studied nuclear engineering at MIT over 20 years ago, running MCNP 4 for my senior thesis. Though I left during my senior year, I eventually went back to university to get a degree in Computer Science, and I have spent the last 11 years working as a software engineer and site reliability engineer at a major FAANG cloud provider.
 
 PromptMC bridges those two worlds. It is also, for me, an exploration of using agentic programming to build software for fun but still holding professional production principles and standards.
+
+## Documentation
+
+- [Installation](docs/installation.md) — setup paths for PromptMC, OpenMC, and nuclear data
+- [CLI reference](docs/cli-reference.md) — commands, flags, environment variables
+- [Python API](docs/python-api.md) — scripting PromptMC
+- [Templates](docs/cli-reference.md#templates) · [Telemetry](docs/telemetry-and-audit.md)
+- [Examples](examples/uo2_criticality/README.md) · [MCP example](examples/mcp/README.md)
+- [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
 ## Contributions and Support
 
