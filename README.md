@@ -41,7 +41,7 @@ pip install promptmc              # core (includes CLI, MCP server, and Gemini p
 pip install promptmc[telemetry]   # + OpenTelemetry tracing
 ```
 
-**OpenMC** (required for simulation execution, geometry-debug checks, and plot rendering) is not on PyPI — install it via Conda, Spack, Docker, or build from source per [docs.openmc.org](https://docs.openmc.org/en/stable/quickinstall.html). Planning and XML/schema validation work without it.
+**OpenMC** (required for simulation execution, geometry-debug checks, and plot rendering) can be installed via Conda, Spack, Docker, or build from source per [docs.openmc.org](https://docs.openmc.org/en/stable/quickinstall.html). Planning and XML/schema validation work without it.
 
 **Cross-section data** (for running simulations):
 
@@ -77,10 +77,6 @@ PromptMC exposes a Model Context Protocol server so AI assistants can run OpenMC
 **Tools:** `openmc_validate`, `openmc_schema_check`, `openmc_template`, `openmc_list_templates`, `openmc_run`, `openmc_analyze`, `openmc_plot` (2D slice, returned to the chat client), `openmc_geometry_debug`, `openmc_check_installation`, `openmc_check_cross_sections`.
 
 Resources expose the configured cross-sections path, the session's tool-call history, and the bundled examples.
-
-## Quality
-
-279 tests · 87% coverage · CI on Python 3.10–3.13 · strict MyPy · zero Ruff warnings · Bandit scanning.
 
 ## Safety
 
