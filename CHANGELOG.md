@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-06-07
+
+### Added
+- Pydantic v2 models for constructive solid geometry (CSG) primitive types (Surfaces, Regions, Cell, Universe, GeometryModel) in new `promptmc.geometry` package.
+- Discriminated union of surfaces including `XPlane`, `YPlane`, `ZPlane`, `Plane`, `Sphere`, `XCylinder`, `YCylinder`, and `ZCylinder`.
+- Tree-based region representation (`HalfSpace`, `Intersection`, `Union_`, `Complement`).
+- Validation rules for geometry constraints: uniqueness of surface/cell IDs, dangling region references, and anti-hang bounded geometry checks.
+- Unified Pydantic material schema validation (`NuclideSpec`, `Material`, `MaterialsModel`) and tallies schema (`TallyFilter`, `Tally`, `TalliesModel`).
+- Dual-mode serialization in `xml_serializer.py` that outputs XML using standard `openmc` objects when importable, and gracefully falls back to a clean dictionary-to-xml serializer when `openmc` is absent.
+- Validated reference geometry seeds under the new `promptmc.benchmarks` package:
+  - `godiva` bare HEU sphere (ICSBEP HEU-MET-FAST-001) with vacuum boundaries.
+  - `pwr_pin` pincell (Mosteller PWR pin cell benchmark) with reflective boundaries.
+- Conditional pytest execution markers (`requires_openmc` and `requires_openmc_data`) to prevent test suite crashes when OpenMC or cross-section datasets are absent.
+
 ## [2.0.2] - 2026-06-07
 
 ### Added

@@ -83,6 +83,8 @@ src/promptmc/
 ├── visualization.py       # result parsing (ResultParser → StatePoint.keff) + plotting
 ├── errors.py              # PromptMCError hierarchy + configure_logging() + retry logic
 ├── telemetry.py           # optional OpenTelemetry (TelemetryManager; no-ops when absent) — the v2.6/v2.8 hook
+├── geometry/              # Pydantic CSG models, materials, tallies schemas + XML serializer (v2.1)
+├── benchmarks/            # validated reference geometries library: Godiva, PWR pin (v2.1/v2.2)
 └── mcp/                    # the v2.0 MCP server
     ├── server.py          #   stdio server; wires the SDK to the tools
     ├── tools.py           #   pure tool functions (no SDK dependency)
@@ -91,8 +93,7 @@ src/promptmc/
 ```
 
 **New code lands in new packages** (don't look for these yet — they arrive with
-the roadmap): `geometry/` (v2.1 CSG schema + serializer), `benchmarks/` (v2.2
-reference library), `components/` (v2.5), `generation/` (v2.7 pipeline). The
+the roadmap): `components/` (v2.5), `generation/` (v2.7 pipeline). The
 v2.6/v2.8 telemetry + audit work extends `telemetry.py`.
 
 > **Keep this map current** — update it in the same commit as any module

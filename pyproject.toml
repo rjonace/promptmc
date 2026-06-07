@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "promptmc"
-version = "2.0.2"
+version = "2.1.0"
 description = "AI Assistant and CLI for OpenMC simulation workflows"
 authors = ["PromptMC Contributors"]
 license = "MIT"
@@ -43,6 +43,7 @@ bandit = "^1.7.9"
 types-PyYAML = "^6.0.0"
 types-psutil = "^6.0.0"
 types-defusedxml = "^0.7.0"
+hypothesis = "^6.100.0"
 
 [tool.poetry.scripts]
 promptmc = "promptmc.cli:app"
@@ -131,7 +132,11 @@ addopts = [
     "--cov-report=html",
     "--strict-markers",
 ]
-markers = ["integration: MCP integration tests"]
+markers = [
+    "integration: MCP integration tests",
+    "requires_openmc: Tests that require openmc to be importable/installed",
+    "requires_openmc_data: Tests that require openmc with cross-section data installed",
+]
 
 [tool.coverage.run]
 source = ["src"]
