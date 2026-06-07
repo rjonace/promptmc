@@ -121,7 +121,7 @@ Full options in the [CLI reference](docs/cli-reference.md).
 
 ## Quality
 
-268 tests · 88% coverage · CI on Python 3.10–3.13 · strict MyPy · zero Ruff warnings · Bandit scanning.
+279 tests · 87% coverage · CI on Python 3.10–3.13 · strict MyPy · zero Ruff warnings · Bandit scanning.
 
 ---
 
