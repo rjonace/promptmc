@@ -10,6 +10,8 @@ PromptMC does that by providing infrastructure and tooling that allows both AI L
 
 It works like a grammar checker between an AI LLM assistant and OpenMC: your AI proposes a configuration, PromptMC validates XML structure and supported schema constraints before the simulator runs, and catches malformed inputs early.
 
+Because AI hallucination is a valid concern in reactor physics, the system is designed with deterministic blast walls. The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
+
 Most planning and schema-validation workflows work without OpenMC installed; execution, geometry-debug checks, and 2D plot rendering require OpenMC.
 
 ---
@@ -49,33 +51,11 @@ See the [CLI reference](docs/cli-reference.md) for provider setup.
 
 ## MCP server
 
-PromptMC exposes a Model Context Protocol server so AI assistants can run OpenMC workflows natively — validation, plotting, execution, and result parsing from inside your LLM chat client.
-
-```bash
-pip install promptmc
-promptmc-mcp
-```
-
-**Claude Desktop:**
-
-```json
-{
-  "mcpServers": {
-    "promptmc": {
-      "command": "promptmc-mcp",
-      "env": { "OPENMC_CROSS_SECTIONS": "/path/to/cross_sections.xml" }
-    }
-  }
-}
-```
-
-Also works with Cursor, Windsurf, and Google Antigravity.
+PromptMC exposes a Model Context Protocol server so AI assistants can run OpenMC workflows natively — validation, plotting, execution, and result parsing from inside your LLM chat client, such as Claude Desktop, Cursor, Windsurf, and Google Antigravity.
 
 **Tools:** `openmc_validate`, `openmc_schema_check`, `openmc_template`, `openmc_list_templates`, `openmc_run`, `openmc_analyze`, `openmc_plot` (2D slice, returned to the chat client), `openmc_geometry_debug`, `openmc_check_installation`, `openmc_check_cross_sections`.
 
 Resources expose the configured cross-sections path, the session's tool-call history, and the bundled examples.
-
-Every output is reviewed by a human. PromptMC is an assistant, never an autonomous designer.
 
 ---
 
