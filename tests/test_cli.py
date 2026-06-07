@@ -352,32 +352,32 @@ def test_template_fixed_source(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# ask
+# plan
 # ---------------------------------------------------------------------------
 
 
-def test_ask_help():
-    result = runner.invoke(app, ["ask", "--help"])
+def test_plan_help():
+    result = runner.invoke(app, ["plan", "--help"])
     assert result.exit_code == 0
     assert "plain-English" in result.stdout or "Plain-English" in result.stdout
     assert "GEMINI_API_KEY" in result.stdout
 
 
-def test_ask_shielding_plan():
+def test_plan_shielding_plan():
     result = runner.invoke(
-        app, ["ask", "make a shielding run with 1 million particles"]
+        app, ["plan", "make a shielding run with 1 million particles"]
     )
     assert result.exit_code == 0
     assert "shielding" in result.stdout
     assert "1,000,000" in result.stdout
 
 
-def test_ask_write_settings(tmp_path):
+def test_plan_write_settings(tmp_path):
     output = tmp_path / "settings.xml"
     result = runner.invoke(
         app,
         [
-            "ask",
+            "plan",
             "make a reactor pin calculation with 20000 particles",
             "--write",
             "-o",
@@ -388,13 +388,13 @@ def test_ask_write_settings(tmp_path):
     assert output.exists()
 
 
-def test_ask_llm_fails_fast():
+def test_plan_llm_fails_fast():
     # Run with --llm but without setting GEMINI_API_KEY in the environment
     import os
     from unittest.mock import patch
 
     with patch.dict(os.environ, {}, clear=True):
-        result = runner.invoke(app, ["ask", "criticality run", "--llm"])
+        result = runner.invoke(app, ["plan", "criticality run", "--llm"])
         assert result.exit_code == 1
         assert "GEMINI_API_KEY" in result.stdout
 
@@ -607,7 +607,7 @@ def test_schema_check_directory(tmp_path):
         ["info", "--help"],
         ["template", "--help"],
         ["list-templates"],
-        ["ask", "--help"],
+        ["plan", "--help"],
         ["batch", "--help"],
         ["analyze", "--help"],
         ["optimize", "--help"],
