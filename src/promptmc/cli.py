@@ -9,11 +9,11 @@ import typer
 
 from promptmc import __version__
 from promptmc.commands.analyze import analyze
-from promptmc.commands.ask import ask
 from promptmc.commands.batch import batch
 from promptmc.commands.common import console
 from promptmc.commands.configure import configure
 from promptmc.commands.info import info, optimize, system_info_cmd
+from promptmc.commands.plan import plan
 from promptmc.commands.run import run
 from promptmc.commands.templates import list_templates_cmd, template
 from promptmc.commands.validate import schema_check, validate
@@ -73,7 +73,7 @@ app.command()(validate)
 app.command()(info)
 app.command()(template)
 app.command(name="list-templates")(list_templates_cmd)
-app.command()(ask)
+app.command()(plan)
 app.command()(batch)
 app.command()(analyze)
 app.command()(optimize)

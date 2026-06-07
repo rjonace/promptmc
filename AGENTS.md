@@ -72,11 +72,11 @@ src/promptmc/
 ├── __init__.py            # public API: OpenMCInstaller/OpenMCValidator/OpenMCRunner, ExecutionMode, BatchRunner, ParallelConfig/ParallelMode
 ├── _typing.py             # shared type aliases (PathLike)
 ├── cli.py                 # Typer CLI entry point (dispatches into commands/)
-├── commands/              # one module per CLI subcommand: ask, run, validate, analyze, batch, templates, info, configure
+├── commands/              # one module per CLI subcommand: plan, run, validate, analyze, batch, templates, info, configure
 ├── openmc_integration.py  # core OpenMC wrapper — OpenMCInstaller / OpenMCValidator / OpenMCRunner (subprocess + Python API), ExecutionMode
 ├── schema.py              # Pydantic validation of OpenMC XML (Settings/Materials/Geometry…) + SchemaValidator; uses defusedxml
 ├── templates.py           # config templates (Criticality / FixedSource / Shielding / ReactorPin) + TemplateRegistry
-├── assistant.py           # NL planner behind `promptmc ask` (NaturalLanguageAssistant) — the keyword router v2.7 replaces
+├── assistant.py           # NL planner behind `promptmc plan` (NaturalLanguageAssistant) — the keyword router v2.7 replaces
 ├── batch.py               # batch + parallel execution (BatchRunner, ParallelExecutor)
 ├── resources.py           # resource limits / monitoring / cleanup, temp simulation workspaces
 ├── progress.py            # progress reporting + system profiling / performance monitoring
@@ -204,7 +204,7 @@ v2.0 has shipped. The remaining work ships as sequential, independently-valuable
 **v2.7 — Constrained generation**
 - LLM-agnostic `Generator` protocol; **Google Gemini default**, user-configurable alternatives, and a local mock.
 - Validate-and-repair loop produces validated, runnable inputs from natural language; the loop is bounded by the v2.4 physics gate (it passes the gate or exits with a structured failure).
-- New MCP tool `openmc_design(description: str)`; `promptmc ask` rebuilt on the pipeline; old keyword router deleted.
+- New MCP tool `openmc_design(description: str)`; `promptmc plan` rebuilt on the pipeline; old keyword router deleted.
 - `openmc_diff_geometry` shows exactly what the repair loop changed. Minimal audit record (model used + artifact produced).
 - A human reviews and approves every output (never autonomous for licensing/safety). No LLM calls in tests (deterministic mock).
 

@@ -18,7 +18,7 @@ Commercial nuclear companies are the near-term target; national labs are the lon
 
 ## What Works Without OpenMC
 
-- Natural-language planning (`promptmc ask`)
+- Natural-language planning (`promptmc plan`)
 - XML template generation and schema validation
 - MCP planning and validation tools
 - Result parsing for existing OpenMC output files
@@ -31,7 +31,7 @@ OpenMC is required for simulation execution, geometry-debug checks, and plot ren
 - **No Unsupervised Design for Licensing/Safety:** The system is an engineering-assist tool with human-in-the-loop verification. A human reviews and approves every output. Never autonomous for licensing or safety-critical sign-off.
 - **No Loose LLM Calls:** All LLM interactions must be routed through strict, schema-validated tool definitions.
 - **MCP Parallels CLI:** The MCP layer should expose the same workflow surface as the CLI, not a separate hidden product.
-- **Single Model Provider:** Where PromptMC itself invokes a model — the `ask` planner and v2.7 constrained generation — it uses Google Gemini only, behind a thin internal interface. The MCP server stays client-agnostic: users drive it with whatever AI client they choose, so provider freedom is preserved where it matters.
+- **Single Model Provider:** Where PromptMC itself invokes a model — the `plan` planner and v2.7 constrained generation — it uses Google Gemini only, behind a thin internal interface. The MCP server stays client-agnostic: users drive it with whatever AI client they choose, so provider freedom is preserved where it matters.
 
 ## Where We Are
 
@@ -101,7 +101,7 @@ Instrument before shipping constrained generation, where behavior most needs ins
 ### v2.7 — Constrained Generation
 
 - **Deliverable:** Gemini-based constrained-generation pipeline with a validate-and-repair loop.
-- **Deliverable:** Google Gemini as the single supported model provider, invoked behind the same thin internal interface as the `ask` planner — so adding another provider later would be an addition rather than a rewrite. Provider freedom for users is preserved through the client-agnostic MCP server, not through this pipeline.
+- **Deliverable:** Google Gemini as the single supported model provider, invoked behind the same thin internal interface as the `plan` planner — so adding another provider later would be an addition rather than a rewrite. Provider freedom for users is preserved through the client-agnostic MCP server, not through this pipeline.
 - **Deliverable:** `openmc_design` MCP tool: natural language → validated OpenMC input package.
 - **Deliverable:** Repair loop bounded by the v2.4 physics gate; either it passes the gate or exits with a structured failure.
 - **Deliverable:** `openmc_diff_geometry` to show exactly what the repair loop changed.

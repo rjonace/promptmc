@@ -41,12 +41,12 @@ pip install promptmc
 No OpenMC needed:
 
 ```bash
-promptmc ask "concrete shielding calculation with 1 million particles"
-promptmc ask "pin cell criticality with 50k particles" --write
-promptmc ask "create a Godiva critical assembly benchmark with U-235 metal sphere geometry"
+promptmc plan "concrete shielding calculation with 1 million particles"
+promptmc plan "pin cell criticality with 50k particles" --write
+promptmc plan "create a Godiva critical assembly benchmark with U-235 metal sphere geometry"
 ```
 
-By default, `ask` uses a deterministic local planner, needing no API key, no network, no generative AI. The optional `--llm` flag calls Google Gemini (set GEMINI_API_KEY), which can interpret more open-ended natural-language requests. Customize the model name with GEMINI_MODEL (defaults to gemini-3.5-flash).
+By default, `plan` uses a deterministic local planner, needing no API key, no network, no generative AI. The optional `--llm` flag calls Google Gemini (set GEMINI_API_KEY), which can interpret more open-ended natural-language requests. Customize the model name with GEMINI_MODEL (defaults to gemini-3.5-flash).
 
 See the [CLI reference](docs/cli-reference.md) for provider setup.
 
@@ -95,7 +95,7 @@ export OPENMC_CROSS_SECTIONS=$(pwd)/cross_sections/cross_sections.xml
 ## CLI at a glance
 
 ```bash
-promptmc ask "criticality run with 100k particles" --write   # plan (no OpenMC)
+promptmc plan "criticality run with 100k particles" --write   # plan (no OpenMC)
 promptmc template criticality --particles 10000              # generate settings.xml
 promptmc validate input.xml --schema                         # validate
 promptmc run input.xml --threads 4                           # run (needs OpenMC)

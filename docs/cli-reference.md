@@ -4,38 +4,38 @@ Complete reference for all PromptMC CLI commands.
 
 ## Natural-Language Planning
 
-### `promptmc ask`
+### `promptmc plan`
 
 Turn plain-English requests into OpenMC plans and settings files.
 
-`promptmc ask` supports two execution modes:
+`promptmc plan` supports two execution modes:
 1. **Local Deterministic Planner (Default):** Runs completely offline with no network calls and no API key. It parses request keywords deterministically to choose templates and estimate particle/batch counts.
 2. **Gemini LLM Planner (with `--llm`):** Calls Google Gemini to interpret more complex or open-ended requests. This requires setting the `GEMINI_API_KEY` environment variable.
 
 *Note: The Gemini client and the MCP server are built-in, core features of PromptMC and require no separate installation steps.*
 
 ```bash
-# Ask for a plan without writing files
-promptmc ask "make a concrete shielding calculation with 1 million particles"
+# Plan without writing files
+promptmc plan "make a concrete shielding calculation with 1 million particles"
 
 # Generate settings.xml directly from natural language
-promptmc ask "set up a reactor pin cell criticality run with 50k particles" --write
+promptmc plan "set up a reactor pin cell criticality run with 50k particles" --write
 
 # Use Google Gemini LLM for richer interpretation
 export GEMINI_API_KEY="..."
-promptmc ask "I need a high-statistics shielding model for a 14 MeV source" --llm --write
+promptmc plan "I need a high-statistics shielding model for a 14 MeV source" --llm --write
 
 # Specify output file
-promptmc ask "criticality run" --write --output my_settings.xml
+promptmc plan "criticality run" --write --output my_settings.xml
 
 # Use a specific Gemini model
-promptmc ask "shielding calculation" --llm --model gemini-2.5-pro --write
+promptmc plan "shielding calculation" --llm --model gemini-2.5-pro --write
 ```
 
 #### Example Output
 
 ```bash
-$ promptmc ask "make a concrete shielding calculation with 1 million particles"
+$ promptmc plan "make a concrete shielding calculation with 1 million particles"
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃               Natural-Language OpenMC Plan                     ┃

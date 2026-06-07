@@ -13,7 +13,7 @@ from promptmc.commands.common import console, handle_errors
 
 
 @handle_errors
-def ask(
+def plan(
     prompt: str = typer.Argument(
         ...,
         help="Plain-English OpenMC request, e.g. 'make a shielding run with 1M particles'",
@@ -43,38 +43,38 @@ def ask(
 ) -> None:
     """Turn a plain-English OpenMC request into a runnable configuration plan."""
     assistant = NaturalLanguageAssistant()
-    plan = assistant.plan(prompt, use_llm=llm, model=model)
+    result = assistant.plan(prompt, use_llm=llm, model=model)
 
     table = Table(title="Natural-Language OpenMC Plan", border_style="green")
     table.add_column("Field", style="cyan", no_wrap=True)
     table.add_column("Value")
-    table.add_row("Source", plan.source)
-    table.add_row("Template", plan.template_type.value)
-    table.add_row("Particles", f"{plan.particles:,}")
-    table.add_row("Batches", str(plan.batches))
-    table.add_row("Inactive", str(plan.inactive))
-    table.add_row("Match score", f"{plan.confidence:.0%}")
-    table.add_row("Command", plan.command(output))
+    table.add_row("Source", result.source)
+    table.add_row("Template", result.template_type.value)
+    table.add_row("Particles", f"{result.particles:,}")
+    table.add_row("Batches", str(result.batches))
+    table.add_row("Inactive", str(result.inactive))
+    table.add_row("Match score", f"{result.confidence:.0%}")
+    table.add_row("Command", result.command(output))
     console.print(table)
-    console.print(Panel(plan.summary, title="Summary", border_style="blue"))
+    console.print(Panel(result.summary, title="Summary", border_style="blue"))
 
-    if plan.rationale:
+    if result.rationale:
         console.print("[bold]Why this plan[/bold]")
-        for reason in plan.rationale:
+        for reason in result.rationale:
             console.print(f"- {reason}")
 
-    if plan.warnings:
+    if result.warnings:
         console.print("[bold yellow]Warnings[/bold yellow]")
-        for warning in plan.warnings:
+        for warning in result.warnings:
             console.print(f"- {warning}")
 
-    if plan.next_steps:
+    if result.next_steps:
         console.print("[bold]Next steps[/bold]")
-        for step in plan.next_steps:
+        for step in result.next_steps:
             console.print(f"- {step}")
 
     if write:
-        result_path = plan.render(output)
+        result_path = result.render(output)
         console.print(
             f"[green]✓[/green] Wrote settings file: [cyan]{result_path}[/cyan]"
         )
