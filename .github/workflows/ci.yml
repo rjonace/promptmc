@@ -42,7 +42,7 @@ jobs:
           key: venv-v2-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
       - name: Install dependencies
-        run: poetry install --with dev --extras "telemetry mcp"
+        run: poetry install --with dev --extras telemetry
 
       - name: Run tests
         run: |
@@ -183,8 +183,8 @@ jobs:
           version: latest
           virtualenvs-create: true
           virtualenvs-in-project: true
-      - name: Install dependencies with MCP extra
-        run: poetry install --with dev --extras "telemetry mcp"
+      - name: Install dependencies
+        run: poetry install --with dev --extras telemetry
       - name: Run MCP tests
         run: |
           source .venv/bin/activate
