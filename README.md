@@ -10,7 +10,7 @@ PromptMC does that by providing infrastructure and tooling that allows both AI L
 
 It works like a grammar checker between an AI LLM assistant and OpenMC: your AI proposes a configuration, PromptMC validates XML structure and supported schema constraints before the simulator runs, and catches malformed inputs early.
 
-Because AI hallucination is a valid concern in reactor physics, the system is designed with deterministic blast walls. Every configuration (from a human, the local planner, or AI) is validated against the same typed Pydantic schemas before it reaches the simulator.
+Because AI hallucination is a valid concern in reactor physics, the system is designed with deterministic blast walls. Every configuration (from a human, the deterministic local planner, or AI) is validated against the same typed Pydantic schemas before it reaches the simulator.
 
 The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
 
@@ -43,9 +43,10 @@ No OpenMC needed:
 ```bash
 promptmc ask "concrete shielding calculation with 1 million particles"
 promptmc ask "pin cell criticality with 50k particles" --write
+promptmc ask "create a Godiva critical assembly benchmark with U-235 metal sphere geometry"
 ```
 
-By default, `ask` uses a deterministic local planner — no API key, no network, no generative AI. The optional `--llm` flag calls Google Gemini (set GEMINI_API_KEY), which can interpret more open-ended natural-language requests. Customize the model name with GEMINI_MODEL (defaults to gemini-3.5-flash).
+By default, `ask` uses a deterministic local planner, needing no API key, no network, no generative AI. The optional `--llm` flag calls Google Gemini (set GEMINI_API_KEY), which can interpret more open-ended natural-language requests. Customize the model name with GEMINI_MODEL (defaults to gemini-3.5-flash).
 
 See the [CLI reference](docs/cli-reference.md) for provider setup.
 
