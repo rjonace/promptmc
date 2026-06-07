@@ -73,9 +73,13 @@ class OpenMCInstaller:
 
         if not subprocess_available and not python_available:
             raise OpenMCNotFoundError(
-                "OpenMC not found. Please install OpenMC via:\n"
-                "- pip install openmc (for Python API)\n"
-                "- or install OpenMC executable and add to PATH"
+                "OpenMC not found. Please install OpenMC via one of the following:\n"
+                "- Conda (recommended): conda create -n openmc-env -c conda-forge openmc\n"
+                "  (On Apple Silicon, use: conda create -n openmc-env --platform osx-64 -c conda-forge openmc)\n"
+                "- Spack: spack install py-openmc\n"
+                "- Docker: docker run openmc/openmc:latest\n"
+                "- Source: Build executable, then run 'python -m pip install .' from the repo root\n"
+                "For details, see: https://docs.openmc.org/en/stable/quickinstall.html"
             )
 
         self._openmc_info = OpenMCInfo(

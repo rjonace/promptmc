@@ -80,7 +80,7 @@ pip install promptmc              # core (includes CLI, MCP server, and Gemini p
 pip install promptmc[telemetry]   # + OpenTelemetry tracing
 ```
 
-**OpenMC** (required for simulation execution, geometry-debug checks, and plot rendering) is not on PyPI — build from source per [docs.openmc.org](https://docs.openmc.org/en/stable/quickstart.html). Planning and XML/schema validation work without it.
+**OpenMC** (required for simulation execution, geometry-debug checks, and plot rendering) is not on PyPI — install it via Conda, Spack, Docker, or build from source per [docs.openmc.org](https://docs.openmc.org/en/stable/quickinstall.html). Planning and XML/schema validation work without it.
 
 **Cross-section data** (for running simulations):
 

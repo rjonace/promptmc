@@ -27,37 +27,84 @@ poetry install --with dev --extras "telemetry"
 
 ## Install OpenMC
 
-OpenMC is not available via pip. Build from source when you need execution, plotting, or geometry-debug workflows:
+OpenMC is not available on PyPI (via pip). You can install it using Conda, Spack, Docker, or by building from source:
 
-### macOS with Homebrew
+### Option 1: Conda (Recommended)
+
+Conda is the easiest way to install OpenMC on Linux and macOS.
 
 ```bash
-# Install build dependencies
-brew install cmake hdf5
+# Add the conda-forge channel
+conda config --add channels conda-forge
+conda config --set channel_priority strict
 
-# Clone and build OpenMC
-git clone https://github.com/openmc-dev/openmc.git
-cd openmc
-mkdir build && cd build
-cmake ..
-make -j4
-sudo make install
+# Create and activate environment
+conda create --name openmc-env openmc
+conda activate openmc-env
 ```
 
-### Linux (Ubuntu/Debian)
+If you are on Apple Silicon (ARM) macOS, specify the platform option:
+```bash
+conda create --name openmc-env --platform osx-64 openmc
+```
+
+### Option 2: Docker
+
+With Docker running, you can run OpenMC directly:
+
+```bash
+docker run -it openmc/openmc:latest
+```
+
+### Option 3: Spack
+
+If you use Spack for package management:
+
+```bash
+spack install py-openmc
+```
+
+### Option 4: Build from Source
+
+If you prefer building from source:
+
+#### macOS with Homebrew
 
 ```bash
 # Install build dependencies
-sudo apt-get update
-sudo apt-get install build-essential cmake libhdf5-dev
+brew install llvm cmake xtensor hdf5 python libomp libpng
 
 # Clone and build OpenMC
-git clone https://github.com/openmc-dev/openmc.git
+git clone --recurse-submodules https://github.com/openmc-dev/openmc.git
 cd openmc
 mkdir build && cd build
 cmake ..
 make -j4
 sudo make install
+
+# Install the Python API from the repository root
+cd ..
+python -m pip install .
+```
+
+#### Linux (Ubuntu/Debian)
+
+```bash
+# Install build dependencies
+sudo apt update
+sudo apt install g++ cmake libhdf5-dev libpng-dev
+
+# Clone and build OpenMC
+git clone --recurse-submodules https://github.com/openmc-dev/openmc.git
+cd openmc
+mkdir build && cd build
+cmake ..
+make -j4
+sudo make install
+
+# Install the Python API from the repository root
+cd ..
+python -m pip install .
 ```
 
 ### Verify Installation
@@ -67,7 +114,7 @@ openmc --version
 python -c "import openmc; print(openmc.__version__)"
 ```
 
-For detailed installation instructions, see https://docs.openmc.org/en/stable/quickstart.html
+For detailed installation instructions, see https://docs.openmc.org/en/stable/quickinstall.html
 
 ## Install Nuclear Data
 
