@@ -6,7 +6,7 @@
 
 OpenMC is powerful and but can be painful to use: you hand-write XML, manage batch runs, and read results out of HDF5. It would be great if we could safely use AI to reduce that friction.
 
-PromptMC aims to do that. It is infrastructure and tooling that allows AI tools and humans to interact with OpenMC through typed, validated workflows.
+PromptMC does that by providing infrastructure and tooling that allows both AIs and humans to interact with OpenMC through typed, schema-driven workflows.
 
 It works like a grammar checker between an AI LLM assistant and OpenMC: your AI proposes a configuration, PromptMC validates XML structure and supported schema constraints before the simulator runs, and catches malformed inputs early.
 
