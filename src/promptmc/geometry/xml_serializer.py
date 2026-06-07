@@ -1,0 +1,312 @@
+"""Dual-mode XML serializer for CSG geometries and materials."""
+
+from __future__ import annotations
+
+import xml.etree.ElementTree as ET  # nosec B405
+from pathlib import Path
+from typing import Any
+
+from promptmc._typing import PathLike
+from promptmc.geometry.materials import Material, MaterialsModel
+from promptmc.geometry.primitives import (
+    GeometryModel,
+    Region,
+    Surface,
+)
+
+# Guarded openmc import
+try:
+    import openmc as _openmc
+
+    openmc: Any = _openmc
+    _OPENMC_AVAILABLE = hasattr(openmc, "Geometry")
+except ImportError:
+    _OPENMC_AVAILABLE = False
+
+
+def _to_openmc_surface(s: Surface) -> Any:
+    """Map a promptmc Surface model to an openmc.Surface object."""
+    if not _OPENMC_AVAILABLE:
+        raise RuntimeError("OpenMC package is not available.")
+
+    if s.kind == "x-plane":
+        return openmc.XPlane(
+            x0=s.x0, boundary_type=s.boundary_type, surface_id=s.id
+        )
+    if s.kind == "y-plane":
+        return openmc.YPlane(
+            y0=s.y0, boundary_type=s.boundary_type, surface_id=s.id
+        )
+    if s.kind == "z-plane":
+        return openmc.ZPlane(
+            z0=s.z0, boundary_type=s.boundary_type, surface_id=s.id
+        )
+    if s.kind == "plane":
+        return openmc.Plane(
+            a=s.a,
+            b=s.b,
+            c=s.c,
+            d=s.d,
+            boundary_type=s.boundary_type,
+            surface_id=s.id,
+        )
+    if s.kind == "sphere":
+        return openmc.Sphere(
+            x0=s.x0,
+            y0=s.y0,
+            z0=s.z0,
+            r=s.r,
+            boundary_type=s.boundary_type,
+            surface_id=s.id,
+        )
+    if s.kind == "x-cylinder":
+        return openmc.XCylinder(
+            y0=s.y0,
+            z0=s.z0,
+            r=s.r,
+            boundary_type=s.boundary_type,
+            surface_id=s.id,
+        )
+    if s.kind == "y-cylinder":
+        return openmc.YCylinder(
+            x0=s.x0,
+            z0=s.z0,
+            r=s.r,
+            boundary_type=s.boundary_type,
+            surface_id=s.id,
+        )
+    if s.kind == "z-cylinder":
+        return openmc.ZCylinder(
+            x0=s.x0,
+            y0=s.y0,
+            r=s.r,
+            boundary_type=s.boundary_type,
+            surface_id=s.id,
+        )
+    raise ValueError(f"Unknown surface kind: {s.kind}")
+
+
+def _to_openmc_region(r: Region, surf_map: dict[int, Any]) -> Any:
+    """Map a promptmc Region model to an openmc.Region object."""
+    if r.kind == "halfspace":
+        s = surf_map[r.surface_id]
+        return -s if r.side == "-" else +s
+    if r.kind == "intersection":
+        return openmc.Intersection(
+            [_to_openmc_region(n, surf_map) for n in r.nodes]
+        )
+    if r.kind == "union":
+        return openmc.Union([_to_openmc_region(n, surf_map) for n in r.nodes])
+    if r.kind == "complement":
+        return ~_to_openmc_region(r.node, surf_map)
+    raise ValueError(f"Unknown region kind: {r.kind}")
+
+
+def _to_openmc_material(m: Material) -> Any:
+    """Map a promptmc Material model to an openmc.Material object."""
+    if not _OPENMC_AVAILABLE:
+        raise RuntimeError("OpenMC package is not available.")
+
+    mat = openmc.Material(material_id=m.id, name=m.name)
+    mat.set_density("g/cm3", m.density_g_per_cc)
+    for n in m.nuclides:
+        mat.add_nuclide(n.name, n.fraction, percent_type="wo")
+    return mat
+
+
+def to_openmc_geometry(model: GeometryModel) -> Any:
+    """Convert promptmc GeometryModel to openmc.Geometry."""
+    if not _OPENMC_AVAILABLE:
+        raise RuntimeError("OpenMC package is not available.")
+
+    surf_map = {}
+    for s in model.surfaces:
+        if s.id is not None:
+            surf_map[s.id] = _to_openmc_surface(s)
+
+    openmc_cells = []
+    for c in model.root_universe.cells:
+        region = _to_openmc_region(c.region, surf_map)
+        cell = openmc.Cell(cell_id=c.id, name=c.name, region=region)
+        if c.fill_material_id is not None:
+            cell.fill = openmc.Material(material_id=c.fill_material_id)
+        elif c.fill_universe_id is not None:
+            cell.fill = openmc.Universe(universe_id=c.fill_universe_id)
+        openmc_cells.append(cell)
+
+    univ = openmc.Universe(
+        universe_id=model.root_universe.id, cells=openmc_cells
+    )
+    return openmc.Geometry(univ)
+
+
+# Fallback XML serialization logic
+def _region_to_string(r: Region) -> str:
+    """Convert Region tree into standard OpenMC region expression string."""
+    if r.kind == "halfspace":
+        return f"{r.side}{r.surface_id}"
+    if r.kind == "intersection":
+        parts = []
+        for n in r.nodes:
+            s = _region_to_string(n)
+            if n.kind == "union":
+                s = f"({s})"
+            parts.append(s)
+        return " ".join(parts)
+    if r.kind == "union":
+        parts = []
+        for n in r.nodes:
+            s = _region_to_string(n)
+            if n.kind == "intersection":
+                s = f"({s})"
+            parts.append(s)
+        return " | ".join(parts)
+    if r.kind == "complement":
+        s = _region_to_string(r.node)
+        if r.node.kind in ("intersection", "union"):
+            s = f"({s})"
+        return f"~{s}"
+    raise ValueError(f"Unknown region kind: {r.kind}")
+
+
+def _geometry_model_to_dict(model: GeometryModel) -> dict[str, Any]:
+    """Convert GeometryModel to intermediate dictionary matching OpenMC XML tags."""
+    surfaces_list = []
+    for s in model.surfaces:
+        coeffs_str = ""
+        if s.kind == "x-plane":
+            coeffs_str = str(s.x0)
+        elif s.kind == "y-plane":
+            coeffs_str = str(s.y0)
+        elif s.kind == "z-plane":
+            coeffs_str = str(s.z0)
+        elif s.kind == "plane":
+            coeffs_str = f"{s.a} {s.b} {s.c} {s.d}"
+        elif s.kind == "sphere":
+            coeffs_str = f"{s.x0} {s.y0} {s.z0} {s.r}"
+        elif s.kind in ("x-cylinder", "y-cylinder", "z-cylinder"):
+            if s.kind == "x-cylinder":
+                coeffs_str = f"{s.y0} {s.z0} {s.r}"
+            elif s.kind == "y-cylinder":
+                coeffs_str = f"{s.x0} {s.z0} {s.r}"
+            else:
+                coeffs_str = f"{s.x0} {s.y0} {s.r}"
+
+        s_dict: dict[str, Any] = {
+            "@id": str(s.id),
+            "@type": s.kind,
+            "@coeffs": coeffs_str,
+        }
+        if s.name:
+            s_dict["@name"] = s.name
+        if s.boundary_type != "transmission":
+            s_dict["@boundary"] = s.boundary_type
+        surfaces_list.append(s_dict)
+
+    cells_list = []
+    for c in model.root_universe.cells:
+        c_dict: dict[str, Any] = {
+            "@id": str(c.id),
+            "@region": _region_to_string(c.region),
+        }
+        if c.name:
+            c_dict["@name"] = c.name
+        if c.fill_material_id is not None:
+            c_dict["@material"] = str(c.fill_material_id)
+        elif c.fill_universe_id is not None:
+            c_dict["@fill"] = str(c.fill_universe_id)
+        else:
+            c_dict["@material"] = "void"
+        cells_list.append(c_dict)
+
+    return {
+        "surface": surfaces_list,
+        "cell": cells_list,
+    }
+
+
+def _materials_model_to_dict(model: MaterialsModel) -> dict[str, Any]:
+    """Convert MaterialsModel to intermediate dictionary matching OpenMC XML tags."""
+    materials_list = []
+    for m in model.materials:
+        m_dict: dict[str, Any] = {
+            "@id": str(m.id),
+        }
+        if m.name:
+            m_dict["@name"] = m.name
+        m_dict["density"] = {
+            "@value": str(m.density_g_per_cc),
+            "@units": "g/cm3",
+        }
+        m_dict["nuclide"] = [
+            {
+                "@name": n.name,
+                "@wo": str(n.fraction),
+            }
+            for n in m.nuclides
+        ]
+        materials_list.append(m_dict)
+    return {
+        "material": materials_list,
+    }
+
+
+def _dict_to_xml(d: dict[str, Any], root_tag: str) -> ET.Element:
+    """Helper to convert structured dictionary to safe ET.Element."""
+    root = ET.Element(root_tag)
+
+    def _build(parent: ET.Element, key: str, value: Any) -> None:
+        if isinstance(value, list):
+            for item in value:
+                _build(parent, key, item)
+        elif isinstance(value, dict):
+            elem = ET.SubElement(parent, key)
+            for k, v in value.items():
+                if k.startswith("@"):
+                    elem.set(k[1:], str(v))
+                else:
+                    _build(elem, k, v)
+        else:
+            elem = ET.SubElement(parent, key)
+            elem.text = str(value)
+
+    for k, v in d.items():
+        if k.startswith("@"):
+            root.set(k[1:], str(v))
+        else:
+            _build(root, k, v)
+    return root
+
+
+def serialize_geometry(model: GeometryModel, path: PathLike) -> None:
+    """Serialize GeometryModel to XML (uses OpenMC if available, falls back to raw XML write)."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    if _OPENMC_AVAILABLE:
+        geom = to_openmc_geometry(model)
+        geom.export_to_xml(str(path))
+    else:
+        d = _geometry_model_to_dict(model)
+        root = _dict_to_xml(d, "geometry")
+        tree = ET.ElementTree(root)
+        ET.indent(tree, space="  ")
+        tree.write(path, encoding="utf-8", xml_declaration=True)
+
+
+def serialize_materials(model: MaterialsModel, path: PathLike) -> None:
+    """Serialize MaterialsModel to XML (uses OpenMC if available, falls back to raw XML write)."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    if _OPENMC_AVAILABLE:
+        mats = openmc.Materials()
+        for m in model.materials:
+            mats.append(_to_openmc_material(m))
+        mats.export_to_xml(str(path))
+    else:
+        d = _materials_model_to_dict(model)
+        root = _dict_to_xml(d, "materials")
+        tree = ET.ElementTree(root)
+        ET.indent(tree, space="  ")
+        tree.write(path, encoding="utf-8", xml_declaration=True)

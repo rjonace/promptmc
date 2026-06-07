@@ -55,14 +55,14 @@ OpenMC is required for simulation execution, geometry-debug checks, and plot ren
 - **Shipped:** `openmc_geometry_debug` for overlap detection via OpenMC geometry-debug mode.
 - **Held to constraint:** No new CLI commands; the MCP layer parallels the CLI, it does not extend it.
 
+## Shipped — CSG Schema + Serialization (v2.1)
+
+- **Shipped:** Pydantic models for Surfaces, Regions, Cells, Materials, and Tallies.
+- **Shipped:** Round-trip serialization to runnable OpenMC XML.
+- **Shipped:** Dual-mode serialization: when OpenMC is available, serialize through OpenMC objects (`.export_to_xml()`); when absent, serialize Pydantic models to intermediate dicts and use a lightweight dict-to-xml utility to avoid double-maintenance.
+- **Shipped:** First two validated reference geometries (PWR pin, Godiva) as schema integration tests.
+
 ## Next Sprints
-
-### v2.1 — CSG Schema + Serialization
-
-- **Deliverable:** Pydantic models for Surfaces, Regions, Cells, Materials, and Tallies.
-- **Deliverable:** Round-trip serialization to runnable OpenMC XML.
-- **Deliverable:** Dual-mode serialization: when OpenMC is available, serialize through OpenMC objects (`.export_to_xml()`); when absent, serialize Pydantic models to intermediate dicts and use a lightweight dict-to-xml utility to avoid double-maintenance. A contract test diffs the two paths in CI to catch drift.
-- **Deliverable:** First two validated reference geometries (PWR pin, Godiva) as schema integration tests.
 
 ### v2.2 — Reference Library
 
