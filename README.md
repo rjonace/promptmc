@@ -96,12 +96,12 @@ export OPENMC_CROSS_SECTIONS=$(pwd)/cross_sections/cross_sections.xml
 
 ```bash
 promptmc plan "criticality run with 100k particles" --write     # plan (no OpenMC)
-promptmc template criticality --particles 10000                  # generate settings.xml
-promptmc validate input.xml --schema                               # validate
-promptmc run input.xml --threads 4                                 # run (needs OpenMC)
+promptmc template criticality --particles 10000                 # generate settings.xml
+promptmc validate input.xml --schema                            # validate
+promptmc run input.xml --threads 4                              # run (needs OpenMC)
 promptmc batch batch_spec.yaml --parallel threads --workers 4
 promptmc analyze ./output --json results.json
-promptmc info                                                      # environment status
+promptmc info                                                   # environment status
 ```
 
 Full options in the [CLI reference](docs/cli-reference.md).
