@@ -53,6 +53,14 @@ export OPENMC_CROSS_SECTIONS=$(pwd)/cross_sections/cross_sections.xml
 
 See [installation](docs/installation.md) for more details.
 
+## MCP server
+
+PromptMC exposes a Model Context Protocol server so AI assistants can run OpenMC workflows natively — validation, plotting, execution, and result parsing from inside your LLM chat client, such as Claude Desktop, Cursor, Windsurf, and Google Antigravity.
+
+**Tools:** `openmc_validate`, `openmc_schema_check`, `openmc_template`, `openmc_list_templates`, `openmc_run`, `openmc_analyze`, `openmc_plot` (2D slice, returned to the chat client), `openmc_geometry_debug`, `openmc_check_installation`, `openmc_check_cross_sections`.
+
+Resources expose the configured cross-sections path, the session's tool-call history, and the bundled examples.
+
 ## CLI
 
 By default, `plan` uses a deterministic local planner, needing no API key, no network, no generative AI. The optional `--llm` flag calls Google Gemini (set GEMINI_API_KEY), which can interpret more open-ended natural-language requests. Customize the model name with GEMINI_MODEL (defaults to gemini-3.5-flash).
@@ -69,14 +77,6 @@ promptmc info                                                   # environment st
 ```
 
 Full options in the [CLI reference](docs/cli-reference.md).
-
-## MCP server
-
-PromptMC exposes a Model Context Protocol server so AI assistants can run OpenMC workflows natively — validation, plotting, execution, and result parsing from inside your LLM chat client, such as Claude Desktop, Cursor, Windsurf, and Google Antigravity.
-
-**Tools:** `openmc_validate`, `openmc_schema_check`, `openmc_template`, `openmc_list_templates`, `openmc_run`, `openmc_analyze`, `openmc_plot` (2D slice, returned to the chat client), `openmc_geometry_debug`, `openmc_check_installation`, `openmc_check_cross_sections`.
-
-Resources expose the configured cross-sections path, the session's tool-call history, and the bundled examples.
 
 ## Safety
 
