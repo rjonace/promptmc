@@ -64,13 +64,14 @@ OpenMC is required for simulation execution, geometry-debug checks, and plot ren
 
 ## Next Sprints
 
-### v2.2 — Reference Library
+### v2.2 — Reference Library (launch milestone)
 
 - **Deliverable:** Open-source library of validated reference geometries: PWR pin, BWR pin, Godiva, Jezebel, and selected ICSBEP benchmark cases.
 - **Deliverable:** Each geometry is runnable, documented, and independently checked against known results.
-- **Release:** Treat as a community launch through OpenMC discussions, the OpenMC Google Group, and ANS forums.
+- **Deliverable:** Keep at least one shielding/streaming case and one fast/criticality case visible so the library doesn't read as PWR-only — the community frames OpenMC across fusion neutronics, spent fuel, and radiation protection, not just thermal reactors.
+- **Release:** This is the public launch milestone. The validated benchmark k-eff tables (matching published values within σ) are the credibility artifact this audience rewards — treat them as launch-ready collateral. Align geometry naming and expected values with `mit-crpg/benchmarks`. Launch through OpenMC Discourse "Show & Tell" / GitHub Discussions and the nuclear subreddits (r/NuclearEngineering, r/nuclear, r/NuclearPower).
 
-The reference library is the trust asset. It ships before additional geometry automation.
+The reference library is the trust asset. It ships before additional geometry automation, and it — not the v2.7 generative story — leads the messaging.
 
 ### v2.3 — Geometry Composition + Inspection
 
