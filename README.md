@@ -1,5 +1,11 @@
 # PromptMC
 
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![PyPI](https://img.shields.io/pypi/v/promptmc)
+![CI](https://img.shields.io/github/actions/workflow/status/rjonace/promptmc/ci.yml)
+![Coverage](https://img.shields.io/codecov/c/github/rjonace/promptmc)
+
 OpenMC is powerful and painful: you hand-write XML, manage batch runs, and read results out of HDF5. PromptMC is the infrastructure layer that reduces that friction — a validated CLI and MCP server.
 
 It works like a grammar checker between an AI LLM assistant and OpenMC: your AI proposes a configuration, PromptMC validates XML structure and supported schema constraints before the simulator runs, and catches malformed inputs early.
