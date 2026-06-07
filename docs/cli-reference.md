@@ -8,6 +8,12 @@ Complete reference for all PromptMC CLI commands.
 
 Turn plain-English requests into OpenMC plans and settings files.
 
+`promptmc ask` supports two execution modes:
+1. **Local Deterministic Planner (Default):** Runs completely offline with no network calls and no API key. It parses request keywords deterministically to choose templates and estimate particle/batch counts.
+2. **Gemini LLM Planner (with `--llm`):** Calls Google Gemini to interpret more complex or open-ended requests. This requires setting the `GEMINI_API_KEY` environment variable.
+
+*Note: The Gemini client and the MCP server are built-in, core features of PromptMC and require no separate installation steps.*
+
 ```bash
 # Ask for a plan without writing files
 promptmc ask "make a concrete shielding calculation with 1 million particles"
@@ -15,18 +21,15 @@ promptmc ask "make a concrete shielding calculation with 1 million particles"
 # Generate settings.xml directly from natural language
 promptmc ask "set up a reactor pin cell criticality run with 50k particles" --write
 
-# Use an OpenAI-compatible LLM for richer interpretation
-export OPENAI_API_KEY="..."
+# Use Google Gemini LLM for richer interpretation
+export GEMINI_API_KEY="..."
 promptmc ask "I need a high-statistics shielding model for a 14 MeV source" --llm --write
 
 # Specify output file
 promptmc ask "criticality run" --write --output my_settings.xml
 
-# Use a specific LLM model
-promptmc ask "shielding calculation" --llm --model gpt-4 --write
-
-# Use a custom LLM endpoint
-promptmc ask "shielding calculation" --llm --endpoint https://api.example.com/v1/chat/completions --write
+# Use a specific Gemini model
+promptmc ask "shielding calculation" --llm --model gemini-2.5-pro --write
 ```
 
 #### Example Output
@@ -234,8 +237,7 @@ promptmc <command> --help
 ## Environment Variables
 
 - `OPENMC_CROSS_SECTIONS`: Path to cross_sections.xml file
-- `OPENAI_API_KEY` or `PROMPTMC_LLM_API_KEY`: API key for LLM planning
-- `PROMPTMC_LLM_MODEL`: LLM model name (default: gpt-4o-mini)
-- `PROMPTMC_LLM_ENDPOINT`: OpenAI-compatible endpoint URL
+- `GEMINI_API_KEY`: API key for Gemini LLM planning (when `--llm` is used)
+- `GEMINI_MODEL`: Gemini model name (default: gemini-3.5-flash)
 - `OTEL_EXPORTER_OTLP_ENDPOINT`: OTLP endpoint for telemetry (if telemetry is installed)
 - `OTEL_CONSOLE_EXPORT`: Set to "false" to disable console telemetry export

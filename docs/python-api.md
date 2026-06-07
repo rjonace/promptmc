@@ -213,6 +213,28 @@ config_path = template.render(
 )
 ```
 
+## Natural Language Assistant
+
+The `NaturalLanguageAssistant` translates plain-English simulation requests into structured plans. It can run in deterministic local mode or use Google Gemini.
+
+```python
+from promptmc.assistant import NaturalLanguageAssistant
+
+assistant = NaturalLanguageAssistant()
+
+# 1. Default local planner (deterministic, offline, no API key needed)
+plan = assistant.plan("concrete shielding calculation with 1 million particles")
+print(plan.template_type)  # TemplateType.SHIELDING
+print(plan.particles)      # 1000000
+
+# 2. Gemini LLM planner (requires GEMINI_API_KEY environment variable set)
+plan = assistant.plan("shielding calculation for 14 MeV neutrons", use_llm=True)
+print(plan.summary)
+```
+
+> [!NOTE]
+> The LLM planner uses Google Gemini exclusively. Other models or custom endpoints are not supported. Set the `GEMINI_API_KEY` environment variable to authenticate, and optionally `GEMINI_MODEL` to override the default model (defaults to `gemini-3.5-flash`).
+
 ## Error Handling
 
 ### PromptMCError

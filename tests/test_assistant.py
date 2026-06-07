@@ -2,36 +2,42 @@
 
 from __future__ import annotations
 
-import json
+import os
 import xml.etree.ElementTree as ET
+from typing import Any
+from unittest.mock import MagicMock, patch
 
+import pytest
 from promptmc.assistant import (
+    GeminiClient,
+    GeminiPlanResponse,
     NaturalLanguageAssistant,
-    OpenAICompatibleLLMClient,
 )
 from promptmc.templates import TemplateType
 
 
-class FakeLLMClient(OpenAICompatibleLLMClient):
+class FakeLLMClient(GeminiClient):
     @property
     def configured(self) -> bool:
         return True
 
-    def complete_json(self, system_prompt: str, user_prompt: str) -> dict:
-        return {
-            "template_type": "shielding",
-            "particles": 2000000,
-            "batches": 20,
-            "inactive": 0,
-            "confidence": 0.9,
-            "summary": "LLM shielding plan",
-            "rationale": ["The request asked for shielding."],
-            "warnings": [],
-            "next_steps": ["Generate settings.xml."],
-        }
+    def generate_structured(
+        self, system_prompt: str, user_prompt: str, response_schema: type
+    ) -> Any:
+        return GeminiPlanResponse(
+            template_type="shielding",
+            particles=2000000,
+            batches=20,
+            inactive=0,
+            confidence=0.9,
+            summary="LLM shielding plan",
+            rationale=["The request asked for shielding."],
+            warnings=[],
+            next_steps=["Generate settings.xml."],
+        )
 
 
-class UnconfiguredLLMClient(OpenAICompatibleLLMClient):
+class UnconfiguredLLMClient(GeminiClient):
     @property
     def configured(self) -> bool:
         return False
@@ -74,7 +80,9 @@ def test_local_plan_fixed_source_request():
 
 def test_local_plan_renders_settings_xml(tmp_path):
     assistant = NaturalLanguageAssistant()
-    plan = assistant.plan("criticality run with 20000 particles and 30 batches")
+    plan = plan = assistant.plan(
+        "criticality run with 20000 particles and 30 batches"
+    )
     output = tmp_path / "settings.xml"
 
     result = plan.render(output)
@@ -96,14 +104,13 @@ def test_llm_plan_uses_configured_client():
     assert plan.particles == 2_000_000
 
 
-def test_llm_plan_falls_back_without_api_key():
+def test_llm_plan_fails_fast_without_api_key():
     assistant = NaturalLanguageAssistant(
         llm_client=UnconfiguredLLMClient(api_key=None)
     )
-    plan = assistant.plan("shielding calculation", use_llm=True)
-
-    assert plan.source == "local"
-    assert any("API key" in warning for warning in plan.warnings)
+    with pytest.raises(ValueError) as excinfo:
+        assistant.plan("shielding calculation", use_llm=True)
+    assert "GEMINI_API_KEY" in str(excinfo.value)
 
 
 def test_parse_number_suffixes():
@@ -114,14 +121,40 @@ def test_parse_number_suffixes():
     assert assistant._parse_number("10,000", "") == 10_000
 
 
-def test_llm_client_payload_can_be_json_serialized():
-    client = OpenAICompatibleLLMClient(api_key="test")
-    payload = {
-        "model": client.model,
-        "messages": [
-            {"role": "system", "content": "system"},
-            {"role": "user", "content": "user"},
-        ],
-    }
+def test_gemini_client_uses_env_vars():
+    with patch.dict(
+        os.environ,
+        {"GEMINI_API_KEY": "env-key", "GEMINI_MODEL": "env-model"},
+    ):
+        client = GeminiClient()
+        assert client.api_key == "env-key"
+        assert client.model == "env-model"
 
-    assert json.loads(json.dumps(payload))["model"] == client.model
+
+def test_gemini_client_generate_structured():
+    client = GeminiClient(api_key="test-key", model="test-model")
+
+    mock_client = MagicMock()
+    mock_response = MagicMock()
+    mock_response.text = (
+        '{"template_type": "shielding", "particles": 2000000, "batches": 20, '
+        '"inactive": 0, "confidence": 0.9, "summary": "LLM shielding plan", '
+        '"rationale": [], "warnings": [], "next_steps": []}'
+    )
+    mock_client.models.generate_content.return_value = mock_response
+
+    with patch(
+        "google.genai.Client", return_value=mock_client
+    ) as mock_genai_cls:
+        res = client.generate_structured(
+            "system-prompt", "user-prompt", GeminiPlanResponse
+        )
+
+        assert res.template_type == "shielding"
+        assert res.particles == 2000000
+        mock_genai_cls.assert_called_once_with(api_key="test-key")
+        mock_client.models.generate_content.assert_called_once()
+        _, kwargs = mock_client.models.generate_content.call_args
+        assert kwargs["model"] == "test-model"
+        assert kwargs["contents"] == "user-prompt"
+        assert kwargs["config"].system_instruction == "system-prompt"

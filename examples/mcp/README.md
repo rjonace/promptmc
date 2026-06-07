@@ -2,7 +2,7 @@
 
 This demonstrates running the bundled UO2 example through PromptMC's MCP server.
 
-Start the server (after `pip install promptmc[mcp]`):
+Start the server (available after `pip install promptmc`):
 
 ```bash
 export OPENMC_CROSS_SECTIONS=/path/to/cross_sections.xml

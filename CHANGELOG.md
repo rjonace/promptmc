@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.2] - 2026-06-07
+
+### Added
+- Integrated `google-genai` SDK as a core dependency to support future Gemini-based constrained generation.
+
+### Changed
+- Promoted `mcp` from an optional extra to a core dependency. The MCP server (`promptmc-mcp`) is now available out-of-the-box upon installing `promptmc`.
+- Reduced packaging extras to `[telemetry]` only; removed the `[mcp]` extra.
+- Transitioned the `ask --llm` planner to use Google Gemini exclusively via the new `GeminiClient` seam.
+- Configured Gemini structured outputs using the new `GeminiPlanResponse` Pydantic model to guarantee valid JSON responses.
+- Replaced the OpenAI-compatible configuration environment variables (`PROMPTMC_LLM_ENDPOINT` and `OPENAI_API_KEY`) with standard `GEMINI_API_KEY` and `GEMINI_MODEL` (defaulting to `gemini-3.5-flash`).
+- Refactored `src/promptmc/mcp/server.py` to import the `mcp` SDK lazily, ensuring standard CLI commands do not incur import overhead.
+
 ## [2.0.1] - 2026-06-06
 
 ### Changed

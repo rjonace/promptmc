@@ -360,6 +360,7 @@ def test_ask_help():
     result = runner.invoke(app, ["ask", "--help"])
     assert result.exit_code == 0
     assert "plain-English" in result.stdout or "Plain-English" in result.stdout
+    assert "GEMINI_API_KEY" in result.stdout
 
 
 def test_ask_shielding_plan():
@@ -385,6 +386,17 @@ def test_ask_write_settings(tmp_path):
     )
     assert result.exit_code == 0
     assert output.exists()
+
+
+def test_ask_llm_fails_fast():
+    # Run with --llm but without setting GEMINI_API_KEY in the environment
+    import os
+    from unittest.mock import patch
+
+    with patch.dict(os.environ, {}, clear=True):
+        result = runner.invoke(app, ["ask", "criticality run", "--llm"])
+        assert result.exit_code == 1
+        assert "GEMINI_API_KEY" in result.stdout
 
 
 # ---------------------------------------------------------------------------

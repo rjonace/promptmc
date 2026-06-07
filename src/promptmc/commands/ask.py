@@ -33,22 +33,17 @@ def ask(
     llm: bool = typer.Option(
         False,
         "--llm",
-        help="Use an OpenAI-compatible LLM if OPENAI_API_KEY or PROMPTMC_LLM_API_KEY is set",
+        help="Use Google Gemini LLM (requires GEMINI_API_KEY)",
     ),
     model: str | None = typer.Option(
         None,
         "--model",
-        help="LLM model name when --llm is used",
-    ),
-    endpoint: str | None = typer.Option(
-        None,
-        "--endpoint",
-        help="OpenAI-compatible chat completions endpoint when --llm is used",
+        help="Gemini model name when --llm is used (default: gemini-3.5-flash)",
     ),
 ) -> None:
     """Turn a plain-English OpenMC request into a runnable configuration plan."""
     assistant = NaturalLanguageAssistant()
-    plan = assistant.plan(prompt, use_llm=llm, model=model, endpoint=endpoint)
+    plan = assistant.plan(prompt, use_llm=llm, model=model)
 
     table = Table(title="Natural-Language OpenMC Plan", border_style="green")
     table.add_column("Field", style="cyan", no_wrap=True)

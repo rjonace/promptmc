@@ -13,8 +13,7 @@ PromptMC planning, template generation, XML validation, and schema validation wo
 ## Install PromptMC
 
 ```bash
-pip install promptmc
-pip install promptmc[mcp]         # optional MCP server
+pip install promptmc              # CLI, MCP server, and Gemini planner
 pip install promptmc[telemetry]   # optional OpenTelemetry support
 ```
 
@@ -23,7 +22,7 @@ For editable development:
 ```bash
 git clone https://github.com/rjonace/promptmc.git
 cd promptmc
-poetry install --with dev --extras "telemetry mcp"
+poetry install --with dev --extras "telemetry"
 ```
 
 ## Install OpenMC

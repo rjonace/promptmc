@@ -11,7 +11,7 @@ from __future__ import annotations
 import asyncio
 import json
 from collections.abc import Iterable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import AnyUrl
 
@@ -25,26 +25,17 @@ from promptmc.mcp.resources import (
 )
 from promptmc.mcp.tools import TOOL_REGISTRY, dispatch
 
-try:
+if TYPE_CHECKING:
     import mcp.types as types
     from mcp.server import Server
     from mcp.server.lowlevel.helper_types import ReadResourceContents
-    from mcp.server.stdio import stdio_server
-
-    _MCP_AVAILABLE = True
-except ImportError:  # pragma: no cover
-    _MCP_AVAILABLE = False
-
-_INSTALL_HINT = (
-    "The 'mcp' extra is required to run the PromptMC MCP server. "
-    "Install it with: pip install promptmc[mcp]"
-)
 
 
 def build_server() -> Server:  # pragma: no cover
     """Build and configure the PromptMC MCP server instance."""
-    if not _MCP_AVAILABLE:
-        raise RuntimeError(_INSTALL_HINT)
+    import mcp.types as types
+    from mcp.server import Server
+    from mcp.server.lowlevel.helper_types import ReadResourceContents
 
     server: Server = Server("promptmc")
 
@@ -103,6 +94,8 @@ def build_server() -> Server:  # pragma: no cover
 
 def main() -> None:  # pragma: no cover
     """Entry point: start the stdio MCP server."""
+    from mcp.server.stdio import stdio_server
+
     server = build_server()
 
     async def _run() -> None:

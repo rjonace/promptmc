@@ -35,8 +35,7 @@ promptmc ask "concrete shielding calculation with 1 million particles"
 promptmc ask "pin cell criticality with 50k particles" --write
 ```
 
-By default, `ask` uses a deterministic local planner — no API key, no network, no generative AI. The optional `--llm` flag calls an external OpenAI-compatible model, configured through environment variables (`PROMPTMC_LLM_API_KEY`, `PROMPTMC_LLM_ENDPOINT`,
-`PROMPTMC_LLM_MODEL`); the key is read only from the environment.
+By default, `ask` uses a deterministic local planner — no API key, no network, no generative AI. The optional `--llm` flag calls Google Gemini (set GEMINI_API_KEY), which can interpret more open-ended natural-language requests. Customize the model name with GEMINI_MODEL (defaults to gemini-3.5-flash).
 
 See the [CLI reference](docs/cli-reference.md) for provider setup.
 
@@ -47,7 +46,7 @@ See the [CLI reference](docs/cli-reference.md) for provider setup.
 PromptMC exposes a Model Context Protocol server so AI assistants can run OpenMC workflows natively — validation, plotting, execution, and result parsing from inside your LLM chat client.
 
 ```bash
-pip install promptmc[mcp]
+pip install promptmc
 promptmc-mcp
 ```
 
@@ -88,8 +87,7 @@ Every output is reviewed by a human. PromptMC is an assistant, never an autonomo
 ## Installation
 
 ```bash
-pip install promptmc              # core
-pip install promptmc[mcp]         # + MCP server
+pip install promptmc              # core (includes CLI, MCP server, and Gemini planner)
 pip install promptmc[telemetry]   # + OpenTelemetry tracing
 ```
 

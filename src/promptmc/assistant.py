@@ -6,11 +6,11 @@ import json
 import os
 import re
 import shlex
-import urllib.error
-import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeVar
+
+from pydantic import BaseModel, Field
 
 from promptmc.templates import TemplateType, get_template
 
@@ -66,92 +66,115 @@ class NaturalLanguagePlan:
         )
 
 
-class OpenAICompatibleLLMClient:
-    """Client for OpenAI-compatible LLM APIs."""
+T = TypeVar("T", bound=BaseModel)
+
+
+class GeminiPlanResponse(BaseModel):
+    """Pydantic schema for the Gemini structured output plan."""
+
+    template_type: str = Field(
+        description="One of 'criticality', 'fixed_source', 'shielding', or 'reactor_pin'"
+    )
+    particles: int = Field(
+        description="Number of particles to simulate, must be a positive integer"
+    )
+    batches: int = Field(
+        description="Number of batches to simulate, must be a positive integer"
+    )
+    inactive: int = Field(
+        description="Number of inactive batches to simulate (must be 0 for fixed_source and shielding)"
+    )
+    confidence: float = Field(
+        description="Confidence score between 0.0 and 1.0"
+    )
+    summary: str = Field(description="A short summary of the plan")
+    rationale: list[str] = Field(
+        default_factory=list, description="Reasoning behind the chosen plan"
+    )
+    warnings: list[str] = Field(
+        default_factory=list,
+        description="Any warnings or potential issues detected",
+    )
+    next_steps: list[str] = Field(
+        default_factory=list, description="Next steps for the user to follow"
+    )
+
+
+class GeminiClient:
+    """A thin client wrapper for Google Gemini API."""
 
     def __init__(
         self,
         api_key: str | None = None,
         model: str | None = None,
-        endpoint: str | None = None,
-        timeout_seconds: int = 30,
     ) -> None:
-        self.api_key: str | None = (
-            api_key
-            or os.getenv("PROMPTMC_LLM_API_KEY")
-            or os.getenv("OPENAI_API_KEY")
-        )
+        self.api_key: str | None = api_key or os.getenv("GEMINI_API_KEY")
         self.model: str = (
-            model or os.getenv("PROMPTMC_LLM_MODEL") or "gpt-4o-mini"
+            model or os.getenv("GEMINI_MODEL") or "gemini-3.5-flash"
         )
-        self.endpoint: str = (
-            endpoint
-            or os.getenv("PROMPTMC_LLM_ENDPOINT")
-            or "https://api.openai.com/v1/chat/completions"
-        )
-        self.timeout_seconds = timeout_seconds
 
     @property
     def configured(self) -> bool:
         """Whether the client has an API key configured."""
         return bool(self.api_key)
 
-    def complete_json(
-        self, system_prompt: str, user_prompt: str
-    ) -> dict[str, Any]:
-        """Send a chat completion request and parse JSON."""
+    def generate_structured(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        response_schema: type[T],
+    ) -> T:
+        """Call Gemini to generate structured output conforming to the response_schema."""
         if not self.api_key:
-            raise RuntimeError("LLM API key is not configured")
+            raise ValueError(
+                "GEMINI_API_KEY environment variable is not set. "
+                "Set this variable to use the Gemini LLM planner, "
+                "or omit the --llm flag to use the default local planner."
+            )
 
-        api_key_str: str = self.api_key
-        payload = {
-            "model": self.model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            "temperature": 0.1,
-            "response_format": {"type": "json_object"},
-        }
-        body = json.dumps(payload).encode("utf-8")
-        request = urllib.request.Request(
-            self.endpoint,
-            data=body,
-            headers={
-                "Authorization": f"Bearer {api_key_str}",
-                "Content-Type": "application/json",
-            },
-            method="POST",
-        )
+        # Lazy import: import google-genai ONLY inside the seam that makes the call
+        from google import genai
+        from google.genai import types
+
+        client = genai.Client(api_key=self.api_key)
 
         try:
-            with urllib.request.urlopen(
-                request, timeout=self.timeout_seconds
-            ) as response:  # nosec B310
-                data = json.loads(response.read().decode("utf-8"))
-        except urllib.error.URLError as e:
-            raise RuntimeError(f"LLM request failed: {e}") from e
+            response = client.models.generate_content(
+                model=self.model,
+                contents=user_prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_prompt,
+                    response_mime_type="application/json",
+                    response_schema=response_schema,
+                    temperature=0.1,
+                ),
+            )
+        except Exception as e:
+            raise RuntimeError(f"Gemini API request failed: {e}") from e
 
-        from typing import cast
+        if not response.text:
+            raise RuntimeError("Gemini returned an empty response")
 
-        content = data["choices"][0]["message"]["content"]
-        return cast(dict[str, Any], json.loads(content))
+        try:
+            return response_schema.model_validate_json(response.text)
+        except Exception as e:
+            raise RuntimeError(
+                f"Failed to parse Gemini response as {response_schema.__name__}: {e}. "
+                f"Raw response: {response.text}"
+            ) from e
 
 
 class NaturalLanguageAssistant:
     """Translates natural language into OpenMC simulation plans."""
 
-    def __init__(
-        self, llm_client: OpenAICompatibleLLMClient | None = None
-    ) -> None:
-        self.llm_client = llm_client or OpenAICompatibleLLMClient()
+    def __init__(self, llm_client: GeminiClient | None = None) -> None:
+        self.llm_client = llm_client or GeminiClient()
 
     def plan(
         self,
         prompt: str,
         use_llm: bool = False,
         model: str | None = None,
-        endpoint: str | None = None,
     ) -> NaturalLanguagePlan:
         """Generate a simulation plan from a prompt."""
         local_plan = self._local_plan(prompt)
@@ -159,25 +182,17 @@ class NaturalLanguageAssistant:
             return local_plan
 
         client = self.llm_client
-        if model or endpoint:
-            client = OpenAICompatibleLLMClient(model=model, endpoint=endpoint)
+        if model:
+            client = GeminiClient(model=model)
 
         if not client.configured:
-            local_plan.warnings.append(
-                "LLM mode requested, but no API key is"
-                " configured. Set OPENAI_API_KEY or"
-                " PROMPTMC_LLM_API_KEY. Returned the"
-                " local planner result instead."
+            raise ValueError(
+                "GEMINI_API_KEY environment variable is not set. "
+                "Set this variable to use the Gemini LLM planner, "
+                "or omit the --llm flag to use the default local planner."
             )
-            return local_plan
 
-        try:
-            return self._llm_plan(prompt, local_plan, client)
-        except Exception as e:
-            local_plan.warnings.append(
-                f"LLM planning failed; returned local plan instead: {e}"
-            )
-            return local_plan
+        return self._llm_plan(prompt, local_plan, client)
 
     def _local_plan(self, prompt: str) -> NaturalLanguagePlan:
         normalized = prompt.lower()
@@ -250,14 +265,13 @@ class NaturalLanguageAssistant:
         self,
         prompt: str,
         fallback: NaturalLanguagePlan,
-        client: OpenAICompatibleLLMClient,
+        client: GeminiClient,
     ) -> NaturalLanguagePlan:
         system_prompt = (
-            "You translate plain-English OpenMC simulation requests into a"
-            " small JSON plan. Return only JSON. Valid template_type values"
-            " are criticality, fixed_source, shielding, and reactor_pin."
-            " Use positive integers for particles and batches."
-            " Use inactive=0 for fixed_source and shielding."
+            "You translate OpenMC simulation requests into a simulation plan JSON object. "
+            "Valid template_type values are 'criticality', 'fixed_source', 'shielding', and 'reactor_pin'. "
+            "Use positive integers for particles and batches. "
+            "Use inactive=0 for fixed_source and shielding."
         )
         user_prompt = json.dumps(
             {
@@ -268,44 +282,32 @@ class NaturalLanguageAssistant:
                     "batches": fallback.batches,
                     "inactive": fallback.inactive,
                 },
-                "required_schema": {
-                    "template_type": "criticality|fixed_source|shielding|reactor_pin",
-                    "particles": "int",
-                    "batches": "int",
-                    "inactive": "int",
-                    "confidence": "float from 0 to 1",
-                    "summary": "short string",
-                    "rationale": ["strings"],
-                    "warnings": ["strings"],
-                    "next_steps": ["strings"],
-                },
             }
         )
-        data = client.complete_json(system_prompt, user_prompt)
-        template_type = TemplateType(
-            str(data.get("template_type", fallback.template_type.value))
+
+        plan_response = client.generate_structured(
+            system_prompt, user_prompt, GeminiPlanResponse
         )
+
+        try:
+            template_type = TemplateType(plan_response.template_type)
+        except ValueError:
+            template_type = fallback.template_type
+
         if template_type not in SUPPORTED_TEMPLATE_TYPES:
             template_type = fallback.template_type
 
         return NaturalLanguagePlan(
             prompt=prompt,
             template_type=template_type,
-            particles=max(1, int(data.get("particles", fallback.particles))),
-            batches=max(1, int(data.get("batches", fallback.batches))),
-            inactive=max(0, int(data.get("inactive", fallback.inactive))),
-            confidence=max(
-                0.0,
-                min(1.0, float(data.get("confidence", fallback.confidence))),
-            ),
-            summary=str(data.get("summary", fallback.summary)),
-            rationale=self._string_list(
-                data.get("rationale", fallback.rationale)
-            ),
-            warnings=self._string_list(data.get("warnings", fallback.warnings)),
-            next_steps=self._string_list(
-                data.get("next_steps", fallback.next_steps)
-            ),
+            particles=max(1, plan_response.particles),
+            batches=max(1, plan_response.batches),
+            inactive=max(0, plan_response.inactive),
+            confidence=max(0.0, min(1.0, plan_response.confidence)),
+            summary=plan_response.summary,
+            rationale=plan_response.rationale,
+            warnings=plan_response.warnings,
+            next_steps=plan_response.next_steps,
             source="llm",
         )
 
