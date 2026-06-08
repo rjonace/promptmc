@@ -10,7 +10,7 @@ PromptMC does that by providing infrastructure and tooling that allows both AI L
 
 It works like a grammar checker between an AI LLM assistant and OpenMC: your AI proposes a configuration, PromptMC validates XML structure and supported schema constraints before the simulator runs, and catches malformed inputs early.
 
-Because AI hallucination is a valid concern in reactor physics, the system is designed with deterministic blast walls. Every configuration (from a human, the deterministic local planner, or AI) is validated against the same typed [Pydantic](https://docs.pydantic.dev/) schemas before it reaches the simulator.
+Because AI [hallucination](https://link.springer.com/article/10.1007/s10676-024-09775-5) is a valid concern in reactor physics, the system is designed with deterministic blast walls. Every configuration (from a human, the deterministic local planner, or AI) is validated against the same typed [Pydantic](https://docs.pydantic.dev/) schemas before it reaches the simulator.
 
 ## What you can do
 
@@ -41,7 +41,7 @@ pip install promptmc[telemetry]   # + OpenTelemetry tracing
 
 **OpenMC** (required for simulation execution, geometry-debug checks, and plot rendering) can be installed via Conda, Spack, Docker, or build from source per [docs.openmc.org](https://docs.openmc.org/en/stable/quickinstall.html). Planning and XML/schema validation work without it.
 
-**[Cross-section data](https://en.wikipedia.org/wiki/Neutron_cross_section)** (for running simulations):
+**[Cross-section data](https://www.nndc.bnl.gov/endf/)** (for running simulations):
 
 ```bash
 pip install openmc-data-downloader

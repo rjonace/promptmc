@@ -6,7 +6,7 @@ This guide covers PromptMC installation plus the optional OpenMC setup required 
 
 - Python 3.10, 3.11, 3.12, or 3.13
 - [OpenMC](https://docs.openmc.org/en/stable/), built from source or executable in `PATH`, for running simulations
-- Nuclear [cross-section data](https://en.wikipedia.org/wiki/Neutron_cross_section) for running simulations
+- Nuclear cross-section data for running simulations
 
 PromptMC planning, template generation, XML validation, and schema validation work without OpenMC installed.
 

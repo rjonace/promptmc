@@ -1,4 +1,4 @@
-# MCP Demo: UO2 [Criticality](https://en.wikipedia.org/wiki/Nuclear_chain_reaction) Benchmark
+# MCP Demo: UO2 Criticality Benchmark
 
 This demonstrates running the bundled UO2 example through PromptMC's [MCP](https://modelcontextprotocol.io) server.
 
