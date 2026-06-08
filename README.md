@@ -12,18 +12,16 @@ It works like a grammar checker between an AI LLM assistant and OpenMC: your AI 
 
 Because AI hallucination is a valid concern in reactor physics, the system is designed with deterministic blast walls. Every configuration (from a human, the deterministic local planner, or AI) is validated against the same typed Pydantic schemas before it reaches the simulator.
 
-The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
-
 ## What you can do
 
 Most planning and schema-validation workflows work without OpenMC installed; execution, geometry-debug checks, and 2D plot rendering require OpenMC.
 
-**Without OpenMC:**
+**Without OpenMC installed:**
 - Describe a simulation in plain English → a validated plan and `settings.xml` (the default planner uses no generative AI)
 - Validate XML structure and PromptMC's supported OpenMC schemas
 - Drive planning and schema validation from an AI client via the MCP server
 
-**With OpenMC:**
+**With OpenMC installed:**
 - Run simulations (subprocess or Python API)
 - Run geometry-debug overlap checks and generate 2D slice plots inside your AI chat client
 - Parse statepoint and tally outputs without touching HDF5
@@ -87,6 +85,8 @@ PromptMC bridges those two worlds. It is also, for me, an exploration of using a
 ## Safety
 
 PromptMC is an engineering-assist tool that keeps a human in the loop. It is not a substitute for professional engineering judgment, independent verification and validation, or regulatory review, and is not for safety, licensing, or other regulated decisions. Reproducing a published benchmark is not qualification for safety analysis. Provided as-is (see [LICENSE](LICENSE)).
+
+The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
 
 ## Documentation
 
