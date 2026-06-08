@@ -8,7 +8,7 @@ import typer
 from rich.panel import Panel
 from rich.table import Table
 
-from promptmc.assistant import NaturalLanguageAssistant
+from promptmc.assistant import DEFAULT_GEMINI_MODEL, NaturalLanguageAssistant
 from promptmc.commands.common import console, handle_errors
 
 
@@ -38,7 +38,7 @@ def plan(
     model: str | None = typer.Option(
         None,
         "--model",
-        help="Gemini model name when --llm is used (default: gemini-3.5-flash)",
+        help=f"Gemini model name when --llm is used (default: {DEFAULT_GEMINI_MODEL})",
     ),
 ) -> None:
     """Turn a plain-English OpenMC request into a runnable configuration plan."""

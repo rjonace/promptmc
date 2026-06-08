@@ -14,6 +14,8 @@ from pydantic import BaseModel, Field
 
 from promptmc.templates import TemplateType, get_template
 
+DEFAULT_GEMINI_MODEL = "gemini-3.5-flash"
+
 SUPPORTED_TEMPLATE_TYPES = {
     TemplateType.CRITICALITY,
     TemplateType.FIXED_SOURCE,
@@ -110,7 +112,7 @@ class GeminiClient:
     ) -> None:
         self.api_key: str | None = api_key or os.getenv("GEMINI_API_KEY")
         self.model: str = (
-            model or os.getenv("GEMINI_MODEL") or "gemini-3.5-flash"
+            model or os.getenv("GEMINI_MODEL") or DEFAULT_GEMINI_MODEL
         )
 
     @property
