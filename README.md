@@ -8,9 +8,9 @@
 
 PromptMC does that by providing infrastructure and tooling that allows both AI LLM assistants and humans to interact with OpenMC through typed, schema-driven workflows.
 
-It works like a grammar checker between an AI LLM assistant and OpenMC: your AI proposes a configuration, PromptMC validates XML structure and supported [schema constraints](https://en.wikipedia.org/wiki/XML_schema) before the simulator runs, and catches malformed inputs early.
+It works like a grammar checker between an AI LLM assistant and OpenMC: your AI proposes a configuration, PromptMC validates XML structure and supported schema constraints before the simulator runs, and catches malformed inputs early.
 
-Because AI hallucination is a valid concern in [reactor physics](https://en.wikipedia.org/wiki/Nuclear_reactor_physics), the system is designed with deterministic blast walls. Every configuration (from a human, the deterministic local planner, or AI) is validated against the same typed [Pydantic](https://docs.pydantic.dev/) schemas before it reaches the simulator.
+Because AI hallucination is a valid concern in reactor physics, the system is designed with deterministic blast walls. Every configuration (from a human, the deterministic local planner, or AI) is validated against the same typed [Pydantic](https://docs.pydantic.dev/) schemas before it reaches the simulator.
 
 ## What you can do
 
