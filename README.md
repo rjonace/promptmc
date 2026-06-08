@@ -53,13 +53,13 @@ See [installation](docs/installation.md) for more details.
 
 ## MCP server
 
-PromptMC exposes a [Model Context Protocol](https://modelcontextprotocol.io) server so AI assistants can run OpenMC workflows natively — validation, plotting, execution, and result parsing from inside your LLM chat client, such as Claude Desktop, Cursor, Devin/Windsurf, and Google Antigravity.
+PromptMC exposes a [Model Context Protocol](https://modelcontextprotocol.io) server so AI assistants can run OpenMC workflows natively — validation, plotting, execution, and result parsing from inside your LLM chat client, such as Claude Desktop, Cursor, and Google Antigravity.
 
 **[Tools](https://modelcontextprotocol.io/docs/concepts/tools):** `openmc_validate`, `openmc_schema_check`, `openmc_template`, `openmc_list_templates`, `openmc_run`, `openmc_analyze`, `openmc_plot` (2D slice, returned to the chat client), `openmc_geometry_debug`, `openmc_check_installation`, `openmc_check_cross_sections`.
 
 [Resources](https://modelcontextprotocol.io/docs/concepts/resources) expose the configured cross-sections path, the session's tool-call history, and the bundled examples.
 
-**Setup:** see the [MCP server configuration guide](docs/mcp.md) for per-client steps (Claude Desktop/Code, Cursor, Devin/Windsurf, Google Antigravity, VS Code).
+**Setup:** see the [MCP server configuration guide](docs/mcp.md) for per-client steps (Claude Desktop/Code, Cursor, Google Antigravity, VS Code).
 
 ## CLI
 
@@ -93,7 +93,7 @@ The goal is not autonomous reactor design; the goal is safer, faster OpenMC iter
 ## Documentation
 
 - [Installation](docs/installation.md) — setup paths for PromptMC, OpenMC, and nuclear data
-- [MCP server](docs/mcp.md) — connecting AI assistants (Claude Desktop/Code, Cursor, Devin/Windsurf, Antigravity, VS Code)
+- [MCP server](docs/mcp.md) — connecting AI assistants (Claude Desktop/Code, Cursor, Antigravity, VS Code)
 - [CLI reference](docs/cli-reference.md) — commands, flags, environment variables
 - [Python API](docs/python-api.md) — scripting PromptMC
 - [Templates](docs/cli-reference.md#templates) · [Telemetry](docs/telemetry-and-audit.md)

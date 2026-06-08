@@ -47,7 +47,7 @@ OpenMC is required for simulation execution, geometry-debug checks, and plot ren
 
 ## Shipped — MCP Server (v2.0)
 
-**Goal (met):** Expose PromptMC’s validation and execution logic directly to AI clients (Claude Desktop, Cursor, Windsurf, Antigravity) via MCP.
+**Goal (met):** Expose PromptMC’s validation and execution logic directly to AI clients (Claude Desktop, Cursor, Antigravity) via MCP.
 
 - **Shipped:** `promptmc-mcp` stdio server (bundled with `pip install promptmc`).
 - **Shipped:** 10 tools incl. `openmc_validate`, `openmc_run`, `openmc_analyze`, and `openmc_schema_check` with strict Pydantic input/output schemas.

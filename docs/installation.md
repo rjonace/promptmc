@@ -25,7 +25,7 @@ cd promptmc
 poetry install --with dev --extras "telemetry"
 ```
 
-The MCP server (`promptmc-mcp`) is included. To connect an AI assistant — Claude Desktop/Code, Cursor, Devin/Windsurf, Google Antigravity, or VS Code — see the [MCP server configuration guide](mcp.md).
+The MCP server (`promptmc-mcp`) is included. To connect an AI assistant — Claude Desktop/Code, Cursor, Google Antigravity, or VS Code — see the [MCP server configuration guide](mcp.md).
 
 ## Install OpenMC
 

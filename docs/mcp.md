@@ -13,7 +13,7 @@ The server is installed with PromptMC (`pip install promptmc`) and started by th
 
 ## Standard configuration
 
-Most clients (Claude Desktop, Cursor, Devin/Windsurf, Google Antigravity) read a JSON object keyed by `mcpServers`. The PromptMC entry is the same everywhere — only the file location differs:
+Most clients (Claude Desktop, Cursor, Google Antigravity) read a JSON object keyed by `mcpServers`. The PromptMC entry is the same everywhere — only the file location differs:
 
 ```json
 {
@@ -65,14 +65,6 @@ Verify with `claude mcp list`, or inspect the resulting `.mcp.json` — it uses 
    - Per-project: `.cursor/mcp.json` in the workspace root
 2. Add the [standard configuration](#standard-configuration).
 3. Reload Cursor. The server shows up under **Settings → MCP** with a green status dot when connected.
-
-### Devin Desktop / Windsurf
-
-Following Cognition's acquisition of Windsurf, the desktop app is now **Devin Desktop** and the **Cascade** agent is now **Devin**; older installs may still show the Windsurf/Cascade names.
-
-1. Open the agent panel, then **Settings → MCP Servers → Manage → View raw config**. The most reliable path is the in-app **View raw config** button, since the file location may differ across versions (historically `~/.codeium/windsurf/mcp_config.json`).
-2. Add the [standard configuration](#standard-configuration).
-3. Click **Refresh** in the MCP Servers panel (or restart the app).
 
 ### Google Antigravity
 

@@ -5,7 +5,7 @@ This demonstrates running the bundled UO2 example through PromptMC's [MCP](https
 ## Connect
 
 Configure an MCP-capable assistant (Claude Desktop, Claude Code, Cursor,
-Devin/Windsurf, Google Antigravity, VS Code with Copilot) using the per-client
+Google Antigravity, VS Code with Copilot) using the per-client
 setup in the [MCP server configuration guide](../../docs/mcp.md). The client
 launches the `promptmc-mcp` server for you over stdio — you don't run it by
 hand. Set `OPENMC_CROSS_SECTIONS` in that config so this example can execute

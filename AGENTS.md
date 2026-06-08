@@ -1,6 +1,6 @@
 # Agentic Implementation Instructions for PromptMC
 
-> **Purpose:** This file is written for AI coding agents (Cascade, Claude Code, Cursor, etc.) tasked with advancing PromptMC. It compresses the project's vision, working norms, and concrete next-sprint instructions into one document an agent can ground itself in at session start.
+> **Purpose:** This file is written for AI coding agents (Claude Code, Cursor, etc.) tasked with advancing PromptMC. It compresses the project's vision, working norms, and concrete next-sprint instructions into one document an agent can ground itself in at session start.
 >
 > If you are an AI agent reading this: **read all of this file before making changes.** Then check `ROADMAP.md` (the authoritative release plan) and `README.md` for orienting context.
 >
@@ -12,7 +12,7 @@
 
 PromptMC is becoming **AI-native infrastructure for nuclear simulation**: validated OpenMC workflows for AI-assisted reactor physics. The new product surface is:
 
-1. An **MCP server** that exposes OpenMC operations to AI agents (e.g., Windsurf, Claude Desktop, Cursor, Antigravity, VS Code with Copilot).
+1. An **MCP server** that exposes OpenMC operations to AI agents (e.g., Claude Desktop, Cursor, Antigravity, VS Code with Copilot).
 2. **Pydantic geometry/material/tally schemas** for OpenMC CSG that are usable as constraint surfaces for LLM-driven structured generation.
 3. A **library of validated reference geometries** (PWR pin, BWR pin, Godiva, Jezebel, ICSBEP cases) that ground the generation pipeline.
 4. A **constrained-generation pipeline** that produces validated, runnable OpenMC inputs from natural language.
@@ -297,7 +297,7 @@ The Pydantic schemas in the v2.1 geometry module must catch all of these at vali
 These capabilities span two releases: **observability** (usage metrics + tracing) lands in **v2.6**, and **provenance/audit** (`audit.jsonl`, OTel spans, MCP client/model capture) lands in **v2.8**. All of it is **opt-in, local, and off by default** (hard rule #10) — provenance for the operator's own review, not analytics phoned home.
 
 - **Audit logging:** when enabled, wrap each MCP tool call in an OpenTelemetry span and record the inputs (JSON arguments) and the outcome (success/failure), so there is a deterministic local record of what the agent attempted.
-- **MCP client capture (automatic):** the MCP `initialize` request carries a `clientInfo` payload naming the client (e.g. "Claude Desktop", "Cursor", "Windsurf"). Read it at startup and attach it as the `llm_product` dimension.
+- **MCP client capture (automatic):** the MCP `initialize` request carries a `clientInfo` payload naming the client (e.g. "Claude Desktop", "Cursor"). Read it at startup and attach it as the `llm_product` dimension.
 - **Model/provider capture (env injection):** MCP doesn't pass the model (the client app owns API keys and routing), so read it from env vars the client sets in its config — `PROMPTMC_TRACKING_MODEL` (→ `llm_model`) and `PROMPTMC_COMPANY_ID` (→ `llm_company`). Example client config:
   ```json
   {

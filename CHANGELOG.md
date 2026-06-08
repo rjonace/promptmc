@@ -47,7 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - 2026-05-30
 
 ### Added
-- **MCP server** (`src/promptmc/mcp/`) — a Model Context Protocol server that exposes PromptMC capabilities as agent-callable tools, allowing AI assistants (Windsurf, Claude Desktop, Cursor, VS Code with Copilot) to drive end-to-end OpenMC workflows without writing Python.
+- **MCP server** (`src/promptmc/mcp/`) — a Model Context Protocol server that exposes PromptMC capabilities as agent-callable tools, allowing AI assistants (Claude Desktop, Cursor, VS Code with Copilot) to drive end-to-end OpenMC workflows without writing Python.
   - `openmc_check_installation` — verify OpenMC installation status.
   - `openmc_validate` — validate an OpenMC input file.
   - `openmc_schema_check` — Pydantic schema validation for an input directory.
