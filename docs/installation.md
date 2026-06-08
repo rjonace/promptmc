@@ -5,8 +5,8 @@ This guide covers PromptMC installation plus the optional OpenMC setup required 
 ## Prerequisites
 
 - Python 3.10, 3.11, 3.12, or 3.13
-- OpenMC, built from source or executable in `PATH`, for running simulations
-- Nuclear cross-section data for running simulations
+- [OpenMC](https://docs.openmc.org/en/stable/), built from source or executable in `PATH`, for running simulations
+- Nuclear [cross-section data](https://en.wikipedia.org/wiki/Neutron_cross_section) for running simulations
 
 PromptMC planning, template generation, XML validation, and schema validation work without OpenMC installed.
 
@@ -24,6 +24,8 @@ git clone https://github.com/rjonace/promptmc.git
 cd promptmc
 poetry install --with dev --extras "telemetry"
 ```
+
+The MCP server (`promptmc-mcp`) is included. To connect an AI assistant — Claude Desktop/Code, Cursor, Devin/Windsurf, Google Antigravity, or VS Code — see the [MCP server configuration guide](mcp.md).
 
 ## Install OpenMC
 

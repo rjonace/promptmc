@@ -4,13 +4,13 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![CI](https://img.shields.io/github/actions/workflow/status/rjonace/promptmc/ci.yml)
 
-OpenMC is powerful but can be painful to use: you hand-write XML, manage batch runs, and read results out of HDF5. It would be great if we could safely use AI to reduce that friction.
+[OpenMC](https://docs.openmc.org/en/stable/) is powerful but can be painful to use: you hand-write XML, manage batch runs, and read results out of [HDF5](https://www.hdfgroup.org/solutions/hdf5/). It would be great if we could safely use AI to reduce that friction.
 
 PromptMC does that by providing infrastructure and tooling that allows both AI LLM assistants and humans to interact with OpenMC through typed, schema-driven workflows.
 
-It works like a grammar checker between an AI LLM assistant and OpenMC: your AI proposes a configuration, PromptMC validates XML structure and supported schema constraints before the simulator runs, and catches malformed inputs early.
+It works like a grammar checker between an AI LLM assistant and OpenMC: your AI proposes a configuration, PromptMC validates XML structure and supported [schema constraints](https://en.wikipedia.org/wiki/XML_schema) before the simulator runs, and catches malformed inputs early.
 
-Because AI hallucination is a valid concern in reactor physics, the system is designed with deterministic blast walls. Every configuration (from a human, the deterministic local planner, or AI) is validated against the same typed Pydantic schemas before it reaches the simulator.
+Because AI hallucination is a valid concern in [reactor physics](https://en.wikipedia.org/wiki/Nuclear_reactor_physics), the system is designed with deterministic blast walls. Every configuration (from a human, the deterministic local planner, or AI) is validated against the same typed [Pydantic](https://docs.pydantic.dev/) schemas before it reaches the simulator.
 
 ## What you can do
 
@@ -24,7 +24,7 @@ Most planning and schema-validation workflows work without OpenMC installed; exe
 **With OpenMC installed:**
 - Run simulations (subprocess or Python API)
 - Run geometry-debug overlap checks and generate 2D slice plots inside your AI chat client
-- Parse statepoint and tally outputs without touching HDF5
+- Parse [statepoint and tally](https://docs.openmc.org/en/stable/usersguide/tallies.html) outputs without touching HDF5
 
 ## Installation
 
@@ -41,7 +41,7 @@ pip install promptmc[telemetry]   # + OpenTelemetry tracing
 
 **OpenMC** (required for simulation execution, geometry-debug checks, and plot rendering) can be installed via Conda, Spack, Docker, or build from source per [docs.openmc.org](https://docs.openmc.org/en/stable/quickinstall.html). Planning and XML/schema validation work without it.
 
-**Cross-section data** (for running simulations):
+**[Cross-section data](https://en.wikipedia.org/wiki/Neutron_cross_section)** (for running simulations):
 
 ```bash
 pip install openmc-data-downloader
@@ -53,11 +53,13 @@ See [installation](docs/installation.md) for more details.
 
 ## MCP server
 
-PromptMC exposes a Model Context Protocol server so AI assistants can run OpenMC workflows natively — validation, plotting, execution, and result parsing from inside your LLM chat client, such as Claude Desktop, Cursor, Windsurf, and Google Antigravity.
+PromptMC exposes a [Model Context Protocol](https://modelcontextprotocol.io) server so AI assistants can run OpenMC workflows natively — validation, plotting, execution, and result parsing from inside your LLM chat client, such as Claude Desktop, Cursor, Devin/Windsurf, and Google Antigravity.
 
-**Tools:** `openmc_validate`, `openmc_schema_check`, `openmc_template`, `openmc_list_templates`, `openmc_run`, `openmc_analyze`, `openmc_plot` (2D slice, returned to the chat client), `openmc_geometry_debug`, `openmc_check_installation`, `openmc_check_cross_sections`.
+**[Tools](https://modelcontextprotocol.io/docs/concepts/tools):** `openmc_validate`, `openmc_schema_check`, `openmc_template`, `openmc_list_templates`, `openmc_run`, `openmc_analyze`, `openmc_plot` (2D slice, returned to the chat client), `openmc_geometry_debug`, `openmc_check_installation`, `openmc_check_cross_sections`.
 
-Resources expose the configured cross-sections path, the session's tool-call history, and the bundled examples.
+[Resources](https://modelcontextprotocol.io/docs/concepts/resources) expose the configured cross-sections path, the session's tool-call history, and the bundled examples.
+
+**Setup:** see the [MCP server configuration guide](docs/mcp.md) for per-client steps (Claude Desktop/Code, Cursor, Devin/Windsurf, Google Antigravity, VS Code).
 
 ## CLI
 
@@ -91,6 +93,7 @@ The goal is not autonomous reactor design; the goal is safer, faster OpenMC iter
 ## Documentation
 
 - [Installation](docs/installation.md) — setup paths for PromptMC, OpenMC, and nuclear data
+- [MCP server](docs/mcp.md) — connecting AI assistants (Claude Desktop/Code, Cursor, Devin/Windsurf, Antigravity, VS Code)
 - [CLI reference](docs/cli-reference.md) — commands, flags, environment variables
 - [Python API](docs/python-api.md) — scripting PromptMC
 - [Templates](docs/cli-reference.md#templates) · [Telemetry](docs/telemetry-and-audit.md)

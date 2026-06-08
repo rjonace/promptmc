@@ -1,19 +1,32 @@
-# MCP Demo: UO2 Criticality Benchmark
+# MCP Demo: UO2 [Criticality](https://en.wikipedia.org/wiki/Nuclear_chain_reaction) Benchmark
 
-This demonstrates running the bundled UO2 example through PromptMC's MCP server.
+This demonstrates running the bundled UO2 example through PromptMC's [MCP](https://modelcontextprotocol.io) server.
 
-Start the server (available after `pip install promptmc`):
+## Connect
+
+Configure an MCP-capable assistant (Claude Desktop, Claude Code, Cursor,
+Devin/Windsurf, Google Antigravity, VS Code with Copilot) using the per-client
+setup in the [MCP server configuration guide](../../docs/mcp.md). The client
+launches the `promptmc-mcp` server for you over stdio — you don't run it by
+hand. Set `OPENMC_CROSS_SECTIONS` in that config so this example can execute
+and plot.
+
+To smoke-test the command outside a client:
 
 ```bash
 export OPENMC_CROSS_SECTIONS=/path/to/cross_sections.xml
-promptmc-mcp
+promptmc-mcp   # serves MCP over stdio; Ctrl-C to exit
 ```
 
-Then connect an MCP-capable AI assistant (Claude Desktop, Windsurf, Cursor,
-Antigravity, VS Code with Copilot) using the configuration in the main
-[README](../../README.md#mcp-server).
+## Driving the demo
 
-## Steps (as performed by an AI assistant)
+You don't type the tool calls below — you prompt the assistant in plain English
+and it picks the tools. For example:
+
+> Validate and run the bundled UO2 criticality example with 4 threads, then
+> show me k-effective and an xy slice of the geometry.
+
+The assistant would carry that out with roughly these calls:
 
 1. **Check installation**: `openmc_check_installation` → confirms OpenMC is available
 2. **Check cross sections**: `openmc_check_cross_sections` → confirms `OPENMC_CROSS_SECTIONS` is set

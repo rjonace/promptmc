@@ -49,7 +49,7 @@ OpenMC is required for simulation execution, geometry-debug checks, and plot ren
 
 **Goal (met):** Expose PromptMC’s validation and execution logic directly to AI clients (Claude Desktop, Cursor, Windsurf, Antigravity) via MCP.
 
-- **Shipped:** `promptmc-mcp` stdio server (`pip install promptmc[mcp]`).
+- **Shipped:** `promptmc-mcp` stdio server (bundled with `pip install promptmc`).
 - **Shipped:** 10 tools incl. `openmc_validate`, `openmc_run`, `openmc_analyze`, and `openmc_schema_check` with strict Pydantic input/output schemas.
 - **Shipped:** `openmc_plot` returning 2D slice plots (PNG + base64) natively to the chat client, using OpenMC’s native plotting mode.
 - **Shipped:** `openmc_geometry_debug` for overlap detection via OpenMC geometry-debug mode.
