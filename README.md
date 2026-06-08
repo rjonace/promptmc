@@ -1,8 +1,14 @@
-# PromptMC
+<p align="center">
+  <img src="docs/assets/logo.svg" alt="PromptMC logo" width="140">
+</p>
 
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![CI](https://img.shields.io/github/actions/workflow/status/rjonace/promptmc/ci.yml)
+<h1 align="center">PromptMC</h1>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="Python">
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
+  <img src="https://img.shields.io/github/actions/workflow/status/rjonace/promptmc/ci.yml" alt="CI">
+</p>
 
 [OpenMC](https://docs.openmc.org/en/stable/) is powerful but can be painful to use: you hand-write XML, manage batch runs, and read results out of [HDF5](https://www.hdfgroup.org/solutions/hdf5/). It would be great if we could safely use AI to reduce that friction.
 

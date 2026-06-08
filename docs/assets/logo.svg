@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="logo-title">
+  <title id="logo-title">PromptMC</title>
+  <rect width="512" height="512" rx="96" fill="#0D1117"/>
+
+  <g fill="none" stroke="#38bdf8" stroke-width="12" stroke-linecap="round" opacity="0.6">
+    <ellipse cx="256" cy="256" rx="75" ry="200"/>
+    <ellipse cx="256" cy="256" rx="75" ry="200" transform="rotate(45 256 256)"/>
+    <ellipse cx="256" cy="256" rx="75" ry="200" transform="rotate(90 256 256)"/>
+    <ellipse cx="256" cy="256" rx="75" ry="200" transform="rotate(135 256 256)"/>
+  </g>
+
+  <g stroke="#4ade80" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M 224 232 L 248 256 L 224 280" />
+    <path d="M 262 280 L 290 280" />
+  </g>
+</svg>
