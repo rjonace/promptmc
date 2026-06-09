@@ -84,12 +84,6 @@ promptmc info                                                   # environment st
 
 Full options in the [CLI reference](docs/cli-reference.md).
 
-## About
-
-I studied nuclear engineering at MIT over 20 years ago, running MCNP 4 for my senior thesis. Though I left during my senior year, I eventually went back to university to get a degree in Computer Science, and I have spent the last 11 years working as a software engineer and site reliability engineer at a major FAANG cloud provider.
-
-PromptMC bridges those two worlds. It is also, for me, an exploration of using agentic programming to build software for fun but still holding professional production principles and standards.
-
 ## Safety
 
 PromptMC is an engineering-assist tool that keeps a human in the loop. It is not a substitute for professional engineering judgment, independent verification and validation, or regulatory review, and is not for safety, licensing, or other regulated decisions. Reproducing a published benchmark is not qualification for safety analysis. Provided as-is (see [LICENSE](LICENSE)).
@@ -105,6 +99,12 @@ The goal is not autonomous reactor design; the goal is safer, faster OpenMC iter
 - [Templates](docs/cli-reference.md#templates) · [Telemetry](docs/telemetry-and-audit.md)
 - [Examples](examples/uo2_criticality/README.md) · [MCP example](examples/mcp/README.md)
 - [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
+
+## About
+
+I studied nuclear engineering at MIT over 20 years ago, running MCNP 4 for my senior thesis. Though I left during my senior year, I eventually went back to university to get a degree in Computer Science, and I have spent the last 11 years working as a software engineer and site reliability engineer at a major FAANG cloud provider.
+
+PromptMC bridges those two worlds. It is also, for me, an exploration of using agentic programming to build software for fun but still holding professional production principles and standards.
 
 ## Contributions and Support
 
