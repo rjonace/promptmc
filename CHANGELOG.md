@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PyPI project metadata: repository/changelog/issues URLs, keywords, and license/development-status classifiers.
 - `py.typed` marker (PEP 561) so downstream type checkers consume PromptMC's type annotations.
 - Python 3.14 in the CI test matrix and trove classifiers.
+- Per-release design documents under `docs/design/` — retrospective for v0.1–v0.3, forward-looking (with open questions) for v0.4–v0.9.
 
 ### Fixed
 - Codecov uploads now authenticate via OIDC; they had been silently rejected ("Token required - not valid tokenless upload") since Codecov dropped anonymous uploads.

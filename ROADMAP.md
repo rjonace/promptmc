@@ -41,6 +41,8 @@ It provides a strictly typed, schema-driven Model Context Protocol (MCP) server 
 - **Shipped:** Dual-mode serialization: when OpenMC is available, serialize through OpenMC objects (`.export_to_xml()`); when absent, serialize Pydantic models to intermediate dicts and use a lightweight dict-to-xml utility to avoid double-maintenance.
 - **Shipped:** First two validated reference geometries (PWR pin, Godiva) as schema integration tests.
 
+Each release has a design document — architecture, key decisions, testing strategy, and open questions — under [docs/design/](docs/design/README.md).
+
 ## Next Sprints
 
 ### v0.4 — Reference Library

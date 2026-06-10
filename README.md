@@ -102,6 +102,7 @@ The goal is not autonomous reactor design; the goal is safer, faster OpenMC iter
 - [Python API](docs/python-api.md) — scripting PromptMC
 - [Templates](docs/cli-reference.md#templates) · [Telemetry](docs/telemetry-and-audit.md)
 - [Examples](src/promptmc/examples/uo2_criticality/README.md) · [MCP example](examples/mcp/README.md)
+- [Design docs](docs/design/README.md) — per-release architecture, decisions, and testing strategy
 - [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
 ## About

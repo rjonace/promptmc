@@ -140,6 +140,8 @@ than hand-rolled equivalents.
 
 The remaining work ships as sequential, independently-valuable minor releases with increasing risk — deterministic foundation first, LLM generation later, provenance to close. Build them in order; each must ship standalone value against the acceptance criteria below. **This section mirrors `ROADMAP.md`, which is the authoritative source; if the two ever disagree, ROADMAP wins and this section should be reconciled to it.**
 
+Each release has a design document under `docs/design/` with the architecture, key decisions, testing strategy, and open questions. **Read the matching design doc before starting a sprint**, and if the implementation diverges from it, update the design doc in the same PR.
+
 ### 5.1 Release plan
 
 | Version | Scope | Risk |
@@ -309,6 +311,7 @@ Before declaring a task complete:
 - [ ] Public API (`src/promptmc/__init__.py`) updated if new symbols added
 - [ ] README updated if user-visible behavior changed
 - [ ] ROADMAP item checked off if a roadmap deliverable was completed
+- [ ] Design doc (`docs/design/`) updated if the implementation diverged from it
 - [ ] Commit messages use conventional prefixes
 - [ ] If a release: version bumped in both files, tag created, GitHub release published
 
