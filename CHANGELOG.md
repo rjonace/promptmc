@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - PyPI publishing workflow (`.github/workflows/publish.yml`) using trusted publishing (OIDC), triggered when a GitHub release is published.
 - PyPI project metadata: repository/changelog/issues URLs, keywords, and license/development-status classifiers.
+- `py.typed` marker (PEP 561) so downstream type checkers consume PromptMC's type annotations.
+- Python 3.14 in the CI test matrix and trove classifiers.
+
+### Fixed
+- Codecov uploads now authenticate via OIDC; they had been silently rejected ("Token required - not valid tokenless upload") since Codecov dropped anonymous uploads.
 
 ### Changed
 - Renamed the `ask` CLI command to `plan` (`promptmc plan "..."`). The behavior, flags (`--write`, `--llm`, `--model`, `--output`), and underlying planner are unchanged.

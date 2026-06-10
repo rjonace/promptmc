@@ -7,8 +7,11 @@
 <p align="center">
   <a href="https://pypi.org/project/promptmc/"><img src="https://img.shields.io/pypi/v/promptmc" alt="PyPI"></a>
   <img src="https://img.shields.io/pypi/pyversions/promptmc" alt="Python">
-  <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
+  <a href="https://app.codecov.io/gh/rjonace/promptmc"><img src="https://img.shields.io/codecov/c/github/rjonace/promptmc" alt="Coverage"></a>
   <img src="https://img.shields.io/github/actions/workflow/status/rjonace/promptmc/ci.yml" alt="CI">
+  <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff"></a>
+  <a href="https://mypy-lang.org/"><img src="https://www.mypy-lang.org/static/mypy_badge.svg" alt="Checked with mypy"></a>
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
 </p>
 
 [OpenMC](https://docs.openmc.org/en/stable/) is powerful but can be painful to use: you hand-write XML, manage batch runs, and read results out of [HDF5](https://www.hdfgroup.org/solutions/hdf5/). It would be great if we could safely use AI to reduce that friction.
