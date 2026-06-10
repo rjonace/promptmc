@@ -5,14 +5,24 @@ description = "AI Assistant and CLI for OpenMC simulation workflows"
 authors = ["PromptMC Contributors"]
 license = "MIT"
 readme = "README.md"
+repository = "https://github.com/rjonace/promptmc"
+keywords = ["openmc", "monte-carlo", "nuclear", "simulation", "mcp"]
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Physics",
 ]
 packages = [{include = "promptmc", from = "src"}]
-include = [{ path = "examples", format = ["sdist", "wheel"] }]
+include = [{ path = "examples", format = ["sdist"] }]
+
+[tool.poetry.urls]
+"Changelog" = "https://github.com/rjonace/promptmc/blob/main/CHANGELOG.md"
+"Issues" = "https://github.com/rjonace/promptmc/issues"
 
 [tool.poetry.dependencies]
 python = "^3.10"

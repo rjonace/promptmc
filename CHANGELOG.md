@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- PyPI publishing workflow (`.github/workflows/publish.yml`) using trusted publishing (OIDC), triggered when a GitHub release is published.
+- PyPI project metadata: repository/changelog/issues URLs, keywords, and license/development-status classifiers.
+
 ### Changed
 - Renamed the `ask` CLI command to `plan` (`promptmc plan "..."`). The behavior, flags (`--write`, `--llm`, `--model`, `--output`), and underlying planner are unchanged.
+- Moved the bundled UO2 criticality example into the package (`promptmc/examples/uo2_criticality`) so wheels no longer install a top-level `examples` directory into site-packages. The repo-root `examples/` folder (batch spec, MCP walkthrough) now ships in the sdist only.
 
 ## [0.3.0] - 2026-06-07
 

@@ -60,7 +60,7 @@ If you're unsure whether a feature fits the scope, open an issue first to discus
 
 - New features require test coverage
 - Tests must pass on Python 3.10, 3.11, 3.12, and 3.13
-- Integration tests should use real OpenMC runs where possible (see `examples/uo2_criticality/`)
+- Integration tests should use real OpenMC runs where possible (see `src/promptmc/examples/uo2_criticality/`)
 - Avoid relying solely on unit test mocks for critical paths
 
 ## Documentation

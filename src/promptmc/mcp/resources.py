@@ -61,9 +61,9 @@ def _uo2_example_dir() -> Path:
 
     Resolution order: the ``PROMPTMC_EXAMPLES_DIR`` environment variable,
     then the first ``examples/uo2_criticality`` directory found while
-    walking up from this file. The walk handles both editable installs and
-    wheels that ship ``examples`` as bundled data, so the resource resolves
-    regardless of how PromptMC was installed.
+    walking up from this file. The example ships as package data at
+    ``promptmc/examples/uo2_criticality``, which the walk finds one level
+    above this module in both editable and wheel installs.
 
     Returns:
         The resolved example directory path, which may not exist.

@@ -85,6 +85,7 @@ src/promptmc/
 ├── telemetry.py           # optional OpenTelemetry (TelemetryManager; no-ops when absent) — the v0.9 hook
 ├── geometry/              # Pydantic CSG models, materials, tallies schemas + XML serializer (v0.3)
 ├── benchmarks/            # validated reference geometries library: Godiva, PWR pin (v0.3/v0.4)
+├── examples/              # bundled UO2 criticality example (package data backing the MCP examples resource)
 └── mcp/                    # the v0.2 MCP server
     ├── server.py          #   stdio server; wires the SDK to the tools
     ├── tools.py           #   pure tool functions (no SDK dependency)
