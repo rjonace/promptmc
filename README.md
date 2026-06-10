@@ -5,7 +5,8 @@
 <h1 align="center">PromptMC</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="Python">
+  <a href="https://pypi.org/project/promptmc/"><img src="https://img.shields.io/pypi/v/promptmc" alt="PyPI"></a>
+  <img src="https://img.shields.io/pypi/pyversions/promptmc" alt="Python">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
   <img src="https://img.shields.io/github/actions/workflow/status/rjonace/promptmc/ci.yml" alt="CI">
 </p>
