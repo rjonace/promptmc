@@ -52,7 +52,7 @@ If you're unsure whether a feature fits the scope, open an issue first to discus
 
 - **Linting**: Ruff with strict rules (80 character line length)
 - **Type Checking**: MyPy in strict mode
-- **Testing**: pytest with coverage reporting (current bar: 88%)
+- **Testing**: pytest with coverage reporting (the bar is the current Codecov number — see the README badge; it must not decrease)
 - **Security**: Bandit security scanning
 - **Formatting**: Ruff formatter
 

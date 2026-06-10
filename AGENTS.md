@@ -32,7 +32,7 @@ Do not work on Next.js frontends, REST APIs, or 3D web visualization — there i
 These are the engineering norms the project has earned across 0.1 → 0.3. Do not regress them.
 
 1. **All CI must pass:** `ruff check`, `ruff format --check`, `mypy src/`, `pytest`, `bandit -r src/`.
-2. **Test coverage must not decrease.** Currently 87%. New code requires tests.
+2. **Test coverage must not decrease.** The Codecov number (README badge) is the source of truth. New code requires tests.
 3. **Python 3.10+ only.** Use `from __future__ import annotations` at the top of every new module.
 4. **Type hints on every public function and class.** Mypy is in strict mode.
 5. **Never break the public API** exported from `src/promptmc/__init__.py` without explicit approval.
