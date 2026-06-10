@@ -157,8 +157,9 @@ Thumbs.db
 *.summary
 openmc/
 
-# Exceptions for examples
+# Exceptions for examples (repo-root and packaged)
 !examples/**/*.xml
+!src/promptmc/examples/**/*.xml
 
 # Private planning documents
 private/
