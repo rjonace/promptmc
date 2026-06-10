@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Renamed the `ask` CLI command to `plan` (`promptmc plan "..."`). The behavior, flags (`--write`, `--llm`, `--model`, `--output`), and underlying planner are unchanged.
 
-## [2.1.0] - 2026-06-07
+## [0.3.0] - 2026-06-07
 
 ### Added
 - Pydantic v2 models for constructive solid geometry (CSG) primitive types (Surfaces, Regions, Cell, Universe, GeometryModel) in new `promptmc.geometry` package.
@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `pwr_pin` pincell (Mosteller PWR pin cell benchmark) with reflective boundaries.
 - Conditional pytest execution markers (`requires_openmc` and `requires_openmc_data`) to prevent test suite crashes when OpenMC or cross-section datasets are absent.
 
-## [2.0.2] - 2026-06-07
+## [0.2.2] - 2026-06-07
 
 ### Added
 - Integrated `google-genai` SDK as a core dependency to support future Gemini-based constrained generation.
@@ -37,14 +37,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced the OpenAI-compatible configuration environment variables (`PROMPTMC_LLM_ENDPOINT` and `OPENAI_API_KEY`) with standard `GEMINI_API_KEY` and `GEMINI_MODEL` (defaulting to `gemini-3.5-flash`).
 - Refactored `src/promptmc/mcp/server.py` to import the `mcp` SDK lazily, ensuring standard CLI commands do not incur import overhead.
 
-## [2.0.1] - 2026-06-06
+## [0.2.1] - 2026-06-06
 
 ### Changed
 - Updated README and ROADMAP to match the current validation surface: planning and XML/schema validation work without OpenMC; simulation execution, geometry-debug checks, and plot rendering require OpenMC.
 - Fixed stale documentation links and refreshed quality metrics to 268 tests, 88% coverage, and CI on Python 3.10–3.13.
 - Added Python 3.13 to the supported/tested version set in documentation and CI.
 
-## [2.0.0] - 2026-05-30
+## [0.2.0] - 2026-05-30
 
 ### Added
 - **MCP server** (`src/promptmc/mcp/`) — a Model Context Protocol server that exposes PromptMC capabilities as agent-callable tools, allowing AI assistants (Claude Desktop, Cursor, VS Code with Copilot) to drive end-to-end OpenMC workflows without writing Python.
@@ -67,15 +67,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Documentation** — README section on configuring AI assistants with PromptMC's MCP server; sample `claude_desktop_config.json` snippet.
 
 ### Changed
-- Bumped version to `2.0.0`.
+- Bumped version to `0.2.0`.
 - Coverage increased to **87%** (MCP package ≥80%).
 - **README safety and scope disclaimer** — added a prominent human-in-the-loop / not-for-licensing notice near the top of `README.md`.
-- **ROADMAP.md** — structured-geometry sprint split into three sequential releases: v2.1 (CSG schema + serialization), v2.2 (validation layer + reference library + deterministic MCP tool), v2.5 (constrained generation pipeline).
-- **ROADMAP.md** — added AI audit logging deliverable to v2.2 (deterministic audit trails via OpenTelemetry).
+- **ROADMAP.md** — structured-geometry sprint split into three sequential releases: v0.3 (CSG schema + serialization), v0.4 (validation layer + reference library + deterministic MCP tool), v0.7 (constrained generation pipeline).
+- **ROADMAP.md** — added AI audit logging deliverable to v0.4 (deterministic audit trails via OpenTelemetry).
 - **Documentation restructure** — trimmed README from 586 to 161 lines; created `docs/` folder with installation, CLI reference, Python API, and telemetry guides; added `CONTRIBUTING.md` with PR gate and scope guard.
 - **Style** — replaced all ampersands with 'and' in documentation text for consistency.
 
-## [1.2.0] - 2026-05-25
+## [0.1.2] - 2026-05-25
 
 ### Refactored
 - **Boilerplate Reduction in CLI**: Refactored `cli.py` to use a single custom error-handling decorator (`_handle_errors`) across all typer CLI commands, significantly reducing redundant try-except blocks.
@@ -87,14 +87,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - **OpenTelemetry Availability**: Added `pytest.mark.skipif` guards to `test_telemetry.py` to gracefully bypass telemetry tests when the library is installed without the `telemetry` extras.
 
-## [1.1.0] - 2026-05-25
+## [0.1.1] - 2026-05-25
 
 ### Changed
 - **Consolidated Modules**: Merged parallel and performance tools directly into batch runner, resource monitor, and progress reporter.
 - **Removed Plugins**: Removed the plugin registry system (`plugins.py`) to keep core API simple and focused.
 - **Lazy Telemetry**: Telemetry dependency components are now lazily loaded and initialized to prevent unnecessary overhead when unused.
 
-## [1.0.0] - 2026-05-23
+## [0.1.0] - 2026-05-23
 
 ### Added
 - Natural-language OpenMC assistant:
@@ -117,7 +117,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `--verbose` flag now activates structured logging via `configure_logging()`
 
 ### Changed
-- Bumped version to `1.0.0`
+- Bumped version to `0.1.0`
 - CLI refactored: all `except` blocks use `raise ... from e` (B904 resolved)
 - `list-templates` now renders a Rich `Table` instead of a plain panel
 - README now leads with the plain-English workflow and optional LLM usage
@@ -137,7 +137,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Total coverage: **82%** (up from 73%)
 - Zero `ruff` warnings across `src/` and `tests/`
 
-## [0.2.0] - 2026-05-23
+## [0.0.3] - 2026-05-23
 
 ### Added
 - Phase 3: Advanced Features
@@ -157,9 +157,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Example batch specification YAML file
 
 ### Changed
-- Bumped version to 0.2.0
+- Bumped version to 0.0.3
 
-## [0.1.0] - 2026-05-17 (initial release with Phase 2)
+## [0.0.2] - 2026-05-17 (Phase 2)
 
 ### Added
 - Phase 2: OpenMC integration module (`openmc_integration.py`)
@@ -177,7 +177,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - h5py dependency for parsing OpenMC HDF5 output files
 - Comprehensive test suite for OpenMC integration
 
-## [0.1.0] - 2026-05-17
+## [0.0.1] - 2026-05-17
 
 ### Added
 - Project initialization

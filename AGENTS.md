@@ -1,6 +1,6 @@
 # Agentic Implementation Instructions for PromptMC
 
-> **Purpose:** This file is written for AI coding agents (Claude Code, Cursor, etc.) tasked with advancing PromptMC. It compresses the project's vision, working norms, and concrete next-sprint instructions into one document an agent can ground itself in at session start.
+> **Purpose:** This file is written for AI coding agents (Claude Code, Cursor, etc.) tasked with advancing PromptMC. It compresses the project's working norms and concrete next-sprint instructions into one document an agent can ground itself in at session start.
 >
 > If you are an AI agent reading this: **read all of this file before making changes.** Then check `ROADMAP.md` (the authoritative release plan) and `README.md` for orienting context.
 >
@@ -10,30 +10,26 @@
 
 ## 1. North Star
 
-PromptMC is becoming **AI-native infrastructure for nuclear simulation**: validated OpenMC workflows for AI-assisted reactor physics. The new product surface is:
+PromptMC is **AI-native infrastructure for nuclear simulation**: validated OpenMC workflows for AI-assisted reactor physics. The product surface is:
 
-1. An **MCP server** that exposes OpenMC operations to AI agents (e.g., Claude Desktop, Cursor, Antigravity, VS Code with Copilot).
+1. An **MCP server** that exposes OpenMC operations to AI agents.
 2. **Pydantic geometry/material/tally schemas** for OpenMC CSG that are usable as constraint surfaces for LLM-driven structured generation.
 3. A **library of validated reference geometries** (PWR pin, BWR pin, Godiva, Jezebel, ICSBEP cases) that ground the generation pipeline.
 4. A **constrained-generation pipeline** that produces validated, runnable OpenMC inputs from natural language.
 
-Every change should advance one of these four pillars or harden the existing v2.x foundation that supports them.
+Every change should advance one of these four pillars or harden the existing foundation that supports them.
 
-PromptMC is **not** an unsupervised reactor designer. It is a human-in-the-loop workflow accelerator: validate first, visualize cheaply, run intentionally, and summarize results for engineering review. Later releases (v2.6) add **bounded** autonomous generation — agents iterate on geometry within validated physics constraints, but a human reviews and approves every output; never autonomous for licensing or safety-critical sign-off.
+PromptMC is **not** an unsupervised reactor designer. It is a human-in-the-loop workflow accelerator: validate first, visualize cheaply, run intentionally, and summarize results for engineering review. v0.8 adds **bounded** generation — agents iterate on geometry within validated physics constraints, but a human reviews and approves every output; never autonomous for licensing or safety-critical sign-off.
 
-The old "SaaS web platform" vision has been **deprecated**. Do not work on Next.js frontends, REST APIs, or 3D web visualization. All visual verification in v2.x must be handled natively via the AI chat client using the `openmc_plot` 2D image tool.
+Do not work on Next.js frontends, REST APIs, or 3D web visualization — there is no web UI. All visual verification must be handled natively via the AI chat client using the `openmc_plot` 2D image tool.
 
-**Project posture & guardrails (important).** PromptMC is a **for-fun, side-project-paced, open-source** tool. Optimize for correctness and clarity, **not monetization** — do not add growth, usage-telemetry, analytics, or upsell machinery. Keep the project **civilian, public, and US-domestic**: never frame benchmarks (including Godiva/HEU and Jezebel/Pu) around weapons, enrichment, or "critical mass" — they are *published* civilian-physics references; and **never bundle or redistribute cross-section data** — users bring their own. These are legal-surface guardrails, not style preferences. Build for usefulness and the OpenMC community — correctness and contribution over monetization.
-
-**Community signals (observed).** Survey of OpenMC community threads (Reddit r/nuclear, r/NuclearEngineering, r/NuclearPower; OpenMC Discourse) shows the two dominant user pain points are **(1) installation — conda/spack and cross-sections**, and **(2) geometry construction via the Python API**. This justifies front-loading pillars 2–3 and the v2.1–v2.5 work (schemas → reference library → composition → components) over later generative pillars. The audience also runs **validation culture deep**: credibility is earned by reproducing published benchmarks (ICSBEP, MORSE-CG, FNG-ITER) with matching k-eff, not by marketing. AI + reactor physics triggers hallucination skepticism by default — frame the deterministic validation layer (the "blast wall") as the answer, and keep the v2.7 generative story off the headline until it ships. The community frames OpenMC **beyond PWRs** (fusion neutronics, spent fuel, radiation protection), so keep at least one shielding and one fast/criticality benchmark visible so the project doesn't read as PWR-only.
-
-**External presence.** The durable reference points for benchmark naming/values and community engagement are **OpenMC Discourse** (`openmc.discourse.group`) and **`mit-crpg/benchmarks`**. Align reference-geometry naming and expected k-eff values with these; treat Discourse "Show & Tell" / GitHub Discussions as launch venues alongside Reddit.
+**Guardrails (important).** PromptMC is an open-source tool built for usefulness, not monetization — do not add growth, usage-telemetry, analytics, or upsell machinery. Keep the project **civilian, public, and US-domestic**: never frame benchmarks (including Godiva/HEU and Jezebel/Pu) around weapons, enrichment, or "critical mass" — they are *published* civilian-physics references; and **never bundle or redistribute cross-section data** — users bring their own. These are legal-surface guardrails, not style preferences.
 
 ---
 
 ## 2. Hard rules (non-negotiable)
 
-These are the engineering norms the project has earned across 1.0 → 2.0. Do not regress them.
+These are the engineering norms the project has earned across 0.1 → 0.3. Do not regress them.
 
 1. **All CI must pass:** `ruff check`, `ruff format --check`, `mypy src/`, `pytest`, `bandit -r src/`.
 2. **Test coverage must not decrease.** Currently 87%. New code requires tests.
@@ -64,9 +60,9 @@ These are the engineering norms the project has earned across 1.0 → 2.0. Do no
 
 ---
 
-## 4. The v2.0 foundation: repository map, tool surface, invariants
+## 4. The shipped foundation: repository map, tool surface, invariants
 
-v2.0 shipped (`v2.0.x`). The MCP layer is live — **do not re-implement it.** This
+v0.1–v0.3 have shipped. The MCP layer is live — **do not re-implement it.** This
 section orients you to what already exists and the invariants to preserve.
 
 ### 4.1 Repository map (where things live)
@@ -80,16 +76,16 @@ src/promptmc/
 ├── openmc_integration.py  # core OpenMC wrapper — OpenMCInstaller / OpenMCValidator / OpenMCRunner (subprocess + Python API), ExecutionMode
 ├── schema.py              # Pydantic validation of OpenMC XML (Settings/Materials/Geometry…) + SchemaValidator; uses defusedxml
 ├── templates.py           # config templates (Criticality / FixedSource / Shielding / ReactorPin) + TemplateRegistry
-├── assistant.py           # NL planner behind `promptmc plan` (NaturalLanguageAssistant) — the keyword router v2.7 replaces
+├── assistant.py           # NL planner behind `promptmc plan` (NaturalLanguageAssistant) — the keyword router v0.8 replaces
 ├── batch.py               # batch + parallel execution (BatchRunner, ParallelExecutor)
 ├── resources.py           # resource limits / monitoring / cleanup, temp simulation workspaces
 ├── progress.py            # progress reporting + system profiling / performance monitoring
 ├── visualization.py       # result parsing (ResultParser → StatePoint.keff) + plotting
 ├── errors.py              # PromptMCError hierarchy + configure_logging() + retry logic
-├── telemetry.py           # optional OpenTelemetry (TelemetryManager; no-ops when absent) — the v2.6/v2.8 hook
-├── geometry/              # Pydantic CSG models, materials, tallies schemas + XML serializer (v2.1)
-├── benchmarks/            # validated reference geometries library: Godiva, PWR pin (v2.1/v2.2)
-└── mcp/                    # the v2.0 MCP server
+├── telemetry.py           # optional OpenTelemetry (TelemetryManager; no-ops when absent) — the v0.9 hook
+├── geometry/              # Pydantic CSG models, materials, tallies schemas + XML serializer (v0.3)
+├── benchmarks/            # validated reference geometries library: Godiva, PWR pin (v0.3/v0.4)
+└── mcp/                    # the v0.2 MCP server
     ├── server.py          #   stdio server; wires the SDK to the tools
     ├── tools.py           #   pure tool functions (no SDK dependency)
     ├── schemas.py         #   Pydantic input/output schema per tool
@@ -97,13 +93,13 @@ src/promptmc/
 ```
 
 **New code lands in new packages** (don't look for these yet — they arrive with
-the roadmap): `components/` (v2.5), `generation/` (v2.7 pipeline). The
-v2.6/v2.8 telemetry + audit work extends `telemetry.py`.
+the roadmap): `components/` (v0.7), `generation/` (v0.8 pipeline). The
+v0.9 telemetry + audit work extends `telemetry.py`.
 
 > **Keep this map current** — update it in the same commit as any module
 > add/move/rename or public-API change (hard rule #11). A stale map is worse than none.
 
-### 4.2 The MCP tool surface (shipped in v2.0)
+### 4.2 The MCP tool surface (shipped in v0.2)
 
 Ten agent-callable tools, each with a Pydantic input/output schema (`mcp/schemas.py`),
 implemented as pure functions (`mcp/tools.py`) and wired to the SDK (`mcp/server.py`):
@@ -122,9 +118,8 @@ implemented as pure functions (`mcp/tools.py`) and wired to the SDK (`mcp/server
 | `openmc_geometry_debug` | OpenMC `--geometry-debug` (overlaps / lost particles) |
 
 Plus three resources: `promptmc://cross-sections`, `promptmc://history`,
-`promptmc://examples/uo2_criticality`. Lead with the tools that cut cognitive
-load (fail-fast validation, instant k-eff/tally summaries, 2D sanity plots), and
-use OpenMC's own parsers/plotting rather than hand-rolled equivalents.
+`promptmc://examples/uo2_criticality`. Use OpenMC's own parsers/plotting rather
+than hand-rolled equivalents.
 
 ### 4.3 Invariants the MCP layer must keep
 
@@ -140,79 +135,63 @@ use OpenMC's own parsers/plotting rather than hand-rolled equivalents.
 
 ---
 
-## 5. Current roadmap: Structured Geometry → Generation → Provenance (v2.1 → v2.8)
+## 5. Current roadmap: Structured Geometry → Generation → Provenance (v0.4 → v0.9)
 
-v2.0 has shipped. The remaining work ships as sequential, independently-valuable minor releases with increasing risk — deterministic foundation first, LLM generation later, provenance to close. Build them in order; each must ship standalone value. **This section mirrors `ROADMAP.md`, which is the authoritative source; if the two ever disagree, ROADMAP wins and this section should be reconciled to it.**
-
-**v2.1 and v2.2 are the committed near-term; v2.3–v2.8 are directional.** v2.2 (the validated reference geometry library) is the community launch and the trust asset. Build the releases in order; each must ship standalone value against the acceptance criteria below.
+The remaining work ships as sequential, independently-valuable minor releases with increasing risk — deterministic foundation first, LLM generation later, provenance to close. Build them in order; each must ship standalone value against the acceptance criteria below. **This section mirrors `ROADMAP.md`, which is the authoritative source; if the two ever disagree, ROADMAP wins and this section should be reconciled to it.**
 
 ### 5.1 Release plan
 
 | Version | Scope | Risk |
 |---|---|---|
-| **v2.1** | CSG Pydantic schema + XML serialization, seeded with PWR pin + Godiva | Low (deterministic) |
-| **v2.2** | Validated reference geometry library (~6 benchmarks); the community launch / trust asset | Low–med |
-| **v2.3** | Geometry composition + inspection: deterministic `openmc_build_geometry` + `openmc_query_geometry` / `openmc_list_cells` / `openmc_list_materials` | Low–med |
-| **v2.4** | Physics safety gate: deterministic pre-run validation (overlaps, unbounded, void, tracking) + `openmc_trace_point` + extended `promptmc validate` | Med |
-| **v2.5** | Component library: reusable components (FuelPin, GuideTube, etc.) + hex lattices, validated against the v2.4 gate | Low–med |
-| **v2.6** | Observability: OpenTelemetry exporter for agent usage metrics + distributed tracing | Low |
-| **v2.7** | Constrained generation: `openmc_design` + validate-and-repair loop (Gemini default, provider-agnostic) + `openmc_diff_geometry` | High |
-| **v2.8** | Provenance + audit: OpenTelemetry spans + local `audit.jsonl`; MCP client / model / provider capture | Low |
-
-(Anything beyond v2.8 — hosted services, team features — is **out of scope** for the open-source roadmap and lives only in the held-in-reserve business docs.)
-
+| **v0.4** | Validated reference geometry library (~6 benchmarks) | Low–med |
+| **v0.5** | Geometry composition + inspection: deterministic `openmc_build_geometry` + `openmc_query_geometry` / `openmc_list_cells` / `openmc_list_materials` | Low–med |
+| **v0.6** | Physics safety gate: deterministic pre-run validation (overlaps, unbounded, void, tracking) + `openmc_trace_point` + extended `promptmc validate` | Med |
+| **v0.7** | Component library: reusable components (FuelPin, GuideTube, etc.) + hex lattices, validated against the v0.6 gate | Low–med |
+| **v0.8** | Constrained generation: `openmc_design` + validate-and-repair loop (Gemini) + `openmc_diff_geometry` | High |
+| **v0.9** | Observability, provenance + audit: OpenTelemetry usage metrics + tracing; spans + local `audit.jsonl`; MCP client / model / provider capture | Low |
 
 ### 5.2 Key design decisions to enforce
 
 - **Pydantic v2** with strict validation. Use `model_validator` for cross-field constraints.
 - **OpenMC CSG correctness** must be checked at validation time, not at simulation time. A model that validates must produce a runnable OpenMC input.
-- **Dual-mode serialization (avoid the double-maintenance trap):** When OpenMC is available, prefer serializing *through* OpenMC objects (map Pydantic models to `openmc.*` objects and call `.export_to_xml()`) to guarantee valid XML and match OpenMC's current schema. When OpenMC is absent, avoid hand-rolling a custom standard-library XML generator—this creates an annoying double-maintenance track. Instead, serialize Pydantic models to a clean, intermediate dictionary structure and use a lightweight, generic dict-to-xml utility to dump the file. Keep the translation layer as dumb as possible. Pydantic v2 has incredibly fast, native dictionary and JSON serialization, so leverage that rather than maintaining parallel XML generation logic.
+- **Dual-mode serialization (avoid the double-maintenance trap):** When OpenMC is available, prefer serializing *through* OpenMC objects (map Pydantic models to `openmc.*` objects and call `.export_to_xml()`) to guarantee valid XML and match OpenMC's current schema. When OpenMC is absent, avoid hand-rolling a custom standard-library XML generator—this creates an annoying double-maintenance track. Instead, serialize Pydantic models to a clean, intermediate dictionary structure and use a lightweight, generic dict-to-xml utility to dump the file. Keep the translation layer as dumb as possible.
 - **Reference geometries are tested against ICSBEP** where applicable. Each benchmark module must include the expected k-eff and acceptable bounds.
-- **LLM-agnostic generation interface.** The pipeline takes a `Generator` protocol; **Google Gemini is the default** provider with user-configurable alternatives, plus a local mock for testing.
+- **Generation behind a thin internal interface.** The pipeline takes a `Generator` protocol; **Google Gemini is the supported provider**, plus a local mock for testing.
 - **No LLM calls in tests.** Use a deterministic mock generator that returns prerecorded structured outputs.
 
 ### 5.3 Per-release acceptance criteria
 
-**v2.1 — CSG schema + serialization**
-- Pydantic v2 models for surfaces, regions, cells, materials, tallies, and lattices.
-- Round-trip: Pydantic → OpenMC XML, re-parsed by `Geometry.from_xml` without loss.
-- PWR pin cell and Godiva built as typed models and serialized to runnable XML.
-- Public schema surface marked **experimental** until v2.2, so it can stabilize without breaking the §2 public-API rule across minors.
-
-**v2.2 — Reference geometry library** (the community launch / trust asset)
+**v0.4 — Reference geometry library**
 - ~6 reference geometries (Godiva, Jezebel, PWR pin, BWR pin, + selected ICSBEP) build as typed models and round-trip: Pydantic → XML → parsed by OpenMC → simulated → match expected k-eff within 3σ. Each benchmark module includes the expected k-eff and bounds.
 - Each geometry is runnable, documented, and independently checked against published results.
 - Schema public surface stabilized (experimental flag removed).
-- Released as a community contribution (OpenMC Discussions, the OpenMC Google Group, ANS forums).
 
-**v2.3 — Geometry composition + inspection**
+**v0.5 — Geometry composition + inspection**
 - Deterministic `openmc_build_geometry` MCP tool (semantic JSON → validated geometry object); no LLM.
 - Lean inspection surface exposed: `openmc_query_geometry`, `openmc_list_cells`, `openmc_list_materials`.
-- (`openmc_trace_point` is deferred to v2.4; `openmc_diff_geometry` to v2.7.)
+- (`openmc_trace_point` is deferred to v0.6; `openmc_diff_geometry` to v0.8.)
 
-**v2.4 — Physics safety gate**
+**v0.6 — Physics safety gate**
 - Deterministic pre-run validation catches cell overlaps, unbounded geometries, void cells, and tracking inconsistencies before OpenMC runs (the §7.4 failure modes).
 - Structured, human- and AI-readable failure explanations that feed exact fixes back into an agent's context.
 - `openmc_trace_point` identifies which cells claim a coordinate.
-- Extended `promptmc validate` CLI. **Gate:** all v2.2 reference geometries pass cleanly.
+- Extended `promptmc validate` CLI. **Gate:** all v0.4 reference geometries pass cleanly.
 
-**v2.5 — Component library**
+**v0.7 — Component library**
 - Reusable, pre-approved components (FuelPin, GuideTube, ControlRod, ReflectorBlock, WaterBox).
 - Hexagonal-lattice support for specialized reactor types.
-- Every component validated against the v2.4 physics gate before it ships.
+- Every component validated against the v0.6 physics gate before it ships.
 
-**v2.6 — Observability**
-- OpenTelemetry exporter for agent usage metrics (tool-call volume, payload size, schema rejection rates).
-- Distributed tracing across the tool surface. Opt-in, local, off by default — never phones home (see §7.5 and hard rule #10). Instrument before shipping constrained generation, where behavior most needs inspection.
-
-**v2.7 — Constrained generation**
-- LLM-agnostic `Generator` protocol; **Google Gemini default**, user-configurable alternatives, and a local mock.
-- Validate-and-repair loop produces validated, runnable inputs from natural language; the loop is bounded by the v2.4 physics gate (it passes the gate or exits with a structured failure).
+**v0.8 — Constrained generation**
+- `Generator` protocol behind a thin internal interface; **Google Gemini** is the supported provider, plus a local mock.
+- Validate-and-repair loop produces validated, runnable inputs from natural language; the loop is bounded by the v0.6 physics gate (it passes the gate or exits with a structured failure).
 - New MCP tool `openmc_design(description: str)`; `promptmc plan` rebuilt on the pipeline; old keyword router deleted.
 - `openmc_diff_geometry` shows exactly what the repair loop changed. Minimal audit record (model used + artifact produced).
 - A human reviews and approves every output (never autonomous for licensing/safety). No LLM calls in tests (deterministic mock).
 
-**v2.8 — Provenance + audit**
+**v0.9 — Observability, provenance + audit**
+- OpenTelemetry exporter for agent usage metrics (tool-call volume, payload size, schema rejection rates).
+- Distributed tracing across the tool surface. Opt-in, local, off by default — never phones home (see §7.5 and hard rule #10).
 - Every MCP tool call wrapped in an OpenTelemetry span and written to a local `audit.jsonl`.
 - Capture MCP client identity via `clientInfo`; capture model/provider via `PROMPTMC_TRACKING_MODEL` / `PROMPTMC_COMPANY_ID`.
 - A deterministic, local record of AI-authored actions for the operator's review and provenance.
@@ -237,7 +216,7 @@ v2.0 has shipped. The remaining work ships as sequential, independently-valuable
 ### 6.3 Refactoring discipline
 
 - Prefer minimal upstream fixes over downstream workarounds.
-- When deleting a feature (e.g., the plugin system in v1.1), delete it everywhere in one commit: source, tests, CLI, docs, and exports. No "shim" half-states.
+- When deleting a feature (e.g., the plugin system in v0.1.1), delete it everywhere in one commit: source, tests, CLI, docs, and exports. No "shim" half-states.
 - When merging modules (e.g., `parallel.py` into `batch.py`), retain meaningful structure inside the file and do not leave "formerly X.py" comments.
 - After significant restructuring, update `README.md`, `ROADMAP.md`, and the public API in `__init__.py` in the same commit.
 
@@ -250,7 +229,7 @@ v2.0 has shipped. The remaining work ships as sequential, independently-valuable
 ### 6.5 Releases
 
 - Bump version in both `pyproject.toml` and `src/promptmc/__init__.py`.
-- Tag with `v<major>.<minor>.<patch>` (e.g., `v2.0.0`, not `v2`).
+- Tag with `v<major>.<minor>.<patch>` (e.g., `v0.2.0`, not `v0.2`).
 - Use `gh release create` with structured release notes (sections: What's Changed, Verified, Full Changelog link).
 - Do not release unless all CI is green.
 
@@ -290,11 +269,11 @@ The following compressed reference exists so an agent does not have to research 
 - **Cross-section data missing isotope:** simulation aborts with "no data for nuclide X".
 - **Negative density / mass fractions summing to >1.0:** material physically invalid.
 
-The Pydantic schemas in the v2.1 geometry module must catch all of these at validation time.
+The Pydantic schemas in the geometry module must catch all of these at validation time.
 
-### 7.5 Observability and AI provenance
+### 7.5 Observability and AI provenance (v0.9)
 
-These capabilities span two releases: **observability** (usage metrics + tracing) lands in **v2.6**, and **provenance/audit** (`audit.jsonl`, OTel spans, MCP client/model capture) lands in **v2.8**. All of it is **opt-in, local, and off by default** (hard rule #10) — provenance for the operator's own review, not analytics phoned home.
+All of it is **opt-in, local, and off by default** (hard rule #10) — provenance for the operator's own review, not analytics phoned home.
 
 - **Audit logging:** when enabled, wrap each MCP tool call in an OpenTelemetry span and record the inputs (JSON arguments) and the outcome (success/failure), so there is a deterministic local record of what the agent attempted.
 - **MCP client capture (automatic):** the MCP `initialize` request carries a `clientInfo` payload naming the client (e.g. "Claude Desktop", "Cursor"). Read it at startup and attach it as the `llm_product` dimension.
