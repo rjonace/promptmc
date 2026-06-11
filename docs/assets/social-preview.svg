@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" role="img" aria-labelledby="card-title">
+  <title id="card-title">PromptMC — validated OpenMC workflows for AI-assisted reactor physics</title>
+  <rect width="1280" height="640" fill="#0D1117"/>
+
+  <!-- atom mark (same geometry as logo.svg, re-centered) -->
+  <g transform="translate(300,320)">
+    <g fill="none" stroke="#38bdf8" stroke-width="13" stroke-linecap="round" opacity="0.6">
+      <ellipse cx="0" cy="0" rx="86" ry="230"/>
+      <ellipse cx="0" cy="0" rx="86" ry="230" transform="rotate(45)"/>
+      <ellipse cx="0" cy="0" rx="86" ry="230" transform="rotate(90)"/>
+      <ellipse cx="0" cy="0" rx="86" ry="230" transform="rotate(135)"/>
+    </g>
+    <g stroke="#4ade80" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M -37 -28 L -9 0 L -37 28"/>
+      <path d="M 7 28 L 39 28"/>
+    </g>
+  </g>
+
+  <!-- wordmark + tagline -->
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+    <text x="560" y="295" font-size="96" font-weight="700" fill="#f0f6fc">PromptMC</text>
+    <text x="563" y="355" font-size="33" fill="#8b949e">Validated OpenMC workflows</text>
+    <text x="563" y="400" font-size="33" fill="#8b949e">for AI-assisted reactor physics</text>
+  </g>
+  <text x="563" y="478" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="28" fill="#4ade80">$ pip install promptmc</text>
+</svg>

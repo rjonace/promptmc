@@ -13,9 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `py.typed` marker (PEP 561) so downstream type checkers consume PromptMC's type annotations.
 - Python 3.14 in the CI test matrix and trove classifiers.
 - Per-release design documents under `docs/design/` — retrospective for v0.1–v0.3, forward-looking (with open questions) for v0.4–v0.9.
+- Social/branding kit under `docs/assets/`: 1280×640 social-preview card (SVG + PNG) and a transparent-background PNG logo.
 
 ### Fixed
 - Codecov uploads now authenticate via OIDC; they had been silently rejected ("Token required - not valid tokenless upload") since Codecov dropped anonymous uploads.
+- README images and links now use absolute URLs so the PyPI project page renders them correctly (relative paths 404 on PyPI).
 
 ### Changed
 - Renamed the `ask` CLI command to `plan` (`promptmc plan "..."`). The behavior, flags (`--write`, `--llm`, `--model`, `--output`), and underlying planner are unchanged.

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/logo.svg" alt="PromptMC logo" width="140">
+  <img src="https://raw.githubusercontent.com/rjonace/promptmc/main/docs/assets/logo.svg" alt="PromptMC logo" width="140">
 </p>
 
 <h1 align="center">PromptMC</h1>
@@ -59,7 +59,7 @@ openmc_data_downloader -l TENDL-2019 -i U235 U238 O16 H1 -d cross_sections
 export OPENMC_CROSS_SECTIONS=$(pwd)/cross_sections/cross_sections.xml
 ```
 
-See [installation](docs/installation.md) for more details.
+See [installation](https://github.com/rjonace/promptmc/blob/main/docs/installation.md) for more details.
 
 ## MCP server
 
@@ -69,7 +69,7 @@ PromptMC exposes a [Model Context Protocol](https://modelcontextprotocol.io) ser
 
 [Resources](https://modelcontextprotocol.io/docs/concepts/resources) expose the configured cross-sections path, the session's tool-call history, and the bundled examples.
 
-**Setup:** see the [MCP server configuration guide](docs/mcp.md) for per-client steps (Claude Desktop/Code, Cursor, Google Antigravity, VS Code).
+**Setup:** see the [MCP server configuration guide](https://github.com/rjonace/promptmc/blob/main/docs/mcp.md) for per-client steps (Claude Desktop/Code, Cursor, Google Antigravity, VS Code).
 
 ## CLI
 
@@ -86,24 +86,24 @@ promptmc analyze ./output --json results.json
 promptmc info                                                   # environment status
 ```
 
-Full options in the [CLI reference](docs/cli-reference.md).
+Full options in the [CLI reference](https://github.com/rjonace/promptmc/blob/main/docs/cli-reference.md).
 
 ## Safety
 
-PromptMC is an engineering-assist tool that keeps a human in the loop. It is not a substitute for professional engineering judgment, independent verification and validation, or regulatory review, and is not for safety, licensing, or other regulated decisions. Reproducing a published benchmark is not qualification for safety analysis. Provided as-is (see [LICENSE](LICENSE)).
+PromptMC is an engineering-assist tool that keeps a human in the loop. It is not a substitute for professional engineering judgment, independent verification and validation, or regulatory review, and is not for safety, licensing, or other regulated decisions. Reproducing a published benchmark is not qualification for safety analysis. Provided as-is (see [LICENSE](https://github.com/rjonace/promptmc/blob/main/LICENSE)).
 
 The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
 
 ## Documentation
 
-- [Installation](docs/installation.md) — setup paths for PromptMC, OpenMC, and nuclear data
-- [MCP server](docs/mcp.md) — connecting AI assistants (Claude Desktop/Code, Cursor, Antigravity, VS Code)
-- [CLI reference](docs/cli-reference.md) — commands, flags, environment variables
-- [Python API](docs/python-api.md) — scripting PromptMC
-- [Templates](docs/cli-reference.md#templates) · [Telemetry](docs/telemetry-and-audit.md)
-- [Examples](src/promptmc/examples/uo2_criticality/README.md) · [MCP example](examples/mcp/README.md)
-- [Design docs](docs/design/README.md) — per-release architecture, decisions, and testing strategy
-- [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
+- [Installation](https://github.com/rjonace/promptmc/blob/main/docs/installation.md) — setup paths for PromptMC, OpenMC, and nuclear data
+- [MCP server](https://github.com/rjonace/promptmc/blob/main/docs/mcp.md) — connecting AI assistants (Claude Desktop/Code, Cursor, Antigravity, VS Code)
+- [CLI reference](https://github.com/rjonace/promptmc/blob/main/docs/cli-reference.md) — commands, flags, environment variables
+- [Python API](https://github.com/rjonace/promptmc/blob/main/docs/python-api.md) — scripting PromptMC
+- [Templates](https://github.com/rjonace/promptmc/blob/main/docs/cli-reference.md#templates) · [Telemetry](https://github.com/rjonace/promptmc/blob/main/docs/telemetry-and-audit.md)
+- [Examples](https://github.com/rjonace/promptmc/blob/main/src/promptmc/examples/uo2_criticality/README.md) · [MCP example](https://github.com/rjonace/promptmc/blob/main/examples/mcp/README.md)
+- [Design docs](https://github.com/rjonace/promptmc/blob/main/docs/design/README.md) — per-release architecture, decisions, and testing strategy
+- [Roadmap](https://github.com/rjonace/promptmc/blob/main/ROADMAP.md) · [Changelog](https://github.com/rjonace/promptmc/blob/main/CHANGELOG.md) · [Contributing](https://github.com/rjonace/promptmc/blob/main/CONTRIBUTING.md)
 
 ## About
 
@@ -117,4 +117,4 @@ I welcome contributions! Please ensure all checks pass (`pytest`, `ruff check`, 
 - **License:** MIT
 - **Documentation:** [GitHub Repository](https://github.com/rjonace/promptmc)
 - **Issues and Discussions:** [GitHub Issues](https://github.com/rjonace/promptmc/issues)
-- **Roadmap:** [ROADMAP.md](ROADMAP.md) for planned features and scope.
+- **Roadmap:** [ROADMAP.md](https://github.com/rjonace/promptmc/blob/main/ROADMAP.md) for planned features and scope.
