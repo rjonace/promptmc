@@ -42,7 +42,7 @@ Most planning and schema-validation workflows work without OpenMC installed; exe
 - Python 3.10 or higher
 - Pip
 
-**PromptMC** can be installed using pip. Use the following commands to install PromptMC:
+**PromptMC** can be installed using pip:
 
 ```bash
 pip install promptmc              # core (includes CLI, MCP server, and Gemini planner)
@@ -76,7 +76,7 @@ PromptMC exposes a [Model Context Protocol](https://modelcontextprotocol.io) ser
 By default, `plan` uses a deterministic local planner, needing no API key, no network, no generative AI. The optional `--llm` flag calls Google Gemini (set GEMINI_API_KEY), which can interpret more open-ended natural-language requests. Customize the model name with GEMINI_MODEL (defaults to gemini-3.5-flash).
 
 ```bash
-promptmc plan "concrete shielding calculation with 1 million particles"
+promptmc plan --llm "concrete shielding calculation with 1 million particles"
 promptmc plan "pin cell criticality with 50k particles" --write
 promptmc template criticality --particles 10000                 # generate settings.xml
 promptmc validate input.xml --schema
