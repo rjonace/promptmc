@@ -10,14 +10,62 @@ This guide covers PromptMC installation plus the optional OpenMC setup required 
 
 PromptMC planning, template generation, XML validation, and schema validation work without OpenMC installed.
 
+> **Note for macOS users:** the Python bundled with macOS (Xcode Command Line Tools) is 3.9, which is too old. If `pip install promptmc` fails with `No matching distribution found`, that is why — see [Troubleshooting](#troubleshooting). The uv method below avoids the problem entirely.
+
 ## Install PromptMC
 
+How you install depends on which features you need:
+
+| You want | Install method |
+|---|---|
+| CLI, MCP server, planning, validation | uv or pipx (isolated install) |
+| Also run simulations | uv or pipx, with the `openmc` executable on `PATH` |
+| Also plot rendering and geometry-debug | pip, into the same environment as OpenMC |
+| Contribute to PromptMC | Poetry (editable install) |
+
+Plot rendering and geometry-debug import OpenMC's Python API, so PromptMC must live in the same Python environment as OpenMC (typically a conda environment) for those features. Everything else works from an isolated tool install.
+
+### Option 1: uv (recommended)
+
+[uv](https://docs.astral.sh/uv/) installs PromptMC into its own isolated environment and puts the `promptmc` and `promptmc-mcp` commands on your `PATH`. If no suitable Python is found on your system, uv downloads one automatically.
+
 ```bash
-pip install promptmc              # CLI, MCP server, and Gemini planner
-pip install 'promptmc[telemetry]' # optional OpenTelemetry support
+# Install uv: https://docs.astral.sh/uv/getting-started/installation/
+# e.g. on macOS: brew install uv
+
+uv tool install promptmc                    # core
+uv tool install 'promptmc[telemetry]'       # + OpenTelemetry tracing
 ```
 
-For editable development:
+To try PromptMC without installing it:
+
+```bash
+uvx promptmc plan "pin cell criticality with 50k particles"
+```
+
+### Option 2: pipx
+
+[pipx](https://pipx.pypa.io/) gives the same isolated-install behavior using a Python already on your system (3.10+):
+
+```bash
+pipx install promptmc
+pipx install 'promptmc[telemetry]'   # instead, for OpenTelemetry tracing
+pipx ensurepath                      # then open a new terminal
+```
+
+### Option 3: pip into an existing environment
+
+Use this when PromptMC must share an environment with OpenMC's Python API (required for plot rendering and geometry-debug), for example inside your conda environment:
+
+```bash
+conda activate openmc-env   # or your virtualenv
+pip install promptmc
+pip install 'promptmc[telemetry]'   # optional OpenTelemetry support
+```
+
+Avoid running pip against your operating system's Python or Homebrew's Python directly — modern distributions block this ([PEP 668](https://peps.python.org/pep-0668/)); use a virtual environment, or Options 1–2.
+
+### Option 4: editable development install
 
 ```bash
 git clone https://github.com/rjonace/promptmc.git
@@ -25,7 +73,7 @@ cd promptmc
 poetry install --with dev --extras "telemetry"
 ```
 
-The MCP server (`promptmc-mcp`) is included. To connect an AI assistant — Claude Desktop/Code, Cursor, Google Antigravity, or VS Code — see the [MCP server configuration guide](mcp.md).
+The MCP server (`promptmc-mcp`) is included in every install method. To connect an AI assistant — Claude Desktop/Code, Cursor, Google Antigravity, or VS Code — see the [MCP server configuration guide](mcp.md).
 
 ## Install OpenMC
 
@@ -149,3 +197,35 @@ promptmc system-info
 # Run a quick command check
 promptmc validate --help
 ```
+
+## Troubleshooting
+
+### `No matching distribution found for promptmc`
+
+Your Python is older than 3.10. pip reports this confusingly — the package exists, but no release supports your interpreter. This is common on macOS, where the bundled `/usr/bin/python3` (from Xcode Command Line Tools) is 3.9. Check with:
+
+```bash
+python3 --version
+```
+
+Fix: use [uv](https://docs.astral.sh/uv/) (Option 1 above), which downloads a suitable Python automatically, or install a newer Python first (e.g. `brew install python` on macOS) and invoke it by its versioned name, such as `python3.14 -m pip install promptmc`.
+
+### `error: externally-managed-environment`
+
+You ran pip against a Python managed by your OS or Homebrew, which blocks direct installs ([PEP 668](https://peps.python.org/pep-0668/)). Use uv or pipx (Options 1–2), or install inside a virtual environment or conda environment (Option 3).
+
+### `command not found: promptmc` after installing
+
+The directory holding the entry-point scripts is not on your `PATH`:
+
+- **pipx / pip --user:** scripts land in `~/.local/bin` — run `pipx ensurepath` (or add the directory to `PATH` in your shell profile), then open a new terminal.
+- **uv:** run `uv tool update-shell`, then open a new terminal.
+- **conda:** make sure the environment you installed into is activated.
+
+### Simulations fail but planning and validation work
+
+Execution requires OpenMC, which is a separate install (see [Install OpenMC](#install-openmc)). Run `promptmc info` to see what PromptMC detects:
+
+- Simulation runs need the `openmc` executable on `PATH` *or* the OpenMC Python API importable from PromptMC's environment.
+- Plot rendering and geometry-debug need the Python API specifically — install PromptMC with pip into the same environment as OpenMC (Option 3).
+- Running simulations also requires cross-section data (see [Install Nuclear Data](#install-nuclear-data)); check with `promptmc info` that `OPENMC_CROSS_SECTIONS` is set.

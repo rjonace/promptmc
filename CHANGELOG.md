@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2026-06-11
+
+### Added
+- Troubleshooting section in the installation guide covering the failure modes new users actually hit: `No matching distribution found` (Python older than 3.10, e.g. macOS's bundled 3.9), `externally-managed-environment` (PEP 668), entry points missing from `PATH`, and OpenMC/cross-section detection via `promptmc info`.
+
+### Changed
+- Rewrote the installation guide around four install methods — uv (recommended) and pipx for isolated CLI installs, pip for sharing an environment with OpenMC's Python API (required for plot rendering and geometry-debug), and Poetry for development — with a decision table mapping desired features to the right method.
+- README installation section now leads with `uv tool install promptmc` and notes the macOS bundled-Python pitfall.
+- Social-preview card simplified to mark, wordmark, and tagline; dropped the `pip install` command line.
+- README copy fixes: planner-deletion language, restored the MCP-parallels-CLI constraint, consolidated examples.
+
 ## [0.3.1] - 2026-06-10
 
 ### Added

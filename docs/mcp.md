@@ -2,7 +2,7 @@
 
 PromptMC ships a [Model Context Protocol](https://modelcontextprotocol.io) server so MCP-capable AI assistants can drive [OpenMC](https://docs.openmc.org/en/stable/) workflows natively — validation, schema checks, plotting, execution, and result parsing from inside your chat client.
 
-The server is installed with PromptMC (`pip install promptmc`) and started by the `promptmc-mcp` command, which speaks MCP over stdio. You normally don't run it by hand — the client launches it for you using the configuration below.
+The server is included in every PromptMC [install method](installation.md) and started by the `promptmc-mcp` command, which speaks MCP over stdio. You normally don't run it by hand — the client launches it for you using the configuration below.
 
 ## Prerequisites
 

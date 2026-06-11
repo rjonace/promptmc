@@ -39,15 +39,22 @@ Most planning and schema-validation workflows work without OpenMC installed; exe
 ## Installation
 
 **Prerequisites:**
-- Python 3.10 or higher
-- Pip
+- Python 3.10 or higher (note: macOS's bundled Python is 3.9 — `uv` below sidesteps this by fetching its own)
 
-**PromptMC** can be installed using pip:
+**PromptMC** — quickest as an isolated CLI install via [uv](https://docs.astral.sh/uv/) or [pipx](https://pipx.pypa.io/):
+
+```bash
+uv tool install promptmc          # or: pipx install promptmc
+```
+
+Or with pip into an existing environment:
 
 ```bash
 pip install promptmc              # core (includes CLI, MCP server, and Gemini planner)
 pip install 'promptmc[telemetry]' # + OpenTelemetry tracing
 ```
+
+Plot rendering and geometry-debug import OpenMC's Python API, so for those install PromptMC with pip into the same environment as OpenMC (e.g. your conda env). Everything else — planning, validation, MCP server, and simulation runs via the `openmc` executable — works from an isolated install.
 
 **OpenMC** (required for simulation execution, geometry-debug checks, and plot rendering) can be installed via Conda, Spack, Docker, or build from source per [docs.openmc.org](https://docs.openmc.org/en/stable/quickinstall.html). Planning and XML/schema validation work without it.
 
