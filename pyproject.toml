@@ -1,14 +1,16 @@
 [tool.poetry]
 name = "promptmc"
-version = "0.3.0"
-description = "AI Assistant and CLI for OpenMC simulation workflows"
+version = "0.3.1"
+description = "Infrastructure for safely using OpenMC with LLMs: plan, build, validate, run, analyze"
 authors = ["PromptMC Contributors"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/rjonace/promptmc"
-keywords = ["openmc", "monte-carlo", "nuclear", "simulation", "mcp"]
+keywords = ["openmc", "monte-carlo", "nuclear-engineering", "simulation", "mcp", "particle-transport", "neutronics", "ai-validation", "mcp-server"]
 classifiers = [
     "Development Status :: 4 - Beta",
+    "Framework :: Pydantic",
+    "Framework :: Pydantic :: 2",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.10",

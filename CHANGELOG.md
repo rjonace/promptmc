@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.1] - 2026-06-10
 
 ### Added
 - PyPI publishing workflow (`.github/workflows/publish.yml`) using trusted publishing (OIDC), triggered when a GitHub release is published.
@@ -18,10 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Codecov uploads now authenticate via OIDC; they had been silently rejected ("Token required - not valid tokenless upload") since Codecov dropped anonymous uploads.
 - README images and links now use absolute URLs so the PyPI project page renders them correctly (relative paths 404 on PyPI).
+- Added Python 3.14 to the installation guide prerequisites.
 
 ### Changed
 - Renamed the `ask` CLI command to `plan` (`promptmc plan "..."`). The behavior, flags (`--write`, `--llm`, `--model`, `--output`), and underlying planner are unchanged.
 - Moved the bundled UO2 criticality example into the package (`promptmc/examples/uo2_criticality`) so wheels no longer install a top-level `examples` directory into site-packages. The repo-root `examples/` folder (batch spec, MCP walkthrough) now ships in the sdist only.
+- New project description, aligned across GitHub and PyPI: "Infrastructure for safely using OpenMC with LLMs: plan, build, validate, run, analyze".
+- PyPI keywords aligned with the GitHub repo topics; added `Framework :: Pydantic` classifiers.
 
 ## [0.3.0] - 2026-06-07
 

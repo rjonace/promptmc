@@ -4,7 +4,7 @@ This guide covers PromptMC installation plus the optional OpenMC setup required 
 
 ## Prerequisites
 
-- Python 3.10, 3.11, 3.12, or 3.13
+- Python 3.10, 3.11, 3.12, 3.13, or 3.14
 - [OpenMC](https://docs.openmc.org/en/stable/), built from source or executable in `PATH`, for running simulations
 - Nuclear cross-section data for running simulations
 
