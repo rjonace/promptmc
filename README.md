@@ -96,13 +96,13 @@ The goal is not autonomous reactor design; the goal is safer, faster OpenMC iter
 
 ## Documentation
 
-- [Installation](https://github.com/rjonace/promptmc/blob/main/docs/installation.md) — setup paths for PromptMC, OpenMC, and nuclear data
-- [MCP server](https://github.com/rjonace/promptmc/blob/main/docs/mcp.md) — connecting AI assistants (Claude Desktop/Code, Cursor, Antigravity, VS Code)
-- [CLI reference](https://github.com/rjonace/promptmc/blob/main/docs/cli-reference.md) — commands, flags, environment variables
-- [Python API](https://github.com/rjonace/promptmc/blob/main/docs/python-api.md) — scripting PromptMC
+- [Installation](https://github.com/rjonace/promptmc/blob/main/docs/installation.md)
+- [MCP server](https://github.com/rjonace/promptmc/blob/main/docs/mcp.md)
+- [CLI reference](https://github.com/rjonace/promptmc/blob/main/docs/cli-reference.md)
+- [Python API](https://github.com/rjonace/promptmc/blob/main/docs/python-api.md)
 - [Templates](https://github.com/rjonace/promptmc/blob/main/docs/cli-reference.md#templates) · [Telemetry](https://github.com/rjonace/promptmc/blob/main/docs/telemetry-and-audit.md)
 - [Examples](https://github.com/rjonace/promptmc/blob/main/src/promptmc/examples/uo2_criticality/README.md) · [MCP example](https://github.com/rjonace/promptmc/blob/main/examples/mcp/README.md)
-- [Design docs](https://github.com/rjonace/promptmc/blob/main/docs/design/README.md) — per-release architecture, decisions, and testing strategy
+- [Design docs](https://github.com/rjonace/promptmc/blob/main/docs/design/README.md)
 - [Roadmap](https://github.com/rjonace/promptmc/blob/main/ROADMAP.md) · [Changelog](https://github.com/rjonace/promptmc/blob/main/CHANGELOG.md) · [Contributing](https://github.com/rjonace/promptmc/blob/main/CONTRIBUTING.md)
 
 ## About
