@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" role="img" aria-labelledby="card-title">
-  <title id="card-title">PromptMC — validated OpenMC workflows for AI-assisted reactor physics</title>
+  <title id="card-title">PromptMC — infrastructure for safely using OpenMC with LLMs</title>
   <rect width="1280" height="640" fill="#0D1117"/>
 
   <!-- atom mark (same geometry as logo.svg, re-centered) -->
@@ -19,8 +19,8 @@
   <!-- wordmark + tagline -->
   <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
     <text x="560" y="295" font-size="96" font-weight="700" fill="#f0f6fc">PromptMC</text>
-    <text x="563" y="355" font-size="33" fill="#8b949e">Validated OpenMC workflows</text>
-    <text x="563" y="400" font-size="33" fill="#8b949e">for AI-assisted reactor physics</text>
+    <text x="563" y="352" font-size="28" fill="#8b949e">Infrastructure for safely using OpenMC with LLMs:</text>
+    <text x="563" y="394" font-size="28" fill="#8b949e">plan, build, validate, run, analyze</text>
   </g>
   <text x="563" y="478" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="28" fill="#4ade80">$ pip install promptmc</text>
 </svg>
