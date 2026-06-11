@@ -76,7 +76,7 @@ src/promptmc/
 ├── openmc_integration.py  # core OpenMC wrapper — OpenMCInstaller / OpenMCValidator / OpenMCRunner (subprocess + Python API), ExecutionMode
 ├── schema.py              # Pydantic validation of OpenMC XML (Settings/Materials/Geometry…) + SchemaValidator; uses defusedxml
 ├── templates.py           # config templates (Criticality / FixedSource / Shielding / ReactorPin) + TemplateRegistry
-├── assistant.py           # NL planner behind `promptmc plan` (NaturalLanguageAssistant) — the keyword router v0.8 replaces
+├── assistant.py           # NL planner behind `promptmc plan` (NaturalLanguageAssistant) — deterministic keyword planner (no-key default; keep it) + Gemini `--llm` path; v0.8 rebuilds only the `--llm` path on the generation pipeline
 ├── batch.py               # batch + parallel execution (BatchRunner, ParallelExecutor)
 ├── resources.py           # resource limits / monitoring / cleanup, temp simulation workspaces
 ├── progress.py            # progress reporting + system profiling / performance monitoring
@@ -124,8 +124,10 @@ than hand-rolled equivalents.
 
 ### 4.3 Invariants the MCP layer must keep
 
-- Do not modify `cli.py` for new tools. The MCP layer parallels the CLI; it does
-  not extend it.
+- **MCP parallels the CLI** (a ROADMAP architectural constraint): the MCP layer
+  exposes the same workflow surface as the CLI, not a separate hidden product.
+  Do not modify `cli.py` for new tools; the MCP layer parallels the CLI, it
+  does not extend it.
 - Do not add LLM calls to the MCP layer. PromptMC provides tools to *some other*
   agent; **it is not the agent.**
 - Synchronous tool calls only — no streaming, no `openmc_run_async`. Async
@@ -188,7 +190,7 @@ Each release has a design document under `docs/design/` with the architecture, k
 **v0.8 — Constrained generation**
 - `Generator` protocol behind a thin internal interface; **Google Gemini** is the supported provider, plus a local mock.
 - Validate-and-repair loop produces validated, runnable inputs from natural language; the loop is bounded by the v0.6 physics gate (it passes the gate or exits with a structured failure).
-- New MCP tool `openmc_design(description: str)`; `promptmc plan` rebuilt on the pipeline; old keyword router deleted.
+- New MCP tool `openmc_design(description: str)`; the `promptmc plan --llm` path rebuilt on the pipeline. The deterministic keyword planner stays as the no-key default — do not delete it.
 - `openmc_diff_geometry` shows exactly what the repair loop changed. Minimal audit record (model used + artifact produced).
 - A human reviews and approves every output (never autonomous for licensing/safety). No LLM calls in tests (deterministic mock).
 

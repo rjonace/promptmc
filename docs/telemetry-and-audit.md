@@ -7,7 +7,7 @@ PromptMC currently provides optional OpenTelemetry integration for simulation ob
 Telemetry is optional. Install with the telemetry extra:
 
 ```bash
-pip install promptmc[telemetry]
+pip install 'promptmc[telemetry]'
 ```
 
 Without the telemetry extra, all telemetry calls are no-ops and have no performance impact.

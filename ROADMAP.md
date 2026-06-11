@@ -19,6 +19,7 @@ It provides a strictly typed, schema-driven Model Context Protocol (MCP) server 
 - **No Web UI:** We are not building a 3D visualization web app. Visual verification will be handled natively via the AI chat client using 2D slice plots.
 - **No Unsupervised Design for Licensing/Safety:** The system is an engineering-assist tool with human-in-the-loop verification. A human reviews and approves every output. Never autonomous for licensing or safety-critical sign-off.
 - **No Loose LLM Calls:** All LLM interactions must be routed through strict, schema-validated tool definitions.
+- **MCP Parallels CLI:** The MCP layer should expose the same workflow surface as the CLI, not a separate hidden product.
 
 ## Shipped — CLI Initial Release (v0.1.0)
 

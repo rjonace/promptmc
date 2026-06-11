@@ -14,7 +14,7 @@ PromptMC planning, template generation, XML validation, and schema validation wo
 
 ```bash
 pip install promptmc              # CLI, MCP server, and Gemini planner
-pip install promptmc[telemetry]   # optional OpenTelemetry support
+pip install 'promptmc[telemetry]' # optional OpenTelemetry support
 ```
 
 For editable development:

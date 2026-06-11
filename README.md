@@ -27,7 +27,7 @@ Because AI [hallucination](https://link.springer.com/article/10.1007/s10676-024-
 Most planning and schema-validation workflows work without OpenMC installed; execution, geometry-debug checks, and 2D plot rendering require OpenMC.
 
 **Without OpenMC installed:**
-- Describe a simulation in plain English → a validated plan and `settings.xml` (the default planner uses no generative AI)
+- Describe a simulation → a validated plan and `settings.xml` (the default planner is keyword-based and uses no generative AI)
 - Validate XML structure and PromptMC's supported OpenMC schemas
 - Drive planning and schema validation from an AI client via the MCP server
 
@@ -46,7 +46,7 @@ Most planning and schema-validation workflows work without OpenMC installed; exe
 
 ```bash
 pip install promptmc              # core (includes CLI, MCP server, and Gemini planner)
-pip install promptmc[telemetry]   # + OpenTelemetry tracing
+pip install 'promptmc[telemetry]' # + OpenTelemetry tracing
 ```
 
 **OpenMC** (required for simulation execution, geometry-debug checks, and plot rendering) can be installed via Conda, Spack, Docker, or build from source per [docs.openmc.org](https://docs.openmc.org/en/stable/quickinstall.html). Planning and XML/schema validation work without it.
@@ -101,7 +101,7 @@ The goal is not autonomous reactor design; the goal is safer, faster OpenMC iter
 - [CLI reference](https://github.com/rjonace/promptmc/blob/main/docs/cli-reference.md)
 - [Python API](https://github.com/rjonace/promptmc/blob/main/docs/python-api.md)
 - [Templates](https://github.com/rjonace/promptmc/blob/main/docs/cli-reference.md#templates) · [Telemetry](https://github.com/rjonace/promptmc/blob/main/docs/telemetry-and-audit.md)
-- [Examples](https://github.com/rjonace/promptmc/blob/main/src/promptmc/examples/uo2_criticality/README.md) · [MCP example](https://github.com/rjonace/promptmc/blob/main/examples/mcp/README.md)
+- [Examples](https://github.com/rjonace/promptmc/blob/main/examples/README.md)
 - [Design docs](https://github.com/rjonace/promptmc/blob/main/docs/design/README.md)
 - [Roadmap](https://github.com/rjonace/promptmc/blob/main/ROADMAP.md) · [Changelog](https://github.com/rjonace/promptmc/blob/main/CHANGELOG.md) · [Contributing](https://github.com/rjonace/promptmc/blob/main/CONTRIBUTING.md)
 
