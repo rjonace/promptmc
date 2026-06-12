@@ -1,26 +1,3 @@
-% PromptMC — JOSS paper bibliography
-%
-% RULE: this file is the *bibliography of the paper*, not a reading list.
-% An entry belongs here only if it will be CITED in paper.md — i.e. you can
-% point to the sentence that needs it. "Useful but not cited" stays in your
-% reading list (private/REFERENCE_AND_PRACTICE.md), never here.
-%
-% Add entries only when you've actually read + verified them, and include a
-% DOI/URL (JOSS auto-links DOIs and the review checks they resolve).
-%
-% Entry types are NOT limited to journal articles. JOSS explicitly wants
-% software and datasets cited too:
-%   @article       journal articles
-%   @misc          software, arXiv preprints, datasets, web docs
-%   @inproceedings conference papers
-%   @techreport    lab / technical reports (e.g. LA-UR, ICSBEP)
-%   @book          textbooks
-%   @manual        software manuals / documentation
-%
-% ---------------------------------------------------------------------------
-
-% --- Core: the thing PromptMC is built on -------------------------------
-
 @article{romano2015openmc,
   author  = {Romano, Paul K. and Horelik, Nicholas E. and Herman, Bryan R.
              and Nelson, Adam G. and Forget, Benoit and Smith, Kord},
@@ -33,9 +10,6 @@
   doi     = {10.1016/j.anucene.2014.07.048}
 }
 
-% OpenMC the software (distinct from the paper above). Plain BibTeX has no
-% @software type, so @misc is the portable choice; pin the version you tested
-% against when you cite it.
 @misc{openmc_software,
   author       = {{OpenMC Development Team}},
   title        = {{OpenMC}: A {Monte Carlo} Particle Transport Code},
@@ -44,10 +18,6 @@
   year         = {2026}
 }
 
-% --- State of the field: AI agents for Monte Carlo / nuclear codes -------
-
-% arXiv preprint example. Position PromptMC against this class of work
-% (autonomous self-healing agents) vs. PromptMC's deterministic validation.
 @misc{ndum2024autofluka,
   author        = {Ndum Ndum, Zavier and Tao, Jian and Ford, John and Liu, Yang},
   title         = {{AutoFLUKA}: A Large Language Model Based Framework for
@@ -59,10 +29,6 @@
   doi           = {10.48550/arXiv.2410.15222}
 }
 
-% --- Removable seeds (added 2026-06-12; drop if unused) ------------------
-
-% The "hallucination is a real concern" reference the README links in its
-% opening. Frames the problem PromptMC's blast-wall validation addresses.
 @article{hicks2024chatgpt,
   author  = {Hicks, Michael Townsen and Humphries, James and Slater, Joe},
   title   = {{ChatGPT} is bullshit},
@@ -73,8 +39,6 @@
   doi     = {10.1007/s10676-024-09775-5}
 }
 
-% Pydantic — the schema/validation layer. Cite only if the paper's design
-% section names it; software-docs entries are fine as @misc.
 @misc{pydantic_docs,
   author       = {{Pydantic Services Inc.}},
   title        = {Pydantic Documentation},
