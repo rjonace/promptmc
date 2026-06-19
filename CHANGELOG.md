@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.3] - 2026-06-19
+
+### Added
+- `depletion` configuration template — eigenvalue transport settings for a depletion/burnup calculation, available via `promptmc template depletion`, the local planner (depletion/burnup keywords), and the MCP `openmc_template` tool. The burnup schedule itself (timesteps, power, depletion chain) is configured through OpenMC's Python depletion API.
+- Quickstart section in the README: a no-OpenMC walkthrough that drives the validation gate (`plan` → `validate --schema`) and shows the gate rejecting a malformed input.
+- Executable-based integration test tier (`requires_openmc_exec` marker) that runs the bundled UO2 example end-to-end through the `openmc` executable in subprocess mode and checks the parsed k-effective.
+
+### Changed
+- Replaced the non-existent `input.xml` placeholder throughout the README, docs, and examples with `settings.xml` (single file) or `./model` (a directory of `geometry.xml` + `materials.xml` + `settings.xml`), matching how OpenMC actually reads inputs. Renamed `examples/input.xml` → `examples/settings.xml`.
+
+### Removed
+- The `configure` CLI command, a redundant subset of `template criticality` that emitted an eigenvalue `settings.xml` (without a source) under the misleading name `openmc_config.xml`. The underlying `OpenMCRunner.generate_configuration()` Python API is retained.
+
 ## [0.3.2] - 2026-06-11
 
 ### Added

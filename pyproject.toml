@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "promptmc"
-version = "0.3.2"
+version = "0.3.3"
 description = "Infrastructure for safely using OpenMC with LLMs: plan, build, validate, run, analyze"
 authors = ["PromptMC Contributors"]
 license = "MIT"
