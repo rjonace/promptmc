@@ -27,8 +27,8 @@ Because AI [hallucination](https://link.springer.com/article/10.1007/s10676-024-
 Most planning and schema-validation workflows work without OpenMC installed; execution, geometry-debug checks, and 2D plot rendering require OpenMC.
 
 **Without OpenMC installed:**
-- Describe a simulation → a validated plan and `settings.xml` (the default planner is keyword-based and uses no generative AI)
 - Validate XML structure and PromptMC's supported OpenMC schemas
+- Describe a simulation → a validated plan and `settings.xml` (the default planner is keyword-based and uses no generative AI)
 - Drive planning and schema validation from an AI client via the MCP server
 
 **With OpenMC installed:**
@@ -72,6 +72,8 @@ See [installation](https://github.com/rjonace/promptmc/blob/main/docs/installati
 
 PromptMC exposes a [Model Context Protocol](https://modelcontextprotocol.io) server so AI assistants can run OpenMC workflows natively — validation, plotting, execution, and result parsing from inside your LLM chat client, such as Claude Desktop, Cursor, and Google Antigravity.
 
+The point of routing these through MCP is that an assistant can validate its own generated geometry and inputs (schema checks, overlap detection) before you spend a run on them, catching the malformed inputs that are easy for an LLM to produce and hard to spot by eye.
+
 **[Tools](https://modelcontextprotocol.io/docs/concepts/tools):** `openmc_validate`, `openmc_schema_check`, `openmc_template`, `openmc_list_templates`, `openmc_run`, `openmc_analyze`, `openmc_plot` (2D slice, returned to the chat client), `openmc_geometry_debug`, `openmc_check_installation`, `openmc_check_cross_sections`.
 
 [Resources](https://modelcontextprotocol.io/docs/concepts/resources) expose the configured cross-sections path, the session's tool-call history, and the bundled examples.
@@ -83,13 +85,13 @@ PromptMC exposes a [Model Context Protocol](https://modelcontextprotocol.io) ser
 By default, `plan` uses a deterministic local planner, needing no API key, no network, no generative AI. The optional `--llm` flag calls Google Gemini (set GEMINI_API_KEY), which can interpret more open-ended natural-language requests. Customize the model name with GEMINI_MODEL (defaults to gemini-3.5-flash).
 
 ```bash
-promptmc plan --llm "concrete shielding calculation with 1 million particles"
-promptmc plan "pin cell criticality with 50k particles" --write
-promptmc template criticality --particles 10000                 # generate settings.xml
 promptmc validate input.xml --schema
+promptmc template criticality --particles 10000                 # generate settings.xml
 promptmc run input.xml --threads 4                              # needs OpenMC
 promptmc batch batch_spec.yaml --parallel threads --workers 4
 promptmc analyze ./output --json results.json
+promptmc plan "pin cell criticality with 50k particles" --write
+promptmc plan --llm "concrete shielding calculation with 1 million particles"
 promptmc info                                                   # environment status
 ```
 

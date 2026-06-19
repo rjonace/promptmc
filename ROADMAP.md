@@ -61,6 +61,7 @@ Each release has a design document — architecture, key decisions, testing stra
 
 - **Deliverable:** Pre-execution validation for cell overlaps, unbounded geometries, void cells, and tracking inconsistencies.
 - **Deliverable:** Structured, human- and AI-readable failure explanations that feed exact fixes back into an agent’s context.
+- **Deliverable:** The failure/fix-hint output is a stable, **model-agnostic, documented contract** — parseable by *any* external agent's error-recovery loop, not just PromptMC's own repair. This is the validation layer other agents plug into.
 - **Deliverable:** `openmc_trace_point` to identify which cells claim a coordinate.
 - **Deliverable:** Extended `promptmc validate` CLI.
 - **Gate:** All v0.4 reference geometries must pass cleanly.
