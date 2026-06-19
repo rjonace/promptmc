@@ -161,48 +161,6 @@ def test_run_not_found_error(mock_runner_cls, mock_validator_cls):
 
 
 # ---------------------------------------------------------------------------
-# configure
-# ---------------------------------------------------------------------------
-
-
-def test_configure_help():
-    result = runner.invoke(app, ["configure", "--help"])
-    assert result.exit_code == 0
-
-
-@patch("promptmc.commands.configure.OpenMCRunner")
-def test_configure_success(mock_runner_cls):
-    mock_runner = MagicMock()
-    mock_runner.generate_configuration.return_value = Path("openmc_config.xml")
-    mock_runner_cls.return_value = mock_runner
-
-    result = runner.invoke(
-        app,
-        [
-            "configure",
-            "--particles",
-            "5000",
-            "--batches",
-            "20",
-            "--inactive",
-            "5",
-        ],
-    )
-    assert result.exit_code == 0
-    assert "Configuration generated" in result.stdout
-
-
-@patch("promptmc.commands.configure.OpenMCRunner")
-def test_configure_error(mock_runner_cls):
-    mock_runner = MagicMock()
-    mock_runner.generate_configuration.side_effect = RuntimeError("disk full")
-    mock_runner_cls.return_value = mock_runner
-
-    result = runner.invoke(app, ["configure"])
-    assert result.exit_code == 1
-
-
-# ---------------------------------------------------------------------------
 # validate
 # ---------------------------------------------------------------------------
 
@@ -602,7 +560,6 @@ def test_schema_check_directory(tmp_path):
     "cmd",
     [
         ["run", "--help"],
-        ["configure", "--help"],
         ["validate", "--help"],
         ["info", "--help"],
         ["template", "--help"],

@@ -21,6 +21,7 @@ SUPPORTED_TEMPLATE_TYPES = {
     TemplateType.FIXED_SOURCE,
     TemplateType.SHIELDING,
     TemplateType.REACTOR_PIN,
+    TemplateType.DEPLETION,
 }
 
 
@@ -224,13 +225,12 @@ class NaturalLanguageAssistant:
         )
 
         warnings: list[str] = []
-        if "depletion" in normalized or "burnup" in normalized:
+        if template_type == TemplateType.DEPLETION:
             warnings.append(
-                "Depletion was detected, but the built-in"
-                " depletion template is not implemented"
-                " yet. Use the generated plan as a"
-                " starting point and add depletion"
-                " settings manually."
+                "The depletion template provides the eigenvalue"
+                " transport settings only. Configure the burnup"
+                " schedule (timesteps, power, and depletion chain)"
+                " via OpenMC's Python depletion API."
             )
         if (
             template_type in {TemplateType.FIXED_SOURCE, TemplateType.SHIELDING}
@@ -271,7 +271,7 @@ class NaturalLanguageAssistant:
     ) -> NaturalLanguagePlan:
         system_prompt = (
             "You translate OpenMC simulation requests into a simulation plan JSON object. "
-            "Valid template_type values are 'criticality', 'fixed_source', 'shielding', and 'reactor_pin'. "
+            "Valid template_type values are 'criticality', 'fixed_source', 'shielding', 'reactor_pin', and 'depletion'. "
             "Use positive integers for particles and batches. "
             "Use inactive=0 for fixed_source and shielding."
         )
@@ -342,6 +342,18 @@ class NaturalLanguageAssistant:
                 )
             ],
             "Pin-cell keywords suggest the reactor pin template.",
+        ),
+        TemplateType.DEPLETION: (
+            [
+                re.compile(rf"\b{kw}\b", re.IGNORECASE)
+                for kw in (
+                    "depletion",
+                    "deplete",
+                    "burnup",
+                    "burn-up",
+                )
+            ],
+            "Depletion/burnup keywords suggest the depletion template.",
         ),
         TemplateType.FIXED_SOURCE: (
             [

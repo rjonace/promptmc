@@ -16,7 +16,7 @@ from promptmc.templates import TemplateType, get_template, list_templates
 def template(
     template_type: str = typer.Argument(
         ...,
-        help="Template type: criticality, fixed_source, shielding, reactor_pin",
+        help="Template type: criticality, fixed_source, shielding, reactor_pin, depletion",
     ),
     output: Path = typer.Option(
         Path("settings.xml"),

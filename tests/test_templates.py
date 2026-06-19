@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 from promptmc.templates import (
     CriticalityTemplate,
+    DepletionTemplate,
     FixedSourceTemplate,
     ReactorPinTemplate,
     ShieldingTemplate,
@@ -43,6 +44,31 @@ def test_reactor_pin_template_metadata():
     """Test reactor pin template metadata."""
     tmpl = ReactorPinTemplate()
     assert tmpl.metadata.template_type == TemplateType.REACTOR_PIN
+
+
+def test_depletion_template_metadata():
+    """Test depletion template metadata."""
+    tmpl = DepletionTemplate()
+    assert tmpl.metadata.template_type == TemplateType.DEPLETION
+    assert tmpl.metadata.name == "Depletion"
+
+
+def test_render_depletion_template():
+    """Test rendering depletion template (eigenvalue transport settings)."""
+    tmpl = DepletionTemplate()
+
+    with tempfile.NamedTemporaryFile(suffix=".xml", delete=False) as f:
+        temp_path = Path(f.name)
+
+    try:
+        tmpl.render(output_path=temp_path)
+        tree = ET.parse(temp_path)
+        root = tree.getroot()
+        assert root.tag == "settings"
+        assert root.find("run_mode").text == "eigenvalue"
+        assert root.find("source") is not None
+    finally:
+        temp_path.unlink()
 
 
 def test_render_criticality_template():

@@ -296,6 +296,58 @@ class ReactorPinTemplate(ConfigurationTemplate):
         return root
 
 
+class DepletionTemplate(ConfigurationTemplate):
+    """Template for depletion (burnup) transport settings.
+
+    Emits the eigenvalue transport settings for a depletion calculation.
+    The burnup schedule itself (timesteps, power, and depletion chain) is
+    configured through OpenMC's Python depletion API, not settings.xml.
+    """
+
+    def __init__(self) -> None:
+        metadata = TemplateMetadata(
+            name="Depletion",
+            template_type=TemplateType.DEPLETION,
+            description=(
+                "Eigenvalue transport settings for a depletion/burnup "
+                "calculation (burnup schedule set via the OpenMC Python API)"
+            ),
+            default_particles=10000,
+            default_batches=100,
+            default_inactive=20,
+        )
+        super().__init__(metadata)
+
+    def _build_xml(
+        self,
+        particles: int,
+        batches: int,
+        inactive: int,
+        **kwargs: Any,
+    ) -> ET.Element:
+        root = ET.Element("settings")
+
+        run_mode = ET.SubElement(root, "run_mode")
+        run_mode.text = "eigenvalue"
+
+        batches_elem = ET.SubElement(root, "batches")
+        batches_elem.text = str(batches)
+
+        inactive_elem = ET.SubElement(root, "inactive")
+        inactive_elem.text = str(inactive)
+
+        particles_elem = ET.SubElement(root, "particles")
+        particles_elem.text = str(particles)
+
+        # Source distribution
+        source = ET.SubElement(root, "source")
+        space = ET.SubElement(source, "space", type="box")
+        params = ET.SubElement(space, "parameters")
+        params.text = kwargs.get("source_box", "-10 -10 -10 10 10 10")
+
+        return root
+
+
 class TemplateRegistry:
     """Registry for configuration templates."""
 
@@ -310,6 +362,7 @@ class TemplateRegistry:
         self.register(FixedSourceTemplate())
         self.register(ShieldingTemplate())
         self.register(ReactorPinTemplate())
+        self.register(DepletionTemplate())
 
     def register(self, template: ConfigurationTemplate) -> None:
         """Register a template.
