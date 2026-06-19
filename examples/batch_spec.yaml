@@ -1,6 +1,6 @@
 name: parameter-sweep-example
 description: Example batch specification for parameter sweep simulations
-base_input: ./input.xml
+base_input: ./settings.xml
 output_root: ./batch_results
 threads_per_job: 2
 parameter_sweeps:

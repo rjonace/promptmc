@@ -119,14 +119,6 @@ promptmc template reactor_pin --output settings.xml --particles 50000
 promptmc template criticality --output settings.xml --particles 10000 --batches 100 --inactive 10
 ```
 
-### `promptmc configure`
-
-Generate a basic configuration file.
-
-```bash
-promptmc configure --output config.xml --particles 10000 --batches 10
-```
-
 ## Validation
 
 ### `promptmc validate`
@@ -135,10 +127,10 @@ Validate XML structure and optionally run schema validation.
 
 ```bash
 # Validate XML structure only
-promptmc validate input.xml
+promptmc validate settings.xml
 
 # Validate XML structure + schema (Pydantic)
-promptmc validate input.xml --schema
+promptmc validate settings.xml --schema
 
 # Validate multiple files
 promptmc validate geometry.xml materials.xml settings.xml --schema
@@ -164,19 +156,19 @@ Run an OpenMC simulation.
 
 ```bash
 # Auto-detect API or subprocess mode
-promptmc run input.xml --threads 4
+promptmc run ./model --threads 4
 
 # Force API mode
-promptmc run input.xml --mode api
+promptmc run ./model --mode api
 
 # Force subprocess mode
-promptmc run input.xml --mode subprocess
+promptmc run ./model --mode subprocess
 
 # Specify output directory
-promptmc run input.xml --output results
+promptmc run ./model --output results
 
 # Run with verbose output
-promptmc --verbose run input.xml
+promptmc --verbose run ./model
 
 ```
 

@@ -46,11 +46,15 @@ Each release has a design document — architecture, key decisions, testing stra
 
 ## Next Sprints
 
-### v0.4 — Reference Library
+### v0.4 — Reference Library + Onboarding
 
 - **Deliverable:** Open-source library of validated reference geometries: PWR pin, BWR pin, Godiva, Jezebel, and selected ICSBEP benchmark cases.
 - **Deliverable:** Each geometry is runnable, documented, and independently checked against known results.
 - **Deliverable:** At least one shielding/streaming case and one fast/criticality case alongside the thermal-reactor geometries.
+- **Deliverable:** `promptmc examples` to list bundled examples and copy one into the working directory as a runnable starting point (e.g. `promptmc examples copy godiva ./run`). This is the delivery mechanism for the reference library: it turns "the library exists in the repo" into "I have a working Godiva in my folder in seconds."
+- **Deliverable:** `promptmc doctor`, one command that runs every environment check (OpenMC present, Python API importable, `cross_sections.xml` set and valid, data downloaded, telemetry extra installed) and prints a single status report with a fix hint for each missing piece. Setup is the top onboarding friction, and the individual checks already exist.
+- **Deliverable:** Consistent `--json` structured output across `validate`, `plan`, and `info` (already present on `analyze`), so agents and CI can parse results instead of Rich tables.
+- **Deliverable:** Provenance header on generated files: a leading comment recording PromptMC version, timestamp, and the exact command used, written into every emitted `settings.xml`.
 
 ### v0.5 — Geometry Composition + Inspection
 

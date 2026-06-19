@@ -37,7 +37,7 @@ from promptmc.schema import SchemaValidator
 validator = OpenMCValidator()
 
 # Validate XML structure
-validator.validate_input_file("input.xml")
+validator.validate_input_file("settings.xml")
 
 # Validate a directory for required OpenMC XML files
 validator.validate_input_file("./input_dir/")
@@ -67,7 +67,7 @@ runner.generate_configuration(
 
 # Run simulation
 result = runner.run_simulation(
-    input_path="input.xml",
+    input_path="./model",
     threads=4,
     output_path="results",
 )
@@ -245,7 +245,7 @@ Base exception for all PromptMC errors.
 from promptmc.errors import PromptMCError
 
 try:
-    runner.run_simulation("input.xml")
+    runner.run_simulation("./model")
 except PromptMCError as e:
     print(f"PromptMC error: {e}")
 ```
@@ -261,7 +261,7 @@ from promptmc.errors import (
 )
 
 try:
-    runner.run_simulation("input.xml")
+    runner.run_simulation("./model")
 except OpenMCNotFoundError:
     print("OpenMC not found in PATH")
 except ValidationError as e:
@@ -313,7 +313,7 @@ print(f"Python API available: {info.python_available}")
 
 # Validate input files
 validator = OpenMCValidator()
-validator.validate_input_file("input.xml")
+validator.validate_input_file("settings.xml")
 
 # Generate configuration
 runner = OpenMCRunner(execution_mode=ExecutionMode.AUTO)
@@ -330,7 +330,7 @@ telemetry.record_simulation_start("sim-001")
 
 with telemetry.trace_operation("simulation_run", simulation_id="sim-001"):
     result = runner.run_simulation(
-        input_path="input.xml",
+        input_path="./model",
         threads=4,
         output_path="results",
     )

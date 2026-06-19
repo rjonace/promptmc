@@ -17,7 +17,7 @@ Without the telemetry extra, all telemetry calls are no-ops and have no performa
 When telemetry is installed, it exports to console by default with no configuration required:
 
 ```bash
-promptmc run input.xml
+promptmc run ./model
 # Telemetry output appears in console
 ```
 
@@ -27,7 +27,7 @@ Set the `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable to export to an OTLP-
 
 ```bash
 export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4317"
-promptmc run input.xml
+promptmc run ./model
 ```
 
 ## Disable Console Export
@@ -36,7 +36,7 @@ To disable console export while using OTLP:
 
 ```bash
 export OTEL_CONSOLE_EXPORT="false"
-promptmc run input.xml
+promptmc run ./model
 ```
 
 ## Python API Usage

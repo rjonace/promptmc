@@ -68,6 +68,38 @@ export OPENMC_CROSS_SECTIONS=$(pwd)/cross_sections/cross_sections.xml
 
 See [installation](https://github.com/rjonace/promptmc/blob/main/docs/installation.md) for more details.
 
+## Quickstart
+
+The validation gate is the core of PromptMC, and you can exercise it with no OpenMC install, no cross-section data, and no API key.
+
+```bash
+# 1. Turn a plain-English request into a settings.xml (deterministic local planner, no API key)
+promptmc plan "pin cell criticality with 50k particles" --write
+
+# 2. Validate it against PromptMC's typed schemas
+promptmc validate settings.xml --schema      # passes
+```
+
+The gate's job is catching malformed inputs before a run consumes them. Hand it a value an AI assistant might plausibly invent, such as `<run_mode>criticalize</run_mode>`, and it rejects the input and reports what was allowed:
+
+```text
+[ERROR] (settings.xml:run_mode)
+        Input should be 'eigenvalue', 'fixed source', 'plot', 'particle restart' or 'volume'
+```
+
+The error is structured, so an assistant can read it and self-correct.
+
+### From settings.xml to a full run
+
+`plan` writes the `settings.xml`. A complete OpenMC model also needs `geometry.xml` and `materials.xml` in the same directory (plus an optional `tallies.xml`). With all of them in one directory, and OpenMC and cross-section data installed:
+
+```bash
+promptmc run ./model        # runs the simulation
+promptmc analyze ./model    # k-effective and tallies, parsed from the statepoint
+```
+
+Runnable reference geometries (PWR pin, Godiva, and more) are the [v0.4 deliverable](https://github.com/rjonace/promptmc/blob/main/ROADMAP.md); until then, bring `geometry.xml` and `materials.xml` from your own model.
+
 ## MCP server
 
 PromptMC exposes a [Model Context Protocol](https://modelcontextprotocol.io) server so AI assistants can run OpenMC workflows natively — validation, plotting, execution, and result parsing from inside your LLM chat client, such as Claude Desktop, Cursor, and Google Antigravity.
@@ -85,11 +117,11 @@ The point of routing these through MCP is that an assistant can validate its own
 By default, `plan` uses a deterministic local planner, needing no API key, no network, no generative AI. The optional `--llm` flag calls Google Gemini (set GEMINI_API_KEY), which can interpret more open-ended natural-language requests. Customize the model name with GEMINI_MODEL (defaults to gemini-3.5-flash).
 
 ```bash
-promptmc validate input.xml --schema
+promptmc validate settings.xml --schema                         # structure + schema, no OpenMC needed
 promptmc template criticality --particles 10000                 # generate settings.xml
-promptmc run input.xml --threads 4                              # needs OpenMC
+promptmc run ./model --threads 4                                # needs OpenMC (geometry + materials + settings)
 promptmc batch batch_spec.yaml --parallel threads --workers 4
-promptmc analyze ./output --json results.json
+promptmc analyze ./model --json results.json                    # parse statepoint + tallies
 promptmc plan "pin cell criticality with 50k particles" --write
 promptmc plan --llm "concrete shielding calculation with 1 million particles"
 promptmc info                                                   # environment status
