@@ -149,6 +149,7 @@ markers = [
     "integration: MCP integration tests",
     "requires_openmc: Tests that require openmc to be importable/installed",
     "requires_openmc_data: Tests that require openmc with cross-section data installed",
+    "requires_openmc_exec: Tests that run the openmc executable (subprocess mode) and need OPENMC_CROSS_SECTIONS",
 ]
 
 [tool.coverage.run]
