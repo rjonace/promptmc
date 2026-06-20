@@ -9,7 +9,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from promptmc.assistant import DEFAULT_GEMINI_MODEL, NaturalLanguageAssistant
-from promptmc.commands.common import console, handle_errors
+from promptmc.commands.common import console, emit_json, handle_errors
 
 
 @handle_errors
@@ -40,10 +40,34 @@ def plan(
         "--model",
         help=f"Gemini model name when --llm is used (default: {DEFAULT_GEMINI_MODEL})",
     ),
+    json_output: bool = typer.Option(
+        False,
+        "--json",
+        help="Emit machine-readable JSON to stdout instead of a table",
+    ),
 ) -> None:
     """Turn a plain-English OpenMC request into a runnable configuration plan."""
     assistant = NaturalLanguageAssistant()
     result = assistant.plan(prompt, use_llm=llm, model=model)
+
+    if json_output:
+        payload: dict[str, object] = {
+            "source": result.source,
+            "template_type": result.template_type.value,
+            "particles": result.particles,
+            "batches": result.batches,
+            "inactive": result.inactive,
+            "confidence": result.confidence,
+            "summary": result.summary,
+            "command": result.command(output),
+            "rationale": result.rationale,
+            "warnings": result.warnings,
+            "next_steps": result.next_steps,
+        }
+        if write:
+            payload["written"] = str(result.render(output))
+        emit_json(payload)
+        return
 
     table = Table(title="Natural-Language OpenMC Plan", border_style="green")
     table.add_column("Field", style="cyan", no_wrap=True)

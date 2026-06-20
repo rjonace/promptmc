@@ -6,7 +6,7 @@ from pathlib import Path
 
 import typer
 
-from promptmc.commands.common import console, handle_errors
+from promptmc.commands.common import console, emit_json, handle_errors
 from promptmc.visualization import ResultParser, ResultVisualizer
 
 
@@ -17,11 +17,12 @@ def analyze(
         help="Path to OpenMC output directory",
         exists=True,
     ),
-    export_json: Path | None = typer.Option(
-        None,
+    json_output: bool = typer.Option(
+        False,
         "--json",
         "-j",
-        help="Export results to JSON file",
+        help="Emit machine-readable JSON to stdout instead of a report "
+        "(redirect with > to save to a file)",
     ),
 ) -> None:
     """Analyze OpenMC simulation results."""
@@ -29,11 +30,10 @@ def analyze(
     visualizer = ResultVisualizer()
 
     result = parser.parse_results(output_path)
+
+    if json_output:
+        emit_json(visualizer.result_to_dict(result))
+        return
+
     report = visualizer.format_text_report(result)
     console.print(report)
-
-    if export_json:
-        json_path = visualizer.export_json(result, export_json)
-        console.print(
-            f"[green]✓[/green] Results exported to: [cyan]{json_path}[/cyan]"
-        )

@@ -19,6 +19,7 @@ from promptmc.errors import (
     OpenMCNotFoundError,
     OpenMCValidationError,
 )
+from promptmc.provenance import write_xml_with_provenance
 
 # OpenMC required input files for a directory-based simulation
 REQUIRED_INPUT_FILES = ("geometry.xml", "materials.xml", "settings.xml")
@@ -272,7 +273,6 @@ class OpenMCRunner:
     ) -> Path:
         """Generate a basic OpenMC settings.xml configuration file."""
         output_path = Path(output_path)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
 
         root = ET.Element("settings")
         ET.SubElement(root, "run_mode").text = "eigenvalue"
@@ -283,8 +283,4 @@ class OpenMCRunner:
         output_elem = ET.SubElement(root, "output")
         ET.SubElement(output_elem, "path").text = str(output_path.parent)
 
-        tree = ET.ElementTree(root)
-        ET.indent(tree, space="  ")
-        tree.write(output_path, encoding="utf-8", xml_declaration=True)
-
-        return output_path
+        return write_xml_with_provenance(root, output_path)

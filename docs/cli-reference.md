@@ -30,6 +30,9 @@ promptmc plan "criticality run" --write --output my_settings.xml
 
 # Use a specific Gemini model
 promptmc plan "shielding calculation" --llm --model gemini-2.5-pro --write
+
+# Machine-readable JSON (includes the rebuild command; add --write for "written" path)
+promptmc plan "criticality run with 50k particles" --json
 ```
 
 #### Example Output
@@ -70,14 +73,36 @@ Next steps
 
 **Note:** The **Match score** is a deterministic count of domain keywords matched, converted to a fixed scale (`min(0.95, 0.55 + 0.1 × matches)`). It is **not** a probabilistic confidence interval — it reflects keyword coverage, not certainty about intent.
 
+## Environment Diagnostics
+
+### `promptmc doctor`
+
+Run every onboarding environment check at once and print a single status
+report with a fix hint for each missing piece. Checks: the `openmc`
+executable on PATH, the importable Python API, `OPENMC_CROSS_SECTIONS` set and
+parseable, the cross-section data files it references present on disk, and the
+optional `telemetry` extra. The Python API and telemetry are reported as
+optional; missing required pieces exit non-zero.
+
+```bash
+# Human-readable status report with fix hints
+promptmc doctor
+
+# Machine-readable JSON for CI / agents
+promptmc doctor --json
+```
+
 ## System Information
 
 ### `promptmc info`
 
-Check OpenMC installation status.
+Show OpenMC installation details (version, Python API, subprocess executable).
 
 ```bash
 promptmc info
+
+# Machine-readable JSON
+promptmc info --json
 ```
 
 ### `promptmc system-info`
@@ -134,6 +159,9 @@ promptmc validate settings.xml --schema
 
 # Validate multiple files
 promptmc validate geometry.xml materials.xml settings.xml --schema
+
+# Machine-readable JSON (exits 1 when invalid; malformed XML is reported as data)
+promptmc validate settings.xml --schema --json
 ```
 
 ### `promptmc schema-check`
@@ -197,9 +225,9 @@ Parse and analyze simulation results.
 # Analyze results in default format
 promptmc analyze ./output
 
-# Export results to JSON
-promptmc analyze ./output --json results.json
-
+# Emit machine-readable JSON to stdout (redirect to save a file)
+promptmc analyze ./output --json
+promptmc analyze ./output --json > results.json
 ```
 
 ## Optimization

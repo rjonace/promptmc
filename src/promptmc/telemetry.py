@@ -300,6 +300,16 @@ class TelemetryManager:
             sys.stdout.flush()
 
 
+def telemetry_available() -> bool:
+    """Whether the optional OpenTelemetry ``telemetry`` extra is installed.
+
+    Returns:
+        ``True`` when the OpenTelemetry packages import successfully, i.e.
+        PromptMC was installed with the ``telemetry`` extra.
+    """
+    return _OTEL_AVAILABLE
+
+
 def get_telemetry_manager() -> TelemetryManager | _NoopTelemetryManager:
     """Get or create the global telemetry manager instance.
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from promptmc._typing import PathLike
 
@@ -257,20 +257,15 @@ class ResultVisualizer:
         lines.append("=" * 60)
         return "\n".join(lines)
 
-    def export_json(
-        self, result: SimulationResult, output_path: PathLike
-    ) -> Path:
-        """Export result as JSON.
+    def result_to_dict(self, result: SimulationResult) -> dict[str, Any]:
+        """Render a result as a JSON-serializable dict.
 
         Args:
             result: Simulation result
-            output_path: Output file path
 
         Returns:
-            Path to generated JSON file
+            A plain dict suitable for ``json.dumps`` (numpy types coerced).
         """
-        output_path = Path(output_path)
-
         data = {
             "statepoint_path": str(result.statepoint_path)
             if result.statepoint_path
@@ -293,10 +288,26 @@ class ResultVisualizer:
             },
         }
 
-        # Convert any non-serializable values
-        data = self._make_json_serializable(data)
+        # Convert any non-serializable values (numpy types, bytes, ...).
+        # ``data`` is a dict, so the recursion returns a dict here.
+        return cast("dict[str, Any]", self._make_json_serializable(data))
 
-        output_path.write_text(json.dumps(data, indent=2))
+    def export_json(
+        self, result: SimulationResult, output_path: PathLike
+    ) -> Path:
+        """Export result as JSON.
+
+        Args:
+            result: Simulation result
+            output_path: Output file path
+
+        Returns:
+            Path to generated JSON file
+        """
+        output_path = Path(output_path)
+        output_path.write_text(
+            json.dumps(self.result_to_dict(result), indent=2)
+        )
         return output_path
 
     def export_summary_table(self, results: list[SimulationResult]) -> str:

@@ -5,16 +5,47 @@ from __future__ import annotations
 import typer
 from rich.panel import Panel
 
-from promptmc.commands.common import console, handle_errors
+from promptmc.commands.common import console, emit_json, handle_errors
+from promptmc.errors import OpenMCNotFoundError
 from promptmc.openmc_integration import OpenMCInstaller
 from promptmc.progress import OptimizationAdvisor, SystemProfiler
 
 
 @handle_errors
-def info() -> None:
+def info(
+    json_output: bool = typer.Option(
+        False,
+        "--json",
+        help="Emit machine-readable JSON to stdout instead of a table",
+    ),
+) -> None:
     """Show OpenMC installation information."""
     installer = OpenMCInstaller()
-    installation = installer.check_installation()
+    try:
+        installation = installer.check_installation()
+    except OpenMCNotFoundError:
+        if not json_output:
+            raise
+        emit_json(
+            {
+                "version": "not found",
+                "python_api": False,
+                "subprocess": False,
+                "executable_path": None,
+            }
+        )
+        raise typer.Exit(1) from None
+
+    if json_output:
+        emit_json(
+            {
+                "version": installation.version,
+                "python_api": installation.python_available,
+                "subprocess": installation.subprocess_available,
+                "executable_path": installation.executable_path or None,
+            }
+        )
+        return
 
     api_status = (
         "Available" if installation.python_available else "Not available"

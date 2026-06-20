@@ -11,6 +11,7 @@ from promptmc import __version__
 from promptmc.commands.analyze import analyze
 from promptmc.commands.batch import batch
 from promptmc.commands.common import console
+from promptmc.commands.doctor import doctor
 from promptmc.commands.info import info, optimize, system_info_cmd
 from promptmc.commands.plan import plan
 from promptmc.commands.run import run
@@ -68,6 +69,7 @@ def main(
 
 app.command()(run)
 app.command()(validate)
+app.command()(doctor)
 app.command()(info)
 app.command()(template)
 app.command(name="list-templates")(list_templates_cmd)

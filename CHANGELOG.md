@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- `promptmc doctor`: a single command that runs every onboarding environment check (OpenMC executable on PATH, importable Python API, `OPENMC_CROSS_SECTIONS` set and parseable, referenced cross-section data files present, and the optional `telemetry` extra) and prints one status report with a concrete fix hint for each missing piece. The Python API and telemetry are reported as optional and do not affect the ready/exit status; missing required pieces exit non-zero.
+- Provenance header on every emitted `settings.xml`: a leading XML comment recording the PromptMC version, a UTC timestamp, and the exact command used. Written by both the template renderer (`promptmc template`, `promptmc plan --write`) and `OpenMCRunner.generate_configuration()`. Double-hyphens in the recorded command are escaped so the comment stays well-formed XML; OpenMC ignores the comment.
+- `--json` structured stdout output on `validate`, `plan`, and `info` (joining `analyze`), so agents and CI can parse results instead of Rich tables. Output is plain, un-styled JSON suitable for piping or redirection. `validate --json` reports malformed XML as `valid: false` data (exiting 1) rather than a raised error.
+- `ResultVisualizer.result_to_dict()` and `promptmc.telemetry.telemetry_available()` helpers backing the above.
+
+### Changed
+- `promptmc analyze --json` is now a boolean flag that emits the result JSON to stdout (redirect with `>` to save a file) instead of taking a file path, for consistency with the other commands. The `ResultVisualizer.export_json(result, path)` Python API is unchanged.
+
 ## [0.3.3] - 2026-06-19
 
 ### Added

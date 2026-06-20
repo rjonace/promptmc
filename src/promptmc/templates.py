@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from promptmc._typing import PathLike
+from promptmc.provenance import write_xml_with_provenance
 
 
 class TemplateType(Enum):
@@ -79,11 +80,7 @@ class ConfigurationTemplate:
             **kwargs,
         )
 
-        tree = ET.ElementTree(root)
-        ET.indent(tree, space="  ")
-        tree.write(output_path, encoding="utf-8", xml_declaration=True)
-
-        return output_path
+        return write_xml_with_provenance(root, output_path)
 
     def _build_xml(
         self,

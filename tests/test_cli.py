@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -461,23 +462,26 @@ def test_analyze_success(mock_viz_cls, mock_parser_cls, tmp_path):
 
 @patch("promptmc.commands.analyze.ResultParser")
 @patch("promptmc.commands.analyze.ResultVisualizer")
-def test_analyze_with_json_export(mock_viz_cls, mock_parser_cls, tmp_path):
+def test_analyze_json_to_stdout(mock_viz_cls, mock_parser_cls, tmp_path):
+    """`analyze --json` emits the result dict to stdout, no text report."""
     mock_result = MagicMock()
     mock_parser = MagicMock()
     mock_parser.parse_results.return_value = mock_result
     mock_parser_cls.return_value = mock_parser
 
-    json_out = tmp_path / "results.json"
     mock_viz = MagicMock()
-    mock_viz.format_text_report.return_value = "Report"
-    mock_viz.export_json.return_value = json_out
+    mock_viz.result_to_dict.return_value = {
+        "k_effective": 1.0,
+        "n_batches": 100,
+    }
     mock_viz_cls.return_value = mock_viz
 
-    result = runner.invoke(
-        app, ["analyze", str(tmp_path), "--json", str(json_out)]
-    )
+    result = runner.invoke(app, ["analyze", str(tmp_path), "--json"])
     assert result.exit_code == 0
-    assert "exported" in result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["k_effective"] == 1.0
+    mock_viz.result_to_dict.assert_called_once_with(mock_result)
+    mock_viz.format_text_report.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
@@ -561,6 +565,7 @@ def test_schema_check_directory(tmp_path):
     [
         ["run", "--help"],
         ["validate", "--help"],
+        ["doctor", "--help"],
         ["info", "--help"],
         ["template", "--help"],
         ["list-templates"],
@@ -576,3 +581,95 @@ def test_all_commands_have_help(cmd):
     """Every command must respond to --help with exit code 0."""
     result = runner.invoke(app, cmd)
     assert result.exit_code == 0, f"Command {cmd} failed: {result.stdout}"
+
+
+# ---------------------------------------------------------------------------
+# --json structured output (validate, plan, info; analyze covered above)
+# ---------------------------------------------------------------------------
+
+
+def test_validate_json_valid(tmp_path):
+    """`validate --json --schema` emits a parseable, valid=True payload."""
+    p = _write_settings(tmp_path)
+    result = runner.invoke(app, ["validate", str(p), "--schema", "--json"])
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    assert payload["xml_valid"] is True
+    assert payload["schema_checked"] is True
+    assert payload["valid"] is True
+    assert payload["issues"] == []
+
+
+def test_validate_json_malformed_xml(tmp_path):
+    """Malformed XML reports valid=False as data and exits 1, not a crash."""
+    bad = tmp_path / "bad.xml"
+    bad.write_text("<settings><batches>")
+    result = runner.invoke(app, ["validate", str(bad), "--json"])
+    assert result.exit_code == 1
+    payload = json.loads(result.stdout)
+    assert payload["xml_valid"] is False
+    assert payload["valid"] is False
+    assert payload["xml_error"]
+
+
+def test_plan_json(tmp_path):
+    """`plan --json` emits the structured plan with the rebuild command."""
+    result = runner.invoke(
+        app, ["plan", "shielding run with 2M particles", "--json"]
+    )
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    assert payload["template_type"] == "shielding"
+    assert payload["particles"] == 2_000_000
+    assert payload["source"] == "local"
+    assert payload["command"].startswith("promptmc template shielding")
+    assert "written" not in payload
+
+
+def test_plan_json_write(tmp_path):
+    """`plan --json --write` reports the written path and creates the file."""
+    out = tmp_path / "settings.xml"
+    result = runner.invoke(
+        app,
+        ["plan", "criticality run", "--json", "--write", "--output", str(out)],
+    )
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    assert payload["written"] == str(out)
+    assert out.exists()
+
+
+@patch("promptmc.commands.info.OpenMCInstaller")
+def test_info_json(mock_installer_cls):
+    """`info --json` emits installation fields as JSON."""
+    mock_info = MagicMock()
+    mock_info.version = "0.14.0"
+    mock_info.python_available = True
+    mock_info.subprocess_available = True
+    mock_info.executable_path = "/usr/local/bin/openmc"
+    mock_installer = MagicMock()
+    mock_installer.check_installation.return_value = mock_info
+    mock_installer_cls.return_value = mock_installer
+
+    result = runner.invoke(app, ["info", "--json"])
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    assert payload["version"] == "0.14.0"
+    assert payload["python_api"] is True
+    assert payload["executable_path"] == "/usr/local/bin/openmc"
+
+
+@patch("promptmc.commands.info.OpenMCInstaller")
+def test_info_json_not_found(mock_installer_cls):
+    """`info --json` still emits JSON (and exits 1) when OpenMC is absent."""
+    from promptmc.openmc_integration import OpenMCNotFoundError
+
+    mock_installer = MagicMock()
+    mock_installer.check_installation.side_effect = OpenMCNotFoundError("nope")
+    mock_installer_cls.return_value = mock_installer
+
+    result = runner.invoke(app, ["info", "--json"])
+    assert result.exit_code == 1
+    payload = json.loads(result.stdout)
+    assert payload["version"] == "not found"
+    assert payload["python_api"] is False

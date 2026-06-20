@@ -117,15 +117,22 @@ The point of routing these through MCP is that an assistant can validate its own
 By default, `plan` uses a deterministic local planner, needing no API key, no network, no generative AI. The optional `--llm` flag calls Google Gemini (set GEMINI_API_KEY), which can interpret more open-ended natural-language requests. Customize the model name with GEMINI_MODEL (defaults to gemini-3.5-flash).
 
 ```bash
+promptmc doctor                                                 # one-shot environment check with fix hints
 promptmc validate settings.xml --schema                         # structure + schema, no OpenMC needed
 promptmc template criticality --particles 10000                 # generate settings.xml
 promptmc run ./model --threads 4                                # needs OpenMC (geometry + materials + settings)
 promptmc batch batch_spec.yaml --parallel threads --workers 4
-promptmc analyze ./model --json results.json                    # parse statepoint + tallies
+promptmc analyze ./model --json > results.json                  # parse statepoint + tallies
 promptmc plan "pin cell criticality with 50k particles" --write
 promptmc plan --llm "concrete shielding calculation with 1 million particles"
-promptmc info                                                   # environment status
+promptmc info                                                   # OpenMC installation details
 ```
+
+`promptmc doctor` runs every setup check (OpenMC executable, Python API, `cross_sections.xml`, downloaded data, telemetry extra) and prints a single status report with a fix hint for each missing piece — start here when setup misbehaves.
+
+`validate`, `plan`, `info`, `analyze`, and `doctor` all accept `--json` for plain, parseable output on stdout, so agents and CI can consume results instead of Rich tables.
+
+Generated `settings.xml` files carry a provenance header — a leading XML comment recording the PromptMC version, a UTC timestamp, and the exact command that produced the file — so any emitted input is self-describing and reproducible.
 
 Full options in the [CLI reference](https://github.com/rjonace/promptmc/blob/main/docs/cli-reference.md).
 
