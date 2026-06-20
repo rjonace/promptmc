@@ -98,49 +98,34 @@ class ConfigurationTemplate:
             inactive=inactive,
             **kwargs,
         )
+        geometry, materials = self._build_models(**kwargs)
         write_xml_with_provenance(root, output_dir / "settings.xml")
-        serialize_geometry(
-            self._build_geometry(**kwargs), output_dir / "geometry.xml"
-        )
-        serialize_materials(
-            self._build_materials(**kwargs), output_dir / "materials.xml"
-        )
+        serialize_geometry(geometry, output_dir / "geometry.xml")
+        serialize_materials(materials, output_dir / "materials.xml")
 
         return output_dir
 
-    def _build_geometry(self, **kwargs: Any) -> GeometryModel:
-        """Build the geometry model for this template.
+    def _build_models(
+        self, **kwargs: Any
+    ) -> tuple[GeometryModel, MaterialsModel]:
+        """Build the (geometry, materials) pair for this template.
 
-        The base implementation returns a minimal bounded geometry: a single
-        void cell inside a vacuum sphere. Subclasses override this to emit a
-        meaningful geometry.
+        The base implementation returns a minimal bounded geometry (a single
+        void cell inside a vacuum sphere) with no materials. Subclasses
+        override this to emit a meaningful model in one pass.
 
         Args:
-            **kwargs: Additional template parameters
+            **kwargs: Additional template parameters.
 
         Returns:
-            A valid ``GeometryModel``.
+            A valid ``(GeometryModel, MaterialsModel)`` pair.
         """
         sphere = Sphere(id=1, name="boundary", r=10.0, boundary_type="vacuum")
         cell = Cell(id=1, name="void", region=HalfSpace(surface_id=1, side="-"))
-        return GeometryModel(
+        geometry = GeometryModel(
             surfaces=[sphere], root_universe=Universe(id=1, cells=[cell])
         )
-
-    def _build_materials(self, **kwargs: Any) -> MaterialsModel:
-        """Build the materials model for this template.
-
-        The base implementation returns an empty materials set (the base
-        geometry is void). Subclasses override this to emit materials that
-        match their geometry.
-
-        Args:
-            **kwargs: Additional template parameters
-
-        Returns:
-            A valid ``MaterialsModel``.
-        """
-        return MaterialsModel(materials=[])
+        return geometry, MaterialsModel(materials=[])
 
     def _build_xml(
         self,
@@ -230,11 +215,10 @@ class CriticalityTemplate(ConfigurationTemplate):
 
         return root
 
-    def _build_geometry(self, **kwargs: Any) -> GeometryModel:
-        return godiva.build()[0]
-
-    def _build_materials(self, **kwargs: Any) -> MaterialsModel:
-        return godiva.build()[1]
+    def _build_models(
+        self, **kwargs: Any
+    ) -> tuple[GeometryModel, MaterialsModel]:
+        return godiva.build()
 
 
 class FixedSourceTemplate(ConfigurationTemplate):
@@ -282,11 +266,10 @@ class FixedSourceTemplate(ConfigurationTemplate):
 
         return root
 
-    def _build_geometry(self, **kwargs: Any) -> GeometryModel:
-        return _shielded_sphere()[0]
-
-    def _build_materials(self, **kwargs: Any) -> MaterialsModel:
-        return _shielded_sphere()[1]
+    def _build_models(
+        self, **kwargs: Any
+    ) -> tuple[GeometryModel, MaterialsModel]:
+        return _shielded_sphere()
 
 
 class ShieldingTemplate(ConfigurationTemplate):
@@ -339,11 +322,10 @@ class ShieldingTemplate(ConfigurationTemplate):
 
         return root
 
-    def _build_geometry(self, **kwargs: Any) -> GeometryModel:
-        return _shielded_sphere()[0]
-
-    def _build_materials(self, **kwargs: Any) -> MaterialsModel:
-        return _shielded_sphere()[1]
+    def _build_models(
+        self, **kwargs: Any
+    ) -> tuple[GeometryModel, MaterialsModel]:
+        return _shielded_sphere()
 
 
 class ReactorPinTemplate(ConfigurationTemplate):
@@ -394,11 +376,10 @@ class ReactorPinTemplate(ConfigurationTemplate):
 
         return root
 
-    def _build_geometry(self, **kwargs: Any) -> GeometryModel:
-        return pwr_pin.build()[0]
-
-    def _build_materials(self, **kwargs: Any) -> MaterialsModel:
-        return pwr_pin.build()[1]
+    def _build_models(
+        self, **kwargs: Any
+    ) -> tuple[GeometryModel, MaterialsModel]:
+        return pwr_pin.build()
 
 
 class DepletionTemplate(ConfigurationTemplate):
@@ -452,11 +433,10 @@ class DepletionTemplate(ConfigurationTemplate):
 
         return root
 
-    def _build_geometry(self, **kwargs: Any) -> GeometryModel:
-        return godiva.build()[0]
-
-    def _build_materials(self, **kwargs: Any) -> MaterialsModel:
-        return godiva.build()[1]
+    def _build_models(
+        self, **kwargs: Any
+    ) -> tuple[GeometryModel, MaterialsModel]:
+        return godiva.build()
 
 
 class TemplateRegistry:
