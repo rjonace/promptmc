@@ -30,7 +30,7 @@ class Tally(BaseModel):
     id: int | None = None
     name: str = ""
     filters: list[TallyFilter] = Field(default_factory=list)
-    scores: list[str] = Field(default_factory=list)
+    scores: list[ScoreType] = Field(default_factory=list)
 
 
 class TalliesModel(BaseModel):
