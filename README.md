@@ -50,11 +50,19 @@ uv tool install promptmc          # or: pipx install promptmc
 Or with pip into an existing environment:
 
 ```bash
-pip install promptmc              # core (includes CLI, MCP server, and Gemini planner)
+pip install promptmc              # core: CLI, schema validation, the local planner
+pip install 'promptmc[mcp]'       # + MCP server (promptmc-mcp)
+pip install 'promptmc[llm]'       # + Gemini-backed `plan --llm`
+pip install 'promptmc[hdf5]'      # + HDF5 statepoint parsing without OpenMC's Python API
+pip install 'promptmc[yaml]'      # + YAML batch specs (JSON works without it)
+pip install 'promptmc[monitoring]'# + psutil-based resource/perf monitoring
 pip install 'promptmc[telemetry]' # + OpenTelemetry tracing
+pip install 'promptmc[all]'       # everything above except telemetry
 ```
 
-Plot rendering and geometry-debug import OpenMC's Python API, so for those install PromptMC with pip into the same environment as OpenMC (e.g. your conda env). Everything else — planning, validation, MCP server, and simulation runs via the `openmc` executable — works from an isolated install.
+The core install depends only on `typer`, `rich`, `pydantic`, `defusedxml`, and `tenacity`; heavier integrations live behind the extras above and degrade gracefully (or raise a clear "install promptmc[…]" error) when absent.
+
+Plot rendering and geometry-debug import OpenMC's Python API, so for those install PromptMC with pip into the same environment as OpenMC (e.g. your conda env). Everything else — planning, validation, MCP server (`[mcp]`), and simulation runs via the `openmc` executable — works from an isolated install.
 
 **OpenMC** (required for simulation execution, geometry-debug checks, and plot rendering) can be installed via Conda, Spack, Docker, or build from source per [docs.openmc.org](https://docs.openmc.org/en/stable/quickinstall.html). Planning and XML/schema validation work without it.
 
