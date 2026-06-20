@@ -87,6 +87,10 @@ without writing an input deck to disk; otherwise it serializes the models to a
 working directory and runs the `openmc` executable as a subprocess. It returns
 the same `SimulationResult`.
 
+Pass `cwd=` to choose the run directory; when omitted, a temporary directory is
+created so results are never written into the caller's current directory. Either
+way the directory the run used is reported on `result.output_dir`.
+
 ```python
 from promptmc import OpenMCRunner
 from promptmc.benchmarks import godiva
@@ -101,7 +105,7 @@ result = runner.run_from_models(
     settings=settings,
     threads=4,
 )
-print(result.success)
+print(result.success, result.output_dir)
 ```
 
 ### ResultParser
