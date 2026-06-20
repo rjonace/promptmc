@@ -69,7 +69,7 @@ section orients you to what already exists and the invariants to preserve.
 
 ```
 src/promptmc/
-├── __init__.py            # public API: OpenMCInstaller/OpenMCValidator/OpenMCRunner, ExecutionMode, BatchRunner, ParallelConfig/ParallelMode
+├── __init__.py            # public API: OpenMCInstaller/OpenMCValidator/OpenMCRunner, ExecutionMode, BatchRunner, ParallelConfig/ParallelMode; validation + geometry/material models (SchemaValidator, SchemaValidationResult, SettingsSchema, GeometryModel, Cell, Surface, Region, Material, MaterialsModel, NuclideSpec)
 ├── _typing.py             # shared type aliases (PathLike)
 ├── cli.py                 # Typer CLI entry point (dispatches into commands/)
 ├── commands/              # one module per CLI subcommand: plan, run, validate, analyze, batch, templates, info, doctor (+ common.py shared helpers)
