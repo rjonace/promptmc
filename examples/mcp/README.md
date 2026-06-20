@@ -1,6 +1,8 @@
-# MCP Demo: UO2 Criticality Benchmark
+# MCP Demo: UO2 eigenvalue (k-effective) run
 
-This demonstrates running the bundled UO2 example through PromptMC's [MCP](https://modelcontextprotocol.io) server.
+This demonstrates running the bundled UO2 example (a small subcritical
+water-reflected sphere, expected k ≈ 0.44) through PromptMC's
+[MCP](https://modelcontextprotocol.io) server.
 
 ## Connect
 
