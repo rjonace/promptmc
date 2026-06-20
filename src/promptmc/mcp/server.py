@@ -2,14 +2,13 @@
 
 Wires the MCP SDK to the pure tool functions in :mod:`promptmc.mcp.tools`
 and the resource handlers in :mod:`promptmc.mcp.resources`. The ``mcp``
-import is guarded so importing this module without the ``[mcp]`` extra does
-not raise; :func:`build_server` reports a clear error in that case.
+SDK is a core dependency, so it is always importable here; the heavy
+imports are kept lazy so they cost nothing until the server starts.
 """
 
 from __future__ import annotations
 
 import asyncio
-import importlib.util
 import json
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
@@ -31,15 +30,9 @@ if TYPE_CHECKING:
     from mcp.server import Server
     from mcp.server.lowlevel.helper_types import ReadResourceContents
 
-_MCP_AVAILABLE = importlib.util.find_spec("mcp") is not None
-_MCP_MISSING_MSG = "Install promptmc[mcp] to run the MCP server."
-
 
 def build_server() -> Server:  # pragma: no cover
     """Build and configure the PromptMC MCP server instance."""
-    if not _MCP_AVAILABLE:
-        raise MCPError(_MCP_MISSING_MSG)
-
     import mcp.types as types
     from mcp.server import Server
     from mcp.server.lowlevel.helper_types import ReadResourceContents
@@ -101,9 +94,6 @@ def build_server() -> Server:  # pragma: no cover
 
 def main() -> None:  # pragma: no cover
     """Entry point: start the stdio MCP server."""
-    if not _MCP_AVAILABLE:
-        raise MCPError(_MCP_MISSING_MSG)
-
     from mcp.server.stdio import stdio_server
 
     server = build_server()

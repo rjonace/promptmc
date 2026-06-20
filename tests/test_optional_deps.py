@@ -12,8 +12,6 @@ from pathlib import Path
 
 import pytest
 from promptmc import assistant, batch, progress, resources
-from promptmc.errors import MCPError
-from promptmc.mcp import server
 
 
 def test_system_profiler_without_psutil(monkeypatch):
@@ -87,18 +85,6 @@ def test_gemini_client_without_genai(monkeypatch):
         client.generate_structured(
             "system", "user", assistant.GeminiPlanResponse
         )
-
-
-def test_build_server_without_mcp(monkeypatch):
-    monkeypatch.setattr(server, "_MCP_AVAILABLE", False)
-    with pytest.raises(MCPError, match="promptmc\\[mcp\\]"):
-        server.build_server()
-
-
-def test_main_without_mcp(monkeypatch):
-    monkeypatch.setattr(server, "_MCP_AVAILABLE", False)
-    with pytest.raises(MCPError, match="promptmc\\[mcp\\]"):
-        server.main()
 
 
 def test_assistant_imports_when_google_absent():

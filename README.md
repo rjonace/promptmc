@@ -16,15 +16,11 @@
 
 [OpenMC](https://docs.openmc.org/en/stable/) is powerful but can be painful to use: you hand-write XML, manage batch runs, and read results out of [HDF5](https://www.hdfgroup.org/solutions/hdf5/). It would be great if we could safely use AI to reduce that friction.
 
-PromptMC does that by providing infrastructure and tooling that allows both AI LLM assistants and humans to interact with OpenMC through typed, schema-driven workflows.
-
-It works like a grammar checker between an AI LLM assistant and OpenMC: your AI proposes a configuration, PromptMC validates XML structure and supported schema constraints before the simulator runs, and catches malformed inputs early.
+PromptMC is infrastructure and tooling that lets AI LLM assistants and humans drive OpenMC through typed, schema-driven workflows. It works like a grammar checker between an assistant and OpenMC: your AI proposes a configuration, and PromptMC validates the XML structure and supported schema constraints before the simulator runs, catching malformed inputs early.
 
 Because AI [hallucination](https://link.springer.com/article/10.1007/s10676-024-09775-5) is a valid concern in reactor physics, the system is designed with deterministic blast walls. Every configuration (from a human, the deterministic local planner, or AI) is validated against the same typed [Pydantic](https://docs.pydantic.dev/) schemas before it reaches the simulator.
 
 ## What you can do
-
-Most planning and schema-validation workflows work without OpenMC installed; execution, geometry-debug checks, and 2D plot rendering require OpenMC.
 
 **Without OpenMC installed:**
 - Validate XML structure and PromptMC's supported OpenMC schemas
@@ -50,21 +46,19 @@ uv tool install promptmc          # or: pipx install promptmc
 Or with pip into an existing environment:
 
 ```bash
-pip install promptmc              # core: CLI, schema validation, the local planner
-pip install 'promptmc[mcp]'       # + MCP server (promptmc-mcp)
+pip install promptmc              # core: CLI, schema validation, local planner, MCP server
 pip install 'promptmc[llm]'       # + Gemini-backed `plan --llm`
-pip install 'promptmc[hdf5]'      # + HDF5 statepoint parsing without OpenMC's Python API
 pip install 'promptmc[yaml]'      # + YAML batch specs (JSON works without it)
 pip install 'promptmc[monitoring]'# + psutil-based resource/perf monitoring
 pip install 'promptmc[telemetry]' # + OpenTelemetry tracing
 pip install 'promptmc[all]'       # everything above except telemetry
 ```
 
-The core install depends only on `typer`, `rich`, `pydantic`, `defusedxml`, and `tenacity`; heavier integrations live behind the extras above and degrade gracefully (or raise a clear "install promptmc[…]" error) when absent.
+The core install — CLI, schema validation, the local planner, statepoint parsing, and the `promptmc-mcp` server — depends on `typer`, `rich`, `pydantic`, `defusedxml`, `tenacity`, `mcp`, and `h5py`; the remaining integrations live behind the extras above and degrade gracefully (or raise a clear "install promptmc[…]" error) when absent.
 
-Plot rendering and geometry-debug import OpenMC's Python API, so for those install PromptMC with pip into the same environment as OpenMC (e.g. your conda env). Everything else — planning, validation, MCP server (`[mcp]`), and simulation runs via the `openmc` executable — works from an isolated install.
+Plot rendering and geometry-debug import OpenMC's Python API, so for those install PromptMC with pip into the same environment as OpenMC (e.g. your conda env). Everything else — planning, validation, the MCP server, and simulation runs via the `openmc` executable — works from an isolated install.
 
-**OpenMC** (required for simulation execution, geometry-debug checks, and plot rendering) can be installed via Conda, Spack, Docker, or build from source per [docs.openmc.org](https://docs.openmc.org/en/stable/quickinstall.html). Planning and XML/schema validation work without it.
+**OpenMC** (required for simulation execution, geometry-debug checks, and plot rendering) installs via Conda, Spack, Docker, or from source per [docs.openmc.org](https://docs.openmc.org/en/stable/quickinstall.html).
 
 **[Cross-section data](https://www.nndc.bnl.gov/endf/)** (for running simulations):
 
@@ -87,9 +81,6 @@ promptmc plan "pin cell criticality with 50k particles" --write   # writes openm
 # 2. Validate the deck against PromptMC's typed schemas
 promptmc validate openmc_inputs --schema      # passes
 ```
-
-`--write` emits a directory (default `openmc_inputs/`) containing a complete,
-runnable deck — `settings.xml`, `geometry.xml`, and `materials.xml`.
 
 The gate's job is catching malformed inputs before a run consumes them. Hand it a value an AI assistant might plausibly invent, such as `<run_mode>criticalize</run_mode>`, and it rejects the input and reports what was allowed:
 
@@ -117,9 +108,7 @@ model.
 
 ## MCP server
 
-PromptMC exposes a [Model Context Protocol](https://modelcontextprotocol.io) server so AI assistants can run OpenMC workflows natively — validation, plotting, execution, and result parsing from inside your LLM chat client, such as Claude Desktop, Cursor, and Google Antigravity.
-
-The point of routing these through MCP is that an assistant can validate its own generated geometry and inputs (schema checks, overlap detection) before you spend a run on them, catching the malformed inputs that are easy for an LLM to produce and hard to spot by eye.
+PromptMC exposes a [Model Context Protocol](https://modelcontextprotocol.io) server so AI assistants can run OpenMC workflows natively — validation, plotting, execution, and result parsing — from inside an LLM chat client such as Claude Desktop, Cursor, or Google Antigravity. The point of routing through MCP is that an assistant can validate its own generated geometry and inputs (schema checks, overlap detection) before you spend a run on them, catching malformed inputs that are easy for an LLM to produce and hard to spot by eye.
 
 **[Tools](https://modelcontextprotocol.io/docs/concepts/tools):** `openmc_validate`, `openmc_schema_check`, `openmc_template`, `openmc_list_templates`, `openmc_run`, `openmc_analyze`, `openmc_plot` (2D slice, returned to the chat client), `openmc_geometry_debug`, `openmc_check_installation`, `openmc_check_cross_sections`.
 
@@ -129,12 +118,12 @@ The point of routing these through MCP is that an assistant can validate its own
 
 ## CLI
 
-By default, `plan` uses a deterministic local planner, needing no API key, no network, no generative AI. The optional `--llm` flag calls Google Gemini (set GEMINI_API_KEY), which can interpret more open-ended natural-language requests. Customize the model name with GEMINI_MODEL (defaults to gemini-3.5-flash).
+By default, `plan` uses a deterministic local planner, needing no API key, no network, no generative AI. The optional `--llm` flag calls Google Gemini (set `GEMINI_API_KEY`) to interpret more open-ended requests.
 
 ```bash
 promptmc plan "pin cell criticality with 50k particles" --write
 promptmc validate settings.xml --schema                         # structure + schema, no OpenMC needed
-promptmc template criticality --particles 10000                 # generate settings.xml
+promptmc template criticality --particles 10000                 # generate a complete input deck
 promptmc run ./model --threads 4                                # needs OpenMC (geometry + materials + settings)
 promptmc batch batch_spec.yaml --parallel threads --workers 4
 promptmc analyze ./model --json > results.json                  # parse statepoint + tallies
@@ -153,13 +142,8 @@ The goal is not autonomous reactor design; the goal is safer, faster OpenMC iter
 
 ## Documentation
 
-- [Installation](https://github.com/rjonace/promptmc/blob/main/docs/installation.md)
-- [MCP server](https://github.com/rjonace/promptmc/blob/main/docs/mcp.md)
-- [CLI reference](https://github.com/rjonace/promptmc/blob/main/docs/cli-reference.md)
-- [Python API](https://github.com/rjonace/promptmc/blob/main/docs/python-api.md)
-- [Templates](https://github.com/rjonace/promptmc/blob/main/docs/cli-reference.md#templates) · [Telemetry](https://github.com/rjonace/promptmc/blob/main/docs/telemetry-and-audit.md)
-- [Examples](https://github.com/rjonace/promptmc/blob/main/examples/README.md)
-- [Design docs](https://github.com/rjonace/promptmc/blob/main/docs/design/README.md)
+- [Installation](https://github.com/rjonace/promptmc/blob/main/docs/installation.md) · [MCP server](https://github.com/rjonace/promptmc/blob/main/docs/mcp.md) · [CLI reference](https://github.com/rjonace/promptmc/blob/main/docs/cli-reference.md) · [Python API](https://github.com/rjonace/promptmc/blob/main/docs/python-api.md)
+- [Templates](https://github.com/rjonace/promptmc/blob/main/docs/cli-reference.md#templates) · [Telemetry](https://github.com/rjonace/promptmc/blob/main/docs/telemetry-and-audit.md) · [Examples](https://github.com/rjonace/promptmc/blob/main/examples/README.md) · [Design docs](https://github.com/rjonace/promptmc/blob/main/docs/design/README.md)
 - [Roadmap](https://github.com/rjonace/promptmc/blob/main/ROADMAP.md) · [Changelog](https://github.com/rjonace/promptmc/blob/main/CHANGELOG.md) · [Contributing](https://github.com/rjonace/promptmc/blob/main/CONTRIBUTING.md)
 
 ## About
