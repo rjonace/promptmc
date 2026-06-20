@@ -8,7 +8,7 @@ import re
 import shlex
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import TypeVar
 
 from pydantic import BaseModel, Field
 
@@ -76,7 +76,10 @@ class GeminiPlanResponse(BaseModel):
     """Pydantic schema for the Gemini structured output plan."""
 
     template_type: str = Field(
-        description="One of 'criticality', 'fixed_source', 'shielding', or 'reactor_pin'"
+        description=(
+            "One of 'criticality', 'fixed_source', 'shielding', "
+            "'reactor_pin', or 'depletion'"
+        )
     )
     particles: int = Field(
         description="Number of particles to simulate, must be a positive integer"
@@ -462,11 +465,3 @@ class NaturalLanguageAssistant:
             f"Use the {template_type.value} template with {particles:,} "
             f"particles and {batches} batches."
         )
-
-    @staticmethod
-    def _string_list(value: Any) -> list[str]:
-        if isinstance(value, list):
-            return [str(item) for item in value]
-        if value is None:
-            return []
-        return [str(value)]

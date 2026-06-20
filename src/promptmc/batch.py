@@ -131,7 +131,7 @@ class ParallelExecutor:
             return self._execute_with_pool(
                 jobs,
                 ThreadPoolExecutor,
-                self._run_single_job,
+                _run_job_in_process,
                 progress_callback,
             )
         if self.config.mode == ParallelMode.PROCESSES:
@@ -186,34 +186,6 @@ class ParallelExecutor:
             if progress_callback:
                 progress_callback(job.job_id, result)
         return results
-
-    def _run_single_job(self, job: SimulationJob) -> JobResult:
-        """Run a single simulation job (used by thread pool)."""
-        start_time = time.time()
-        try:
-            runner = OpenMCRunner()
-            result = runner.run_simulation(
-                input_path=job.input_path,
-                threads=job.threads,
-                output_path=job.output_path,
-            )
-            duration = time.time() - start_time
-            return JobResult(
-                job_id=job.job_id,
-                success=result.returncode == 0,
-                duration_seconds=duration,
-                return_code=result.returncode,
-                stdout=result.stdout or "",
-                stderr=result.stderr or "",
-            )
-        except Exception as e:
-            return JobResult(
-                job_id=job.job_id,
-                success=False,
-                duration_seconds=time.time() - start_time,
-                return_code=-1,
-                error=str(e),
-            )
 
     def _run_mpi_job(self, job: SimulationJob) -> JobResult:
         """Run a single job using MPI."""

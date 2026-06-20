@@ -51,12 +51,6 @@ class SettingsSchema(BaseModel):
             )
         return self
 
-    @field_validator("inactive")
-    @classmethod
-    def _check_inactive_for_run_mode(cls, v: int) -> int:
-        # Note: run_mode-specific validation happens in model_validator
-        return v
-
 
 class MaterialSchema(BaseModel):
     """Schema for an OpenMC material element."""

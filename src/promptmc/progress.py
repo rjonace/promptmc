@@ -384,6 +384,8 @@ class PerformanceMonitor:
         self.sample_interval = sample_interval_seconds
         self._samples: list[dict[str, Any]] = []
         self._monitoring = False
+        self._start_time = 0.0
+        self._end_time = 0.0
 
     @contextmanager
     def monitor(self) -> Iterator[PerformanceMonitor]:
@@ -431,8 +433,8 @@ class PerformanceMonitor:
         Returns:
             PerformanceMetrics with aggregated data.
         """
-        start = getattr(self, "_start_time", 0)
-        end = getattr(self, "_end_time", 0)
+        start = self._start_time
+        end = self._end_time
         if not self._samples:
             return PerformanceMetrics(
                 duration_seconds=end - start,

@@ -72,10 +72,10 @@ src/promptmc/
 ├── __init__.py            # public API: OpenMCInstaller/OpenMCValidator/OpenMCRunner, ExecutionMode, BatchRunner, ParallelConfig/ParallelMode
 ├── _typing.py             # shared type aliases (PathLike)
 ├── cli.py                 # Typer CLI entry point (dispatches into commands/)
-├── commands/              # one module per CLI subcommand: plan, run, validate, analyze, batch, templates, info, configure
+├── commands/              # one module per CLI subcommand: plan, run, validate, analyze, batch, templates, info, doctor (+ common.py shared helpers)
 ├── openmc_integration.py  # core OpenMC wrapper — OpenMCInstaller / OpenMCValidator / OpenMCRunner (subprocess + Python API), ExecutionMode
 ├── schema.py              # Pydantic validation of OpenMC XML (Settings/Materials/Geometry…) + SchemaValidator; uses defusedxml
-├── templates.py           # config templates (Criticality / FixedSource / Shielding / ReactorPin) + TemplateRegistry
+├── templates.py           # config templates (Criticality / FixedSource / Shielding / ReactorPin / Depletion) + TemplateRegistry
 ├── assistant.py           # NL planner behind `promptmc plan` (NaturalLanguageAssistant) — deterministic keyword planner (no-key default; keep it) + Gemini `--llm` path; v0.8 rebuilds only the `--llm` path on the generation pipeline
 ├── batch.py               # batch + parallel execution (BatchRunner, ParallelExecutor)
 ├── resources.py           # resource limits / monitoring / cleanup, temp simulation workspaces

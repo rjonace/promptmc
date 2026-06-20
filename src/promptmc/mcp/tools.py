@@ -603,10 +603,10 @@ TOOL_REGISTRY: dict[str, ToolSpec[Any, Any]] = {
         description=(
             "Generate a settings.xml file from a named"
             " template (criticality, fixed_source,"
-            " shielding, or reactor_pin). Optionally"
-            " override particle count, batches, and"
-            " inactive batches. Returns the output path"
-            " and template metadata."
+            " shielding, reactor_pin, or depletion)."
+            " Optionally override particle count,"
+            " batches, and inactive batches. Returns the"
+            " output path and template metadata."
         ),
         input_model=TemplateInput,
         output_model=TemplateOutput,
