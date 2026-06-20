@@ -99,3 +99,29 @@ def test_main_without_mcp(monkeypatch):
     monkeypatch.setattr(server, "_MCP_AVAILABLE", False)
     with pytest.raises(MCPError, match="promptmc\\[mcp\\]"):
         server.main()
+
+
+def test_assistant_imports_when_google_absent():
+    """Importing assistant must not crash when ``google`` is uninstalled.
+
+    ``find_spec`` on the dotted ``google.genai`` imports the parent package,
+    so a missing ``google`` raises ``ModuleNotFoundError`` instead of
+    returning ``None`` -- the core-only install path.
+    """
+    import importlib
+    import importlib.util
+
+    real_find_spec = importlib.util.find_spec
+
+    def fake_find_spec(name, *args, **kwargs):
+        if name == "google.genai":
+            raise ModuleNotFoundError("No module named 'google'")
+        return real_find_spec(name, *args, **kwargs)
+
+    importlib.util.find_spec = fake_find_spec
+    try:
+        reloaded = importlib.reload(assistant)
+        assert reloaded._GENAI_AVAILABLE is False
+    finally:
+        importlib.util.find_spec = real_find_spec
+        importlib.reload(assistant)

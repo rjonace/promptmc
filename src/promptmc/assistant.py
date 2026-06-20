@@ -17,7 +17,12 @@ from promptmc.templates import TemplateType, get_template
 
 DEFAULT_GEMINI_MODEL = "gemini-3.5-flash"
 
-_GENAI_AVAILABLE = importlib.util.find_spec("google.genai") is not None
+try:
+    # find_spec on a dotted name imports the parent package, so a missing
+    # `google` raises ModuleNotFoundError rather than returning None.
+    _GENAI_AVAILABLE = importlib.util.find_spec("google.genai") is not None
+except ModuleNotFoundError:
+    _GENAI_AVAILABLE = False
 _GENAI_MISSING_MSG = (
     "Install promptmc[llm] for the Gemini LLM planner "
     "(the default local planner needs no extra)."
