@@ -1,8 +1,4 @@
-"""CSG geometry schemas and serializers.
-
-WARNING: This geometry API is currently EXPERIMENTAL and subject to change
-prior to v0.4 stability.
-"""
+"""CSG geometry schemas and serializers."""
 
 from promptmc.geometry.materials import Material, MaterialsModel, NuclideSpec
 from promptmc.geometry.primitives import (

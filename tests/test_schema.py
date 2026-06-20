@@ -6,9 +6,15 @@ import tempfile
 from pathlib import Path
 
 import pytest
+from promptmc.geometry.materials import Material, MaterialsModel, NuclideSpec
+from promptmc.geometry.primitives import (
+    Cell,
+    GeometryModel,
+    HalfSpace,
+    Sphere,
+    Universe,
+)
 from promptmc.schema import (
-    GeometrySchema,
-    MaterialsSchema,
     RunMode,
     SchemaSeverity,
     SchemaValidator,
@@ -45,29 +51,31 @@ def test_settings_schema_excessive_particles():
         SettingsSchema(particles=10_000_000_000)
 
 
-def test_materials_schema_unique_ids():
+def test_materials_model_unique_ids():
     """Test that material IDs must be unique."""
-    from promptmc.schema import MaterialSchema
-
+    nuclide = NuclideSpec(name="U235", fraction=1.0)
     with pytest.raises(ValidationError):
-        MaterialsSchema(
+        MaterialsModel(
             materials=[
-                MaterialSchema(id=1),
-                MaterialSchema(id=1),
+                Material(id=1, density_g_per_cc=1.0, nuclides=[nuclide]),
+                Material(id=1, density_g_per_cc=1.0, nuclides=[nuclide]),
             ]
         )
 
 
-def test_geometry_schema_unique_ids():
+def test_geometry_model_unique_cell_ids():
     """Test that cell IDs must be unique."""
-    from promptmc.schema import CellSchema
-
+    sphere = Sphere(id=1, r=5.0, boundary_type="vacuum")
+    region = HalfSpace(surface_id=1, side="-")
     with pytest.raises(ValidationError):
-        GeometrySchema(
-            cells=[
-                CellSchema(id=1),
-                CellSchema(id=1),
-            ]
+        GeometryModel(
+            surfaces=[sphere],
+            root_universe=Universe(
+                cells=[
+                    Cell(id=1, region=region),
+                    Cell(id=1, region=region),
+                ]
+            ),
         )
 
 
@@ -149,8 +157,8 @@ def test_validator_materials_valid():
             "<materials>"
             '<material id="1" name="water">'
             '<density value="1.0" units="g/cm3"/>'
-            '<nuclide name="H-1"/>'
-            '<nuclide name="O-16"/>'
+            '<nuclide name="H-1" wo="0.1119"/>'
+            '<nuclide name="O-16" wo="0.8881"/>'
             "</material>"
             "</materials>"
         )
@@ -172,8 +180,9 @@ def test_validator_geometry_valid():
     ) as f:
         f.write(
             "<geometry>"
-            '<cell id="1" name="core" material="1"/>'
-            '<cell id="2" name="reflector" material="2"/>'
+            '<surface id="1" type="sphere" coeffs="0 0 0 5" '
+            'boundary="vacuum"/>'
+            '<cell id="1" name="core" material="1" region="-1"/>'
             "</geometry>"
         )
         temp_path = Path(f.name)
