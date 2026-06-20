@@ -25,7 +25,6 @@ def test_batch_spec_creation():
     assert spec.name == "test-batch"
     assert spec.base_input == Path("/tmp/input.xml")
     assert spec.threads_per_job == 4
-    assert spec.parameter_sweeps == []
 
 
 def test_batch_runner_initialization():
@@ -49,7 +48,6 @@ def test_save_and_load_yaml_spec():
         base_input=Path("/tmp/input.xml"),
         output_root=Path("/tmp/output"),
         threads_per_job=2,
-        parameter_sweeps=[{"param1": "value1"}],
         description="Test description",
     )
 
@@ -63,7 +61,7 @@ def test_save_and_load_yaml_spec():
         loaded = load_batch_spec(temp_path)
         assert loaded.name == spec.name
         assert loaded.threads_per_job == spec.threads_per_job
-        assert loaded.parameter_sweeps == spec.parameter_sweeps
+        assert loaded.description == spec.description
     finally:
         temp_path.unlink()
 
@@ -139,14 +137,13 @@ def test_run_batch_no_openmc():
             name="no-openmc-test",
             base_input=input_file,
             output_root=output_root,
-            parameter_sweeps=[{"i": 1}, {"i": 2}],
         )
 
         config = ParallelConfig(mode=ParallelMode.THREADS, max_workers=1)
         runner = BatchRunner(parallel_config=config)
         summary = runner.run_batch(spec)
 
-        assert summary.total_jobs == 2
+        assert summary.total_jobs == 1
         # Jobs may fail due to missing OpenMC, but the runner should complete
         assert summary.batch_id != ""
 
