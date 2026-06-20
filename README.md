@@ -5,7 +5,7 @@
 <h1 align="center">PromptMC</h1>
 
 <p align="center">
-  <a href="https://pypi.org/project/promptmc/"><img src="https://img.shields.io/pypi/v/promptmc" alt="PyPI"></a>
+  <a href="https://pypi.org/project/promptmc/"><img src="https://img.shields.io/pypi/v/promptmc?cacheSeconds=3600" alt="PyPI"></a>
   <img src="https://img.shields.io/pypi/pyversions/promptmc" alt="Python">
   <a href="https://app.codecov.io/gh/rjonace/promptmc"><img src="https://img.shields.io/codecov/c/github/rjonace/promptmc" alt="Coverage"></a>
   <img src="https://img.shields.io/github/actions/workflow/status/rjonace/promptmc/ci.yml" alt="CI">
