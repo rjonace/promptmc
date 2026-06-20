@@ -1,8 +1,9 @@
 # UO2 Criticality Example (subcritical water-reflected sphere)
 
-This example demonstrates the `promptmc` workflow (generate settings, validate,
-run, analyze) on a small UO2 and light-water model using OpenMC's criticality
-(eigenvalue) mode.
+This example demonstrates the `promptmc` workflow (validate, run, analyze) on a
+small UO2 and light-water model using OpenMC's criticality (eigenvalue) mode.
+The three input files below are hand-authored for this specific geometry and
+ship with the package.
 
 > **Expected result: k-effective ≈ 0.44 (subcritical).** This is the correct
 > answer for this geometry, not a broken run. A 10 cm sphere of 3%-enriched UO2
@@ -20,7 +21,7 @@ run, analyze) on a small UO2 and light-water model using OpenMC's criticality
   reflector, bounded by a vacuum sphere at 20 cm.
 - `materials.xml`: UO2 (3% enriched, 10 g/cm³) and light water (1 g/cm³).
 - `settings.xml`: criticality (eigenvalue) settings, 500 particles over 20
-  batches (10 inactive). Regenerate it with the step below or edit it directly.
+  batches (10 inactive). Edit it directly to change run parameters.
 - `statepoint.20.h5`, `summary.h5`: results from a prior run, so `analyze`
   works out of the box without cross-section data. Re-running overwrites them.
 
@@ -40,14 +41,17 @@ environment are set up correctly.
 
 ## Running the Example
 
-1. **Generate settings:**
-   Generate `settings.xml` from the built-in `criticality` template. We use 500
-   particles and 20 batches for a quick test. The emitted file carries a
-   provenance header (PromptMC version, timestamp, and the exact command).
+1. **Validate the deck (optional, no OpenMC needed):**
+   Check the bundled deck against PromptMC's typed schemas before running.
 
    ```bash
-   poetry run promptmc template criticality --output src/promptmc/examples/uo2_criticality/settings.xml --particles 500 --batches 20
+   poetry run promptmc validate src/promptmc/examples/uo2_criticality/ --schema
    ```
+
+   > **Note:** The built-in `criticality` template ships the Godiva reference
+   > geometry (a bare HEU sphere), not this UO2 model, so
+   > `promptmc template criticality` will not reproduce this deck. To tweak the
+   > run, edit `settings.xml` in this directory directly.
 
 2. **Run the simulation:**
    `promptmc` auto-detects the Python API or falls back to the `openmc`

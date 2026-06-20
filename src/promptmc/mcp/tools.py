@@ -605,12 +605,14 @@ TOOL_REGISTRY: dict[str, ToolSpec[Any, Any]] = {
     "openmc_template": ToolSpec(
         name="openmc_template",
         description=(
-            "Generate a settings.xml file from a named"
-            " template (criticality, fixed_source,"
-            " shielding, reactor_pin, or depletion)."
+            "Generate a complete OpenMC input deck"
+            " (settings.xml, geometry.xml, materials.xml)"
+            " from a named template (criticality,"
+            " fixed_source, shielding, reactor_pin, or"
+            " depletion) into an output directory."
             " Optionally override particle count,"
             " batches, and inactive batches. Returns the"
-            " output path and template metadata."
+            " output directory and template metadata."
         ),
         input_model=TemplateInput,
         output_model=TemplateOutput,

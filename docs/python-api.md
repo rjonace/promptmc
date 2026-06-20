@@ -79,6 +79,31 @@ print(result.stdout or result.stderr)
 `run_simulation()` returns a `promptmc.SimulationResult` with `success: bool`,
 `return_code: int`, `stdout`, `stderr`, and an optional `error` message.
 
+#### Run directly from in-memory models
+
+`run_from_models()` runs straight from validated Pydantic models. When OpenMC's
+Python API is importable it maps the models to `openmc` objects and runs them
+without writing an input deck to disk; otherwise it serializes the models to a
+working directory and runs the `openmc` executable as a subprocess. It returns
+the same `SimulationResult`.
+
+```python
+from promptmc import OpenMCRunner
+from promptmc.benchmarks import godiva
+
+geometry, materials = godiva.build()
+settings = ...  # a promptmc.SettingsSchema
+
+runner = OpenMCRunner()
+result = runner.run_from_models(
+    geometry=geometry,
+    materials=materials,
+    settings=settings,
+    threads=4,
+)
+print(result.success)
+```
+
 ### ResultParser
 
 Parse and analyze simulation outputs.
@@ -201,7 +226,10 @@ results = executor.execute_jobs(tasks)
 
 ### Built-in templates
 
-Generate configurations from built-in templates.
+Generate complete input decks from built-in templates. `render()` treats
+`output_path` as a **directory** and writes a runnable deck into it
+(`settings.xml`, `geometry.xml`, `materials.xml`) that passes
+`SchemaValidator.validate_directory`.
 
 ```python
 from promptmc.templates import TemplateType, get_template
@@ -209,13 +237,36 @@ from promptmc.templates import TemplateType, get_template
 # Create template
 template = get_template(TemplateType.CRITICALITY)
 
-# Generate and save configuration
-config_path = template.render(
-    output_path="settings.xml",
+# Render a complete input deck into a directory
+deck_dir = template.render(
+    output_path="openmc_inputs",
     particles=10000,
     batches=100,
     inactive=10,
 )
+# deck_dir/ now contains settings.xml, geometry.xml, materials.xml
+```
+
+To build and run a template's deck in one step, use `run()` — it builds the
+geometry/materials/settings and dispatches through
+`OpenMCRunner.run_from_models`:
+
+```python
+result = template.run(particles=10000, batches=100, inactive=10, threads=4)
+print(result.success)
+```
+
+### Reference benchmarks
+
+The bundled benchmarks expose `build()` (returns `(geometry, materials)`) and a
+convenience `run()` that executes the benchmark with sensible eigenvalue
+defaults:
+
+```python
+from promptmc.benchmarks import godiva, pwr_pin
+
+result = godiva.run(threads=4)      # Godiva bare-HEU sphere
+result = pwr_pin.run(threads=4)     # Mosteller PWR pin cell
 ```
 
 ## Natural Language Assistant
