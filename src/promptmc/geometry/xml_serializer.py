@@ -478,7 +478,13 @@ def _surface_from_element(elem: ET.Element) -> Surface:
     """Build a Surface model from an OpenMC ``<surface>`` element."""
     stype = elem.get("type")
     if stype not in _SURFACE_COEFF_FIELDS:
-        raise ValueError(f"Unsupported surface type: {stype!r}")
+        supported = ", ".join(sorted(_SURFACE_COEFF_FIELDS))
+        raise ValueError(
+            f"Unsupported surface type: {stype!r}. PromptMC's schema "
+            f"validation currently supports these surfaces: {supported}. "
+            "Cones, general quadrics, lattices, and nested universes/fills "
+            "run in OpenMC but are not yet modeled (tracked on the roadmap)."
+        )
 
     fields = _SURFACE_COEFF_FIELDS[stype]
     raw_coeffs = (elem.get("coeffs") or "").split()
