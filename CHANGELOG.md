@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.5] - 2026-06-20
 
 ### Added
 - `promptmc doctor`: a single command that runs every onboarding environment check (OpenMC executable on PATH, importable Python API, `OPENMC_CROSS_SECTIONS` set and parseable, referenced cross-section data files present, and the optional `telemetry` extra) and prints one status report with a concrete fix hint for each missing piece. The Python API and telemetry are reported as optional and do not affect the ready/exit status; missing required pieces exit non-zero.
