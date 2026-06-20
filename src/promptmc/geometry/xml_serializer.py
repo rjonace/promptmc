@@ -4,7 +4,13 @@ from __future__ import annotations
 
 import xml.etree.ElementTree as ET  # nosec B405
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+from defusedxml.ElementTree import parse as defused_parse
+from pydantic import TypeAdapter
+
+if TYPE_CHECKING:
+    from promptmc.schema import SettingsSchema
 
 from defusedxml.ElementTree import parse as defused_parse
 from pydantic import TypeAdapter
@@ -125,6 +131,17 @@ def _to_openmc_material(m: Material) -> Any:
     return mat
 
 
+def to_openmc_materials(model: MaterialsModel) -> Any:
+    """Convert a promptmc MaterialsModel to an ``openmc.Materials`` list."""
+    if not _OPENMC_AVAILABLE:
+        raise RuntimeError("OpenMC package is not available.")
+
+    mats = openmc.Materials()
+    for m in model.materials:
+        mats.append(_to_openmc_material(m))
+    return mats
+
+
 def to_openmc_geometry(model: GeometryModel) -> Any:
     """Convert promptmc GeometryModel to openmc.Geometry."""
     if not _OPENMC_AVAILABLE:
@@ -149,6 +166,28 @@ def to_openmc_geometry(model: GeometryModel) -> Any:
         universe_id=model.root_universe.id, cells=openmc_cells
     )
     return openmc.Geometry(univ)
+
+
+def to_openmc_settings(settings: SettingsSchema) -> Any:
+    """Convert a promptmc SettingsSchema to an ``openmc.Settings`` object."""
+    if not _OPENMC_AVAILABLE:
+        raise RuntimeError("OpenMC package is not available.")
+
+    s = openmc.Settings()
+    s.run_mode = settings.run_mode.value
+    s.batches = settings.batches
+    s.inactive = settings.inactive
+    s.particles = settings.particles
+    if settings.seed is not None:
+        s.seed = settings.seed
+    if settings.survival_biasing is not None:
+        s.survival_biasing = settings.survival_biasing
+    if settings.weight_cutoff is not None:
+        s.cutoff = {"weight": settings.weight_cutoff}
+    s.source = openmc.IndependentSource(
+        space=openmc.stats.Point((0.0, 0.0, 0.0))
+    )
+    return s
 
 
 # Fallback XML serialization logic
@@ -311,10 +350,7 @@ def serialize_materials(model: MaterialsModel, path: PathLike) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
 
     if _OPENMC_AVAILABLE:
-        mats = openmc.Materials()
-        for m in model.materials:
-            mats.append(_to_openmc_material(m))
-        mats.export_to_xml(str(path))
+        to_openmc_materials(model).export_to_xml(str(path))
     else:
         d = _materials_model_to_dict(model)
         root = _dict_to_xml(d, "materials")

@@ -5,11 +5,12 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess  # nosec B404
+import tempfile
 import xml.etree.ElementTree as ET  # nosec B405
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from defusedxml.ElementTree import parse as defused_parse
 
@@ -20,6 +21,11 @@ from promptmc.errors import (
     OpenMCValidationError,
 )
 from promptmc.provenance import write_xml_with_provenance
+
+if TYPE_CHECKING:
+    from promptmc.geometry.materials import MaterialsModel
+    from promptmc.geometry.primitives import GeometryModel
+    from promptmc.schema import SettingsSchema
 
 # OpenMC required input files for a directory-based simulation
 REQUIRED_INPUT_FILES = ("geometry.xml", "materials.xml", "settings.xml")
@@ -57,6 +63,7 @@ class SimulationResult:
     stdout: str = ""
     stderr: str = ""
     error: str | None = None
+    output_dir: str | None = None
 
 
 class OpenMCInstaller:
@@ -198,6 +205,52 @@ class OpenMCRunner:
             return self._run_via_api(input_path, threads, output_path, cwd)
         return self._run_via_subprocess(input_path, threads, output_path, cwd)
 
+    def run_from_models(
+        self,
+        geometry: GeometryModel,
+        materials: MaterialsModel,
+        settings: SettingsSchema,
+        threads: int = 1,
+        cwd: PathLike | None = None,
+    ) -> SimulationResult:
+        """Run a simulation directly from in-memory promptmc models.
+
+        When OpenMC's Python API is available the models are mapped to
+        ``openmc`` objects and executed without writing input XML to disk.
+        Otherwise the models are serialized to a working directory and run
+        through the OpenMC executable as a subprocess.
+
+        Args:
+            geometry: The geometry model to simulate.
+            materials: The materials model to simulate.
+            settings: The run settings.
+            threads: Number of OpenMP threads to use.
+            cwd: Working directory for the run. When omitted, a temporary
+                directory is created so output files are not written into the
+                caller's current working directory.
+
+        Returns:
+            The :class:`SimulationResult` describing the run outcome. Its
+            ``output_dir`` is the directory the run wrote its results into.
+        """
+        work = (
+            Path(cwd) if cwd else Path(tempfile.mkdtemp(prefix="promptmc_run_"))
+        )
+        work.mkdir(parents=True, exist_ok=True)
+
+        mode = self._determine_execution_mode()
+
+        if (
+            mode == ExecutionMode.API
+            and self.installer._openmc_module is not None
+        ):
+            return self._run_models_via_api(
+                geometry, materials, settings, threads, work
+            )
+        return self._run_models_via_subprocess(
+            geometry, materials, settings, threads, work
+        )
+
     def _determine_execution_mode(self) -> ExecutionMode:
         if self.execution_mode == ExecutionMode.API:
             self.installer.check_installation()
@@ -284,6 +337,96 @@ class OpenMCRunner:
             raise OpenMCExecutionError(
                 f"Failed to run OpenMC subprocess: {e}"
             ) from e
+
+    def _run_models_via_api(
+        self,
+        geometry: GeometryModel,
+        materials: MaterialsModel,
+        settings: SettingsSchema,
+        threads: int,
+        work: Path,
+    ) -> SimulationResult:
+        from promptmc.geometry.xml_serializer import (
+            to_openmc_geometry,
+            to_openmc_materials,
+            to_openmc_settings,
+        )
+
+        original_threads = os.environ.get("OMP_NUM_THREADS")
+        os.environ["OMP_NUM_THREADS"] = str(threads)
+        try:
+            # openmc is an optional dependency; import inline to allow
+            # the core library to function without it installed
+            import openmc
+
+            model = cast(Any, openmc).model.Model(
+                geometry=to_openmc_geometry(geometry),
+                materials=to_openmc_materials(materials),
+                settings=to_openmc_settings(settings),
+            )
+            model.run(cwd=str(work), threads=threads)
+            return SimulationResult(
+                success=True,
+                return_code=0,
+                stdout="Simulation completed successfully via API",
+                output_dir=str(work),
+            )
+        except Exception as e:
+            return SimulationResult(
+                success=False,
+                return_code=1,
+                stderr=str(e),
+                error=str(e),
+                output_dir=str(work),
+            )
+        finally:
+            if original_threads is None:
+                os.environ.pop("OMP_NUM_THREADS", None)
+            else:
+                os.environ["OMP_NUM_THREADS"] = original_threads
+
+    def _run_models_via_subprocess(
+        self,
+        geometry: GeometryModel,
+        materials: MaterialsModel,
+        settings: SettingsSchema,
+        threads: int,
+        work: Path,
+    ) -> SimulationResult:
+        from promptmc.geometry.xml_serializer import (
+            serialize_geometry,
+            serialize_materials,
+        )
+
+        serialize_geometry(geometry, work / "geometry.xml")
+        serialize_materials(materials, work / "materials.xml")
+        self._write_settings_xml(settings, work / "settings.xml")
+
+        result = self._run_via_subprocess(work, threads, work, work)
+        result.output_dir = str(work)
+        return result
+
+    @staticmethod
+    def _write_settings_xml(settings: SettingsSchema, path: Path) -> None:
+        """Serialize a SettingsSchema to a runnable settings.xml file."""
+        root = ET.Element("settings")
+        ET.SubElement(root, "run_mode").text = settings.run_mode.value
+        ET.SubElement(root, "batches").text = str(settings.batches)
+        ET.SubElement(root, "inactive").text = str(settings.inactive)
+        ET.SubElement(root, "particles").text = str(settings.particles)
+        if settings.seed is not None:
+            ET.SubElement(root, "seed").text = str(settings.seed)
+        if settings.survival_biasing is not None:
+            ET.SubElement(root, "survival_biasing").text = str(
+                settings.survival_biasing
+            ).lower()
+        if settings.weight_cutoff is not None:
+            cutoff = ET.SubElement(root, "cutoff")
+            ET.SubElement(cutoff, "weight").text = str(settings.weight_cutoff)
+        source = ET.SubElement(root, "source", strength="1.0")
+        space = ET.SubElement(source, "space", type="point")
+        ET.SubElement(space, "parameters").text = "0.0 0.0 0.0"
+        write_xml_with_provenance(root, path)
 
     def generate_configuration(
         self,

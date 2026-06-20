@@ -261,8 +261,9 @@ class NaturalLanguageAssistant:
             )
 
         next_steps = [
-            "Generate settings.xml from the recommended template.",
-            "Add or verify materials.xml and geometry.xml for the physical model.",
+            "Render the recommended template into a complete input deck "
+            "(settings.xml + geometry.xml + materials.xml).",
+            "Review the geometry and materials for the physical model.",
             "Run schema validation before launching OpenMC.",
         ]
         summary = self._summary(template_type, particles, batches, inactive)

@@ -22,7 +22,9 @@ from promptmc.geometry.xml_serializer import (
     serialize_geometry,
     serialize_materials,
 )
+from promptmc.openmc_integration import OpenMCRunner, SimulationResult
 from promptmc.provenance import write_xml_with_provenance
+from promptmc.schema import RunMode, SettingsSchema
 
 
 class TemplateType(Enum):
@@ -33,6 +35,11 @@ class TemplateType(Enum):
     DEPLETION = "depletion"
     SHIELDING = "shielding"
     REACTOR_PIN = "reactor_pin"
+
+
+_FIXED_SOURCE_TYPES = frozenset(
+    {TemplateType.FIXED_SOURCE, TemplateType.SHIELDING}
+)
 
 
 @dataclass
@@ -126,6 +133,77 @@ class ConfigurationTemplate:
             surfaces=[sphere], root_universe=Universe(id=1, cells=[cell])
         )
         return geometry, MaterialsModel(materials=[])
+
+    def _build_settings(
+        self,
+        particles: int | None = None,
+        batches: int | None = None,
+        inactive: int | None = None,
+    ) -> SettingsSchema:
+        """Build the run settings for this template.
+
+        The run mode is derived from the template type (fixed-source for
+        shielding/fixed-source templates, eigenvalue otherwise).
+
+        Args:
+            particles: Override default particles
+            batches: Override default batches
+            inactive: Override default inactive batches
+
+        Returns:
+            A validated ``SettingsSchema``.
+        """
+        run_mode = (
+            RunMode.FIXED_SOURCE
+            if self.metadata.template_type in _FIXED_SOURCE_TYPES
+            else RunMode.EIGENVALUE
+        )
+        return SettingsSchema(
+            run_mode=run_mode,
+            particles=particles or self.metadata.default_particles,
+            batches=batches or self.metadata.default_batches,
+            inactive=(
+                inactive
+                if inactive is not None
+                else self.metadata.default_inactive
+            ),
+        )
+
+    def run(
+        self,
+        particles: int | None = None,
+        batches: int | None = None,
+        inactive: int | None = None,
+        threads: int = 1,
+        cwd: PathLike | None = None,
+        **kwargs: Any,
+    ) -> SimulationResult:
+        """Build this template's models and run them through OpenMC.
+
+        This is a convenience wrapper around
+        :meth:`OpenMCRunner.run_from_models` that skips writing an input
+        deck to disk when OpenMC's Python API is available.
+
+        Args:
+            particles: Override default particles
+            batches: Override default batches
+            inactive: Override default inactive batches
+            threads: Number of OpenMP threads to use
+            cwd: Working directory for the run
+            **kwargs: Additional template parameters forwarded to the
+                geometry/materials builders
+
+        Returns:
+            The :class:`SimulationResult` describing the run outcome.
+        """
+        geometry, materials = self._build_models(**kwargs)
+        return OpenMCRunner().run_from_models(
+            geometry=geometry,
+            materials=materials,
+            settings=self._build_settings(particles, batches, inactive),
+            threads=threads,
+            cwd=cwd,
+        )
 
     def _build_xml(
         self,

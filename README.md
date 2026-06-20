@@ -81,12 +81,15 @@ See [installation](https://github.com/rjonace/promptmc/blob/main/docs/installati
 The validation gate is the core of PromptMC, and you can exercise it with no OpenMC install, no cross-section data, and no API key.
 
 ```bash
-# 1. Turn a plain-English request into a settings.xml (deterministic local planner, no API key)
-promptmc plan "pin cell criticality with 50k particles" --write
+# 1. Turn a plain-English request into a complete input deck (deterministic local planner, no API key)
+promptmc plan "pin cell criticality with 50k particles" --write   # writes openmc_inputs/
 
-# 2. Validate it against PromptMC's typed schemas
-promptmc validate settings.xml --schema      # passes
+# 2. Validate the deck against PromptMC's typed schemas
+promptmc validate openmc_inputs --schema      # passes
 ```
+
+`--write` emits a directory (default `openmc_inputs/`) containing a complete,
+runnable deck — `settings.xml`, `geometry.xml`, and `materials.xml`.
 
 The gate's job is catching malformed inputs before a run consumes them. Hand it a value an AI assistant might plausibly invent, such as `<run_mode>criticalize</run_mode>`, and it rejects the input and reports what was allowed:
 
@@ -96,6 +99,21 @@ The gate's job is catching malformed inputs before a run consumes them. Hand it 
 ```
 
 The error is structured, so an assistant can read it and self-correct.
+
+### From a deck to a full run
+
+`plan --write` and `promptmc template` emit a complete deck directory
+(`settings.xml`, `geometry.xml`, `materials.xml`, plus an optional
+`tallies.xml`). With OpenMC and cross-section data installed, run it directly:
+
+```bash
+promptmc run ./openmc_inputs        # runs the simulation
+promptmc analyze ./openmc_inputs    # k-effective and tallies, parsed from the statepoint
+```
+
+The built-in templates back their decks with validated reference geometries
+(PWR pin, Godiva); swap in your own `geometry.xml`/`materials.xml` for a custom
+model.
 
 ## MCP server
 
@@ -114,9 +132,15 @@ The point of routing these through MCP is that an assistant can validate its own
 By default, `plan` uses a deterministic local planner, needing no API key, no network, no generative AI. The optional `--llm` flag calls Google Gemini (set GEMINI_API_KEY), which can interpret more open-ended natural-language requests. Customize the model name with GEMINI_MODEL (defaults to gemini-3.5-flash).
 
 ```bash
+<<<<<<< HEAD
 promptmc plan "pin cell criticality with 50k particles" --write
 promptmc validate settings.xml --schema                         # structure + schema, no OpenMC needed
 promptmc template criticality --particles 10000                 # generate settings.xml
+=======
+promptmc doctor                                                 # one-shot environment check with fix hints
+promptmc validate openmc_inputs --schema                        # structure + schema, no OpenMC needed
+promptmc template criticality --particles 10000                 # generate a complete input deck dir
+>>>>>>> devin/1781955416-task8-run-from-models
 promptmc run ./model --threads 4                                # needs OpenMC (geometry + materials + settings)
 promptmc batch batch_spec.yaml --parallel threads --workers 4
 promptmc analyze ./model --json > results.json                  # parse statepoint + tallies
@@ -125,6 +149,15 @@ promptmc info                                                   # OpenMC install
 promptmc doctor                                                 # one-shot environment check with fix hints
 ```
 
+<<<<<<< HEAD
+=======
+`promptmc doctor` runs every setup check (OpenMC executable, Python API, `cross_sections.xml`, downloaded data, telemetry extra) and prints a single status report with a fix hint for each missing piece — start here when setup misbehaves.
+
+`validate`, `plan`, `info`, `analyze`, and `doctor` all accept `--json` for plain, parseable output on stdout, so agents and CI can consume results instead of Rich tables.
+
+Generated `settings.xml` files carry a provenance header — a leading XML comment recording the PromptMC version, a UTC timestamp, and the exact command that produced the file — so any emitted deck is self-describing and reproducible.
+
+>>>>>>> devin/1781955416-task8-run-from-models
 Full options in the [CLI reference](https://github.com/rjonace/promptmc/blob/main/docs/cli-reference.md).
 
 ## Safety

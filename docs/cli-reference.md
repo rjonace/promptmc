@@ -6,7 +6,7 @@ Complete reference for all PromptMC CLI commands.
 
 ### `promptmc plan`
 
-Turn plain-English requests into OpenMC plans and settings files.
+Turn plain-English requests into OpenMC plans and complete input decks.
 
 `promptmc plan` supports two execution modes:
 1. **Local Deterministic Planner (Default):** Runs completely offline with no network calls and no API key. It parses request keywords deterministically to choose templates and estimate particle/batch counts.
@@ -18,15 +18,15 @@ Turn plain-English requests into OpenMC plans and settings files.
 # Plan without writing files
 promptmc plan "make a concrete shielding calculation with 1 million particles"
 
-# Generate settings.xml directly from natural language
+# Generate a complete input deck directly from natural language (writes openmc_inputs/)
 promptmc plan "set up a reactor pin cell criticality run with 50k particles" --write
 
 # Use Google Gemini LLM for richer interpretation
 export GEMINI_API_KEY="..."
 promptmc plan "I need a high-statistics shielding model for a 14 MeV source" --llm --write
 
-# Specify output file
-promptmc plan "criticality run" --write --output my_settings.xml
+# Specify the output deck directory
+promptmc plan "criticality run" --write --output my_inputs
 
 # Use a specific Gemini model
 promptmc plan "shielding calculation" --llm --model gemini-2.5-pro --write
@@ -51,8 +51,8 @@ $ promptmc plan "make a concrete shielding calculation with 1 million particles"
 │ Batches        │ 10                                            │
 │ Inactive       │ 0                                             │
 │ Match score    │ 85%  (3 keywords matched)                     │
-│ Command        │ promptmc template shielding --output          │
-│                │ settings.xml --particles 1000000 --batches 10 │
+│ Command        │ promptmc template shielding --output           │
+│                │ openmc_inputs --particles 1000000 --batches 10 │
 └────────────────┴───────────────────────────────────────────────┘
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -66,8 +66,8 @@ Why this plan
 - Shielding/dose keywords suggest a shielding calculation.
 
 Next steps
-- Generate settings.xml from the recommended template.
-- Add or verify materials.xml and geometry.xml for the physical model.
+- Render the recommended template into a complete input deck (settings.xml + geometry.xml + materials.xml).
+- Review the geometry and materials for the physical model.
 - Run schema validation before launching OpenMC.
 ```
 
@@ -125,23 +125,25 @@ promptmc list-templates
 
 ### `promptmc template`
 
-Generate settings.xml from a template.
+Generate a complete OpenMC input deck from a template. `--output` is a
+**directory** (default `openmc_inputs/`); each run writes `settings.xml`,
+`geometry.xml`, and `materials.xml` into it.
 
 ```bash
 # Criticality template
-promptmc template criticality --output settings.xml --particles 10000
+promptmc template criticality --output openmc_inputs --particles 10000
 
 # Fixed source template
-promptmc template fixed_source --output settings.xml --particles 50000
+promptmc template fixed_source --output openmc_inputs --particles 50000
 
 # Shielding template
-promptmc template shielding --output settings.xml --particles 1000000
+promptmc template shielding --output openmc_inputs --particles 1000000
 
 # Reactor pin template
-promptmc template reactor_pin --output settings.xml --particles 50000
+promptmc template reactor_pin --output openmc_inputs --particles 50000
 
 # Specify batches and inactive
-promptmc template criticality --output settings.xml --particles 10000 --batches 100 --inactive 10
+promptmc template criticality --output openmc_inputs --particles 10000 --batches 100 --inactive 10
 ```
 
 ## Validation

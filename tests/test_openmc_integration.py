@@ -1,9 +1,10 @@
 import tempfile
 from pathlib import Path
 from subprocess import CompletedProcess
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
+from promptmc.benchmarks import godiva
 from promptmc.errors import (
     OpenMCError as OpenMCIntegrationError,
 )
@@ -18,6 +19,7 @@ from promptmc.openmc_integration import (
     OpenMCValidator,
     SimulationResult,
 )
+from promptmc.schema import RunMode, SettingsSchema
 
 
 def test_simulation_result_defaults():
@@ -248,3 +250,131 @@ def test_determine_execution_mode_subprocess():
     runner = OpenMCRunner(ExecutionMode.SUBPROCESS)
     mode = runner._determine_execution_mode()
     assert mode == ExecutionMode.SUBPROCESS
+
+
+def test_run_from_models_subprocess_serializes_deck(tmp_path):
+    """The fallback path serializes models to XML, then runs the executable."""
+    geom, mats = godiva.build()
+    settings = SettingsSchema(
+        run_mode=RunMode.EIGENVALUE, particles=100, batches=10, inactive=2
+    )
+    runner = OpenMCRunner(ExecutionMode.SUBPROCESS)
+    completed = CompletedProcess(
+        args=["openmc"], returncode=0, stdout="done", stderr=""
+    )
+    with patch(
+        "promptmc.openmc_integration.subprocess.run", return_value=completed
+    ):
+        result = runner.run_from_models(geom, mats, settings, cwd=tmp_path)
+
+    assert result.success is True
+    assert result.output_dir == str(tmp_path)
+    assert (tmp_path / "geometry.xml").exists()
+    assert (tmp_path / "materials.xml").exists()
+    settings_xml = (tmp_path / "settings.xml").read_text()
+    assert "eigenvalue" in settings_xml
+    assert "<source" in settings_xml
+
+
+def test_run_from_models_defaults_to_temp_dir(tmp_path, monkeypatch):
+    """Without an explicit cwd, the run uses a temp dir, not the caller's cwd.
+
+    The chosen directory is reported on ``SimulationResult.output_dir`` so the
+    deck and its results are never orphaned.
+    """
+    geom, mats = godiva.build()
+    settings = SettingsSchema(
+        run_mode=RunMode.EIGENVALUE, particles=100, batches=10, inactive=2
+    )
+    runner = OpenMCRunner(ExecutionMode.SUBPROCESS)
+    completed = CompletedProcess(
+        args=["openmc"], returncode=0, stdout="done", stderr=""
+    )
+    monkeypatch.chdir(tmp_path)
+    with patch(
+        "promptmc.openmc_integration.subprocess.run", return_value=completed
+    ):
+        result = runner.run_from_models(geom, mats, settings)
+
+    assert result.success is True
+    assert result.output_dir is not None
+    out = Path(result.output_dir)
+    assert out.resolve() != tmp_path.resolve()
+    assert (out / "geometry.xml").exists()
+    assert (out / "settings.xml").exists()
+
+
+def test_run_from_models_api_uses_python_objects(tmp_path):
+    """When OpenMC is importable, models run through the Python API."""
+    geom, mats = godiva.build()
+    settings = SettingsSchema(
+        run_mode=RunMode.EIGENVALUE, particles=100, batches=10, inactive=2
+    )
+    fake_openmc = MagicMock()
+
+    runner = OpenMCRunner(ExecutionMode.API)
+    runner.installer._openmc_module = fake_openmc
+
+    with (
+        patch.dict("sys.modules", {"openmc": fake_openmc}),
+        patch.object(
+            runner, "_determine_execution_mode", return_value=ExecutionMode.API
+        ),
+        patch(
+            "promptmc.geometry.xml_serializer.to_openmc_geometry",
+            return_value="geom",
+        ),
+        patch(
+            "promptmc.geometry.xml_serializer.to_openmc_materials",
+            return_value="mats",
+        ),
+        patch(
+            "promptmc.geometry.xml_serializer.to_openmc_settings",
+            return_value="settings",
+        ),
+    ):
+        result = runner.run_from_models(geom, mats, settings, cwd=tmp_path)
+
+    assert result.success is True
+    fake_openmc.model.Model.assert_called_once_with(
+        geometry="geom", materials="mats", settings="settings"
+    )
+    fake_openmc.model.Model.return_value.run.assert_called_once()
+
+
+def test_run_from_models_api_reports_failure(tmp_path):
+    """API failures are captured as an unsuccessful SimulationResult."""
+    geom, mats = godiva.build()
+    settings = SettingsSchema(
+        run_mode=RunMode.EIGENVALUE, particles=100, batches=10, inactive=2
+    )
+    fake_openmc = MagicMock()
+    fake_openmc.model.Model.return_value.run.side_effect = RuntimeError(
+        "solver blew up"
+    )
+
+    runner = OpenMCRunner(ExecutionMode.API)
+    runner.installer._openmc_module = fake_openmc
+
+    with (
+        patch.dict("sys.modules", {"openmc": fake_openmc}),
+        patch.object(
+            runner, "_determine_execution_mode", return_value=ExecutionMode.API
+        ),
+        patch(
+            "promptmc.geometry.xml_serializer.to_openmc_geometry",
+            return_value="geom",
+        ),
+        patch(
+            "promptmc.geometry.xml_serializer.to_openmc_materials",
+            return_value="mats",
+        ),
+        patch(
+            "promptmc.geometry.xml_serializer.to_openmc_settings",
+            return_value="settings",
+        ),
+    ):
+        result = runner.run_from_models(geom, mats, settings, cwd=tmp_path)
+
+    assert result.success is False
+    assert "solver blew up" in (result.error or "")

@@ -73,9 +73,10 @@ src/promptmc/
 ├── _typing.py             # shared type aliases (PathLike)
 ├── cli.py                 # Typer CLI entry point (dispatches into commands/)
 ├── commands/              # one module per CLI subcommand: plan, run, validate, analyze, batch, templates, info, doctor (+ common.py shared helpers)
-├── openmc_integration.py  # core OpenMC wrapper — OpenMCInstaller / OpenMCValidator / OpenMCRunner (subprocess + Python API), ExecutionMode, SimulationResult (run outcome)
+<<<<<<< HEAD
+├── openmc_integration.py  # core OpenMC wrapper — OpenMCInstaller / OpenMCValidator / OpenMCRunner (run_simulation from XML + run_from_models straight from Pydantic models; Python API when openmc is importable, else XML+subprocess fallback), ExecutionMode, SimulationResult (run outcome)
 ├── schema.py              # SettingsSchema + SchemaValidator/SchemaValidationResult; geometry/materials validation delegates to the geometry/ models via parse_*_xml; uses defusedxml
-├── templates.py           # config templates (Criticality / FixedSource / Shielding / ReactorPin / Depletion) + TemplateRegistry; render() emits a complete input deck dir (settings.xml + geometry.xml + materials.xml)
+├── templates.py           # config templates (Criticality / FixedSource / Shielding / ReactorPin / Depletion) + TemplateRegistry; render() emits a complete input deck dir (settings.xml + geometry.xml + materials.xml); run() executes the deck straight through OpenMCRunner.run_from_models
 ├── assistant.py           # NL planner behind `promptmc plan` (NaturalLanguageAssistant) — deterministic keyword planner (no-key default; keep it) + Gemini `--llm` path; v0.8 rebuilds only the `--llm` path on the generation pipeline
 ├── batch.py               # batch + parallel execution (BatchRunner, ParallelExecutor)
 ├── resources.py           # resource limits / monitoring / cleanup, temp simulation workspaces
@@ -83,7 +84,7 @@ src/promptmc/
 ├── visualization.py       # result parsing (ResultParser → StatePoint.keff) + plotting
 ├── errors.py              # PromptMCError hierarchy + configure_logging() + retry logic
 ├── telemetry.py           # optional OpenTelemetry (TelemetryManager; no-ops when absent) — the v0.9 hook
-├── geometry/              # Pydantic CSG models, materials, tallies schemas + XML serializer/deserializer (parse_geometry_xml/parse_materials_xml, v0.4)
+├── geometry/              # Pydantic CSG models, materials, tallies schemas + XML serializer/deserializer (parse_geometry_xml/parse_materials_xml, v0.4) + openmc bridges (to_openmc_geometry/to_openmc_materials/to_openmc_settings)
 ├── benchmarks/            # validated reference geometries library: Godiva, PWR pin (v0.3/v0.4)
 ├── examples/              # bundled UO2 criticality example (package data backing the MCP examples resource)
 └── mcp/                    # the v0.2 MCP server

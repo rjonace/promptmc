@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from promptmc._typing import PathLike
 from promptmc.geometry.materials import Material, MaterialsModel, NuclideSpec
 from promptmc.geometry.primitives import (
     Cell,
@@ -10,6 +11,8 @@ from promptmc.geometry.primitives import (
     Sphere,
     Universe,
 )
+from promptmc.openmc_integration import OpenMCRunner, SimulationResult
+from promptmc.schema import RunMode, SettingsSchema
 
 NAME = "Godiva"
 SOURCE = "ICSBEP HEU-MET-FAST-001"
@@ -50,3 +53,38 @@ def build() -> tuple[GeometryModel, MaterialsModel]:
     mats = MaterialsModel(materials=[heu])
 
     return geom, mats
+
+
+def run(
+    particles: int | None = None,
+    batches: int | None = None,
+    inactive: int | None = None,
+    threads: int = 1,
+    cwd: PathLike | None = None,
+) -> SimulationResult:
+    """Build and run the Godiva benchmark through OpenMC.
+
+    Args:
+        particles: Particles per batch (default 10000).
+        batches: Total batches (default 100).
+        inactive: Inactive batches (default 20).
+        threads: Number of OpenMP threads to use.
+        cwd: Working directory for the run.
+
+    Returns:
+        The :class:`SimulationResult` describing the run outcome.
+    """
+    geom, mats = build()
+    settings = SettingsSchema(
+        run_mode=RunMode.EIGENVALUE,
+        particles=particles or 10000,
+        batches=batches or 100,
+        inactive=inactive if inactive is not None else 20,
+    )
+    return OpenMCRunner().run_from_models(
+        geometry=geom,
+        materials=mats,
+        settings=settings,
+        threads=threads,
+        cwd=cwd,
+    )

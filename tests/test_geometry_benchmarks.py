@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import tempfile
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import pytest
-from promptmc.benchmarks import ALL_BENCHMARKS
+from promptmc.benchmarks import ALL_BENCHMARKS, godiva, pwr_pin
 from promptmc.benchmarks.godiva import build as build_godiva
 from promptmc.benchmarks.pwr_pin import build as build_pwr_pin
 from promptmc.geometry.xml_serializer import (
@@ -14,6 +15,7 @@ from promptmc.geometry.xml_serializer import (
     serialize_materials,
 )
 from promptmc.openmc_integration import OpenMCRunner
+from promptmc.schema import RunMode
 from promptmc.visualization import ResultParser
 
 
@@ -126,3 +128,38 @@ def test_benchmarks_simulation() -> None:
 
             # Check within tolerance
             assert abs(keff.value - bench.EXPECTED_KEFF) < bench.KEFF_TOLERANCE
+
+
+def test_godiva_run_delegates_to_runner() -> None:
+    """godiva.run builds the deck and forwards eigenvalue settings."""
+    sentinel = object()
+    with patch.object(godiva, "OpenMCRunner") as runner_cls:
+        runner = MagicMock()
+        runner.run_from_models.return_value = sentinel
+        runner_cls.return_value = runner
+
+        result = godiva.run(particles=200, batches=30, inactive=5, threads=2)
+
+    assert result is sentinel
+    _, kwargs = runner.run_from_models.call_args
+    assert kwargs["threads"] == 2
+    assert kwargs["settings"].run_mode == RunMode.EIGENVALUE
+    assert kwargs["settings"].particles == 200
+    assert kwargs["settings"].batches == 30
+
+
+def test_pwr_pin_run_uses_default_settings() -> None:
+    """pwr_pin.run applies its benchmark-specific defaults when unset."""
+    sentinel = object()
+    with patch.object(pwr_pin, "OpenMCRunner") as runner_cls:
+        runner = MagicMock()
+        runner.run_from_models.return_value = sentinel
+        runner_cls.return_value = runner
+
+        result = pwr_pin.run()
+
+    assert result is sentinel
+    _, kwargs = runner.run_from_models.call_args
+    assert kwargs["settings"].run_mode == RunMode.EIGENVALUE
+    assert kwargs["settings"].batches == 150
+    assert kwargs["settings"].inactive == 50
