@@ -12,7 +12,6 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
-import psutil
 from rich.console import Console
 from rich.progress import (
     BarColumn,
@@ -25,6 +24,14 @@ from rich.progress import (
     TimeElapsedColumn,
     TimeRemainingColumn,
 )
+
+try:
+    import psutil
+
+    _PSUTIL_AVAILABLE = True
+except ImportError:  # pragma: no cover - psutil is an optional extra
+    psutil = None  # type: ignore[assignment]
+    _PSUTIL_AVAILABLE = False
 
 
 class ProgressStage(str, Enum):
@@ -329,6 +336,17 @@ class SystemProfiler:
         import platform
         import sys
 
+        if not _PSUTIL_AVAILABLE:
+            cpu_count = os.cpu_count() or 1
+            return SystemInfo(
+                cpu_count=cpu_count,
+                cpu_count_physical=cpu_count,
+                total_memory_gb=0.0,
+                available_memory_gb=0.0,
+                platform=platform.platform(),
+                python_version=sys.version,
+            )
+
         memory = psutil.virtual_memory()
         return SystemInfo(
             cpu_count=psutil.cpu_count(logical=True) or 1,
@@ -411,6 +429,8 @@ class PerformanceMonitor:
 
     def _sample_loop(self) -> None:
         """Sample metrics periodically."""
+        if not _PSUTIL_AVAILABLE:
+            return
         process = psutil.Process(os.getpid())
         while self._monitoring:
             try:

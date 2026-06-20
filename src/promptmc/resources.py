@@ -11,9 +11,15 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-import psutil
-
 from promptmc.errors import ResourceError
+
+try:
+    import psutil
+
+    _PSUTIL_AVAILABLE = True
+except ImportError:  # pragma: no cover - psutil is an optional extra
+    psutil = None  # type: ignore[assignment]
+    _PSUTIL_AVAILABLE = False
 
 
 @dataclass
@@ -58,7 +64,9 @@ class ResourceMonitor:
 
     @staticmethod
     def _get_process() -> Any | None:
-        """Get a psutil Process."""
+        """Get a psutil Process, or None when psutil is unavailable."""
+        if not _PSUTIL_AVAILABLE:
+            return None
         return psutil.Process(os.getpid())
 
     def current_usage(self) -> ResourceUsage:

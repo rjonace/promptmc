@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import re
@@ -15,6 +16,17 @@ from pydantic import BaseModel, Field
 from promptmc.templates import TemplateType, get_template
 
 DEFAULT_GEMINI_MODEL = "gemini-3.5-flash"
+
+try:
+    # find_spec on a dotted name imports the parent package, so a missing
+    # `google` raises ModuleNotFoundError rather than returning None.
+    _GENAI_AVAILABLE = importlib.util.find_spec("google.genai") is not None
+except ModuleNotFoundError:
+    _GENAI_AVAILABLE = False
+_GENAI_MISSING_MSG = (
+    "Install promptmc[llm] for the Gemini LLM planner "
+    "(the default local planner needs no extra)."
+)
 
 SUPPORTED_TEMPLATE_TYPES = {
     TemplateType.CRITICALITY,
@@ -137,6 +149,9 @@ class GeminiClient:
                 "Set this variable to use the Gemini LLM planner, "
                 "or omit the --llm flag to use the default local planner."
             )
+
+        if not _GENAI_AVAILABLE:
+            raise ImportError(_GENAI_MISSING_MSG)
 
         # Lazy import: import google-genai ONLY inside the seam that makes the call
         from google import genai

@@ -28,9 +28,10 @@ files = [
 name = "anyio"
 version = "4.13.0"
 description = "High-level concurrency and networking framework on top of asyncio or Trio"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\" or extra == \"llm\""
 files = [
     {file = "anyio-4.13.0-py3-none-any.whl", hash = "sha256:08b310f9e24a9594186fd75b4f73f4a4152069e3853f1ed8bfbf58369f4ad708"},
     {file = "anyio-4.13.0.tar.gz", hash = "sha256:334b70e641fd2221c1505b3890c69882fe4a2df910cba14d97019b90b24439dc"},
@@ -48,9 +49,10 @@ trio = ["trio (>=0.32.0)"]
 name = "attrs"
 version = "26.1.0"
 description = "Classes Without Boilerplate"
-optional = false
+optional = true
 python-versions = ">=3.9"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\""
 files = [
     {file = "attrs-26.1.0-py3-none-any.whl", hash = "sha256:c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309"},
     {file = "attrs-26.1.0.tar.gz", hash = "sha256:d03ceb89cb322a8fd706d4fb91940737b6642aa36998fe130a9bc96c985eff32"},
@@ -85,9 +87,10 @@ yaml = ["PyYAML"]
 name = "certifi"
 version = "2026.4.22"
 description = "Python package for providing Mozilla's CA Bundle."
-optional = false
+optional = true
 python-versions = ">=3.7"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\" or extra == \"llm\" or extra == \"telemetry\""
 files = [
     {file = "certifi-2026.4.22-py3-none-any.whl", hash = "sha256:3cb2210c8f88ba2318d29b0388d1023c8492ff72ecdde4ebdaddbb13a31b1c4a"},
     {file = "certifi-2026.4.22.tar.gz", hash = "sha256:8d455352a37b71bf76a79caa83a3d6c25afee4a385d632127b6afb3963f1c580"},
@@ -97,10 +100,10 @@ files = [
 name = "cffi"
 version = "2.0.0"
 description = "Foreign Function Interface for Python calling C code."
-optional = false
+optional = true
 python-versions = ">=3.9"
 groups = ["main"]
-markers = "platform_python_implementation != \"PyPy\""
+markers = "(extra == \"mcp\" or extra == \"all\" or extra == \"llm\") and platform_python_implementation != \"PyPy\""
 files = [
     {file = "cffi-2.0.0-cp310-cp310-macosx_10_13_x86_64.whl", hash = "sha256:0cf2d91ecc3fcc0625c2c530fe004f82c110405f101548512cce44322fa8ac44"},
     {file = "cffi-2.0.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:f73b96c41e3b2adedc34a7356e64c8eb96e03a3782b535e043a986276ce12a49"},
@@ -207,9 +210,10 @@ files = [
 name = "charset-normalizer"
 version = "3.4.7"
 description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
-optional = false
+optional = true
 python-versions = ">=3.7"
 groups = ["main"]
+markers = "extra == \"llm\" or extra == \"all\" or extra == \"telemetry\""
 files = [
     {file = "charset_normalizer-3.4.7-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:cdd68a1fb318e290a2077696b7eb7a21a49163c455979c639bf5a5dcdc46617d"},
     {file = "charset_normalizer-3.4.7-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:e17b8d5d6a8c47c85e68ca8379def1303fd360c3e22093a807cd34a71cd082b8"},
@@ -368,7 +372,7 @@ files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
 ]
-markers = {main = "platform_system == \"Windows\"", dev = "platform_system == \"Windows\" or sys_platform == \"win32\""}
+markers = {main = "platform_system == \"Windows\"", dev = "sys_platform == \"win32\" or platform_system == \"Windows\""}
 
 [[package]]
 name = "coverage"
@@ -496,9 +500,10 @@ toml = ["tomli ; python_full_version <= \"3.11.0a6\""]
 name = "cryptography"
 version = "48.0.1"
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
-optional = false
+optional = true
 python-versions = "!=3.9.0,!=3.9.1,>=3.9"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\" or extra == \"llm\""
 files = [
     {file = "cryptography-48.0.1-cp311-abi3-macosx_10_9_universal2.whl", hash = "sha256:3e4a1a3232eef2e6c732827d5722db29a0cc8b27af2a4d865b094cf954be9ca1"},
     {file = "cryptography-48.0.1-cp311-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:32143b24adb918f078134e1e230f1eb8cc04886b92c28b5f0041aaf3e5699225"},
@@ -586,9 +591,10 @@ files = [
 name = "distro"
 version = "1.9.0"
 description = "Distro - an OS platform information API"
-optional = false
+optional = true
 python-versions = ">=3.6"
 groups = ["main"]
+markers = "extra == \"llm\" or extra == \"all\""
 files = [
     {file = "distro-1.9.0-py3-none-any.whl", hash = "sha256:7bffd925d65168f85027d8da9af6bddab658135b840670a223589bc0c8ef02b2"},
     {file = "distro-1.9.0.tar.gz", hash = "sha256:2fa77c6fd8940f116ee1d6b94a2f90b13b5ea8d019b98bc8bafdcabcdd9bdbed"},
@@ -601,11 +607,11 @@ description = "Backport of PEP 654 (exception groups)"
 optional = false
 python-versions = ">=3.7"
 groups = ["main", "dev"]
-markers = "python_version == \"3.10\""
 files = [
     {file = "exceptiongroup-1.3.1-py3-none-any.whl", hash = "sha256:a7a39a3bd276781e98394987d3a5701d0c4edffb633bb7a5144577f82c773598"},
     {file = "exceptiongroup-1.3.1.tar.gz", hash = "sha256:8b412432c6055b0b7d14c310000ae93352ed6754f70fa8f7c34141f91c4e3219"},
 ]
+markers = {main = "(extra == \"mcp\" or extra == \"all\" or extra == \"llm\") and python_version == \"3.10\"", dev = "python_version == \"3.10\""}
 
 [package.dependencies]
 typing-extensions = {version = ">=4.6.0", markers = "python_version < \"3.13\""}
@@ -629,9 +635,10 @@ files = [
 name = "google-auth"
 version = "2.53.0"
 description = "Google Authentication Library"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"llm\" or extra == \"all\""
 files = [
     {file = "google_auth-2.53.0-py3-none-any.whl", hash = "sha256:6e7449917c599b35126a99ec268ec6880301f2fea41dce198fe8fd83ff642b68"},
     {file = "google_auth-2.53.0.tar.gz", hash = "sha256:e7e6aa16f6bee7b2b264830fd04f08087a1d5a836df516251a5d15327b246c9c"},
@@ -658,9 +665,10 @@ urllib3 = ["packaging", "urllib3"]
 name = "google-genai"
 version = "2.8.0"
 description = "GenAI Python SDK"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"llm\" or extra == \"all\""
 files = [
     {file = "google_genai-2.8.0-py3-none-any.whl", hash = "sha256:4da0a223a100f4b37f609a68b835e3326ab0fa313314dc0fd9d34e76ee293844"},
     {file = "google_genai-2.8.0.tar.gz", hash = "sha256:37a9b3cb127d763e7f4ca47452ae3562c87728773bd1b149f7b559c239da2bc1"},
@@ -784,9 +792,10 @@ protobuf = ["grpcio-tools (>=1.80.0)"]
 name = "h11"
 version = "0.16.0"
 description = "A pure-Python, bring-your-own-I/O implementation of HTTP/1.1"
-optional = false
+optional = true
 python-versions = ">=3.8"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\" or extra == \"llm\""
 files = [
     {file = "h11-0.16.0-py3-none-any.whl", hash = "sha256:63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86"},
     {file = "h11-0.16.0.tar.gz", hash = "sha256:4e35b956cf45792e4caa5885e69fba00bdbc6ffafbfa020300e549b208ee5ff1"},
@@ -796,9 +805,10 @@ files = [
 name = "h5py"
 version = "3.16.0"
 description = "Read and write HDF5 files from Python"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"hdf5\" or extra == \"all\""
 files = [
     {file = "h5py-3.16.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:e06f864bedb2c8e7c1358e6c73af48519e317457c444d6f3d332bb4e8fa6d7d9"},
     {file = "h5py-3.16.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:ec86d4fffd87a0f4cb3d5796ceb5a50123a2a6d99b43e616e5504e66a953eca3"},
@@ -857,9 +867,10 @@ numpy = ">=1.21.2"
 name = "httpcore"
 version = "1.0.9"
 description = "A minimal low-level HTTP client."
-optional = false
+optional = true
 python-versions = ">=3.8"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\" or extra == \"llm\""
 files = [
     {file = "httpcore-1.0.9-py3-none-any.whl", hash = "sha256:2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55"},
     {file = "httpcore-1.0.9.tar.gz", hash = "sha256:6e34463af53fd2ab5d807f399a9b45ea31c3dfa2276f15a2c3f00afff6e176e8"},
@@ -879,9 +890,10 @@ trio = ["trio (>=0.22.0,<1.0)"]
 name = "httpx"
 version = "0.28.1"
 description = "The next generation HTTP client."
-optional = false
+optional = true
 python-versions = ">=3.8"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\" or extra == \"llm\""
 files = [
     {file = "httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad"},
     {file = "httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc"},
@@ -904,9 +916,10 @@ zstd = ["zstandard (>=0.18.0)"]
 name = "httpx-sse"
 version = "0.4.3"
 description = "Consume Server-Sent Event (SSE) messages with HTTPX."
-optional = false
+optional = true
 python-versions = ">=3.9"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\""
 files = [
     {file = "httpx_sse-0.4.3-py3-none-any.whl", hash = "sha256:0ac1c9fe3c0afad2e0ebb25a934a59f4c7823b60792691f779fad2c5568830fc"},
     {file = "httpx_sse-0.4.3.tar.gz", hash = "sha256:9b1ed0127459a66014aec3c56bebd93da3c1bc8bb6618c8082039a44889a755d"},
@@ -965,9 +978,10 @@ license = ["ukkonen"]
 name = "idna"
 version = "3.15"
 description = "Internationalized Domain Names in Applications (IDNA)"
-optional = false
+optional = true
 python-versions = ">=3.8"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\" or extra == \"llm\" or extra == \"telemetry\""
 files = [
     {file = "idna-3.15-py3-none-any.whl", hash = "sha256:048adeaf8c2d788c40fee287673ccaa74c24ffd8dcf09ffa555a2fbb59f10ac8"},
     {file = "idna-3.15.tar.gz", hash = "sha256:ca962446ea538f7092a95e057da437618e886f4d349216d2b1e294abfdb65fdc"},
@@ -1017,9 +1031,10 @@ files = [
 name = "jsonschema"
 version = "4.26.0"
 description = "An implementation of JSON Schema validation for Python"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\""
 files = [
     {file = "jsonschema-4.26.0-py3-none-any.whl", hash = "sha256:d489f15263b8d200f8387e64b4c3a75f06629559fb73deb8fdfb525f2dab50ce"},
     {file = "jsonschema-4.26.0.tar.gz", hash = "sha256:0c26707e2efad8aa1bfc5b7ce170f3fccc2e4918ff85989ba9ffa9facb2be326"},
@@ -1039,9 +1054,10 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 name = "jsonschema-specifications"
 version = "2025.9.1"
 description = "The JSON Schema meta-schemas and vocabularies, exposed as a Registry"
-optional = false
+optional = true
 python-versions = ">=3.9"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\""
 files = [
     {file = "jsonschema_specifications-2025.9.1-py3-none-any.whl", hash = "sha256:98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe"},
     {file = "jsonschema_specifications-2025.9.1.tar.gz", hash = "sha256:b540987f239e745613c7a9176f3edb72b832a4ac465cf02712288397832b5e8d"},
@@ -1179,9 +1195,10 @@ testing = ["coverage", "pytest", "pytest-cov", "pytest-regressions", "pytest-tim
 name = "mcp"
 version = "1.27.2"
 description = "Model Context Protocol SDK"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\""
 files = [
     {file = "mcp-1.27.2-py3-none-any.whl", hash = "sha256:d6ff5160c6ca65d93013626efb3fc249de683c30b2d8570755ceddd490344de5"},
     {file = "mcp-1.27.2.tar.gz", hash = "sha256:8e02db104096d1c25b28e64bde29a5c32b31bc241710213e12fd4d84985bdfef"},
@@ -1320,9 +1337,10 @@ files = [
 name = "numpy"
 version = "2.2.6"
 description = "Fundamental package for array computing in Python"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"hdf5\" or extra == \"all\""
 files = [
     {file = "numpy-2.2.6-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:b412caa66f72040e6d268491a59f2c43bf03eb6c96dd8f0307829feb7fa2b6fb"},
     {file = "numpy-2.2.6-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:8e41fd67c52b86603a91c1a505ebaef50b3314de0213461c7a6e99c9a3beff90"},
@@ -1640,9 +1658,10 @@ files = [
 name = "psutil"
 version = "6.1.1"
 description = "Cross-platform lib for process and system monitoring in Python."
-optional = false
+optional = true
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,>=2.7"
 groups = ["main"]
+markers = "extra == \"monitoring\" or extra == \"all\""
 files = [
     {file = "psutil-6.1.1-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:9ccc4316f24409159897799b83004cb1e24f9819b0dcf9c0b68bdcb6cefee6a8"},
     {file = "psutil-6.1.1-cp27-cp27m-manylinux2010_i686.whl", hash = "sha256:ca9609c77ea3b8481ab005da74ed894035936223422dc591d6772b147421f777"},
@@ -1671,9 +1690,10 @@ test = ["pytest", "pytest-xdist", "setuptools"]
 name = "pyasn1"
 version = "0.6.3"
 description = "Pure-Python implementation of ASN.1 types and DER/BER/CER codecs (X.208)"
-optional = false
+optional = true
 python-versions = ">=3.8"
 groups = ["main"]
+markers = "extra == \"llm\" or extra == \"all\""
 files = [
     {file = "pyasn1-0.6.3-py3-none-any.whl", hash = "sha256:a80184d120f0864a52a073acc6fc642847d0be408e7c7252f31390c0f4eadcde"},
     {file = "pyasn1-0.6.3.tar.gz", hash = "sha256:697a8ecd6d98891189184ca1fa05d1bb00e2f84b5977c481452050549c8a72cf"},
@@ -1683,9 +1703,10 @@ files = [
 name = "pyasn1-modules"
 version = "0.4.2"
 description = "A collection of ASN.1-based protocols modules"
-optional = false
+optional = true
 python-versions = ">=3.8"
 groups = ["main"]
+markers = "extra == \"llm\" or extra == \"all\""
 files = [
     {file = "pyasn1_modules-0.4.2-py3-none-any.whl", hash = "sha256:29253a9207ce32b64c3ac6600edc75368f98473906e8fd1043bd6b5b1de2c14a"},
     {file = "pyasn1_modules-0.4.2.tar.gz", hash = "sha256:677091de870a80aae844b1ca6134f54652fa2c8c5a52aa396440ac3106e941e6"},
@@ -1698,10 +1719,10 @@ pyasn1 = ">=0.6.1,<0.7.0"
 name = "pycparser"
 version = "3.0"
 description = "C parser in Python"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "platform_python_implementation != \"PyPy\" and implementation_name != \"PyPy\""
+markers = "(extra == \"mcp\" or extra == \"all\" or extra == \"llm\") and platform_python_implementation != \"PyPy\" and implementation_name != \"PyPy\""
 files = [
     {file = "pycparser-3.0-py3-none-any.whl", hash = "sha256:b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992"},
     {file = "pycparser-3.0.tar.gz", hash = "sha256:600f49d217304a5902ac3c37e1281c9fe94e4d0489de643a9504c5cdfdfc6b29"},
@@ -1866,9 +1887,10 @@ typing-extensions = ">=4.14.1"
 name = "pydantic-settings"
 version = "2.14.1"
 description = "Settings management using Pydantic"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\""
 files = [
     {file = "pydantic_settings-2.14.1-py3-none-any.whl", hash = "sha256:6e3c7edfd8277687cdc598f56e5cff0e9bfff0910a3749deaa8d4401c3a2b9de"},
     {file = "pydantic_settings-2.14.1.tar.gz", hash = "sha256:e874d3bec7e787b0c9958277956ed9b4dd5de6a80e162188fdaff7c5e26fd5fa"},
@@ -1905,9 +1927,10 @@ windows-terminal = ["colorama (>=0.4.6)"]
 name = "pyjwt"
 version = "2.13.0"
 description = "JSON Web Token implementation in Python"
-optional = false
+optional = true
 python-versions = ">=3.9"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\""
 files = [
     {file = "pyjwt-2.13.0-py3-none-any.whl", hash = "sha256:66adcc2aff09b3f1bbd95fc1e1577df8ac8723c978552fd43304c8a290ac5728"},
     {file = "pyjwt-2.13.0.tar.gz", hash = "sha256:41571c89ca91598c79e8ef18a2d07367d4810fbbd6f637794879baf1b7703423"},
@@ -1987,9 +2010,10 @@ testing = ["covdefaults (>=2.3)", "coverage (>=7.5.4)", "pytest (>=8.3.5)", "pyt
 name = "python-dotenv"
 version = "1.2.2"
 description = "Read key-value pairs from a .env file and set them as environment variables"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\""
 files = [
     {file = "python_dotenv-1.2.2-py3-none-any.whl", hash = "sha256:1d8214789a24de455a8b8bd8ae6fe3c6b69a5e3d64aa8a8e5d68e694bbcb285a"},
     {file = "python_dotenv-1.2.2.tar.gz", hash = "sha256:2c371a91fbd7ba082c2c1dc1f8bf89ca22564a087c2c287cd9b662adde799cf3"},
@@ -2002,9 +2026,10 @@ cli = ["click (>=5.0)"]
 name = "python-multipart"
 version = "0.0.31"
 description = "A streaming multipart parser for Python"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\""
 files = [
     {file = "python_multipart-0.0.31-py3-none-any.whl", hash = "sha256:8408153d68a9773291fc1da39a8b85a50044bddbabd2dd72e9229776b7b15e28"},
     {file = "python_multipart-0.0.31.tar.gz", hash = "sha256:fc631183bb13e56db3158a4909908dfb2e23565286744e798241e63750e5d680"},
@@ -2014,10 +2039,10 @@ files = [
 name = "pywin32"
 version = "311"
 description = "Python for Window Extensions"
-optional = false
+optional = true
 python-versions = "*"
 groups = ["main"]
-markers = "sys_platform == \"win32\""
+markers = "(extra == \"mcp\" or extra == \"all\") and sys_platform == \"win32\""
 files = [
     {file = "pywin32-311-cp310-cp310-win32.whl", hash = "sha256:d03ff496d2a0cd4a5893504789d4a15399133fe82517455e78bad62efbb7f0a3"},
     {file = "pywin32-311-cp310-cp310-win_amd64.whl", hash = "sha256:797c2772017851984b97180b0bebe4b620bb86328e8a884bb626156295a63b3b"},
@@ -2123,14 +2148,16 @@ files = [
     {file = "pyyaml-6.0.3-cp39-cp39-win_amd64.whl", hash = "sha256:2e71d11abed7344e42a8849600193d15b6def118602c4c176f748e4583246007"},
     {file = "pyyaml-6.0.3.tar.gz", hash = "sha256:d76623373421df22fb4cf8817020cbb7ef15c725b9d5e45f17e189bfc384190f"},
 ]
+markers = {main = "extra == \"yaml\" or extra == \"all\""}
 
 [[package]]
 name = "referencing"
 version = "0.37.0"
 description = "JSON Referencing + Python"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\""
 files = [
     {file = "referencing-0.37.0-py3-none-any.whl", hash = "sha256:381329a9f99628c9069361716891d34ad94af76e461dcb0335825aecc7692231"},
     {file = "referencing-0.37.0.tar.gz", hash = "sha256:44aefc3142c5b842538163acb373e24cce6632bd54bdb01b21ad5863489f50d8"},
@@ -2145,9 +2172,10 @@ typing-extensions = {version = ">=4.4.0", markers = "python_version < \"3.13\""}
 name = "requests"
 version = "2.34.2"
 description = "Python HTTP for Humans."
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"llm\" or extra == \"all\" or extra == \"telemetry\""
 files = [
     {file = "requests-2.34.2-py3-none-any.whl", hash = "sha256:2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0"},
     {file = "requests-2.34.2.tar.gz", hash = "sha256:f288924cae4e29463698d6d60bc6a4da69c89185ad1e0bcc4104f584e960b9ed"},
@@ -2187,9 +2215,10 @@ jupyter = ["ipywidgets (>=7.5.1,<9)"]
 name = "rpds-py"
 version = "0.30.0"
 description = "Python bindings to Rust's persistent data structures (rpds)"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\""
 files = [
     {file = "rpds_py-0.30.0-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:679ae98e00c0e8d68a7fda324e16b90fd5260945b45d3b824c892cec9eea3288"},
     {file = "rpds_py-0.30.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:4cc2206b76b4f576934f0ed374b10d7ca5f457858b157ca52064bdfc26b9fc00"},
@@ -2352,9 +2381,10 @@ files = [
 name = "sniffio"
 version = "1.3.1"
 description = "Sniff out which async library your code is running under"
-optional = false
+optional = true
 python-versions = ">=3.7"
 groups = ["main"]
+markers = "extra == \"llm\" or extra == \"all\""
 files = [
     {file = "sniffio-1.3.1-py3-none-any.whl", hash = "sha256:2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2"},
     {file = "sniffio-1.3.1.tar.gz", hash = "sha256:f4324edc670a0f49750a81b895f35c3adb843cca46f0530f79fc1babb23789dc"},
@@ -2376,9 +2406,10 @@ files = [
 name = "sse-starlette"
 version = "3.4.4"
 description = "SSE plugin for Starlette"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\""
 files = [
     {file = "sse_starlette-3.4.4-py3-none-any.whl", hash = "sha256:3f4dd50d8aed2771a091f3a83000323fc3844541c16b4fe585ae2420cc6df973"},
     {file = "sse_starlette-3.4.4.tar.gz", hash = "sha256:07e0fa0460138baf25cdd5fb28683472c3995dc1642225191b3832d62526bcb0"},
@@ -2399,9 +2430,10 @@ uvicorn = ["uvicorn (>=0.34.0)"]
 name = "starlette"
 version = "1.3.1"
 description = "The little ASGI library that shines."
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"mcp\" or extra == \"all\""
 files = [
     {file = "starlette-1.3.1-py3-none-any.whl", hash = "sha256:c7372aae11c3c3f26a42df7bd626cec2f47d03483d261d369516a615a53714c6"},
     {file = "starlette-1.3.1.tar.gz", hash = "sha256:05d0213193f2fbaae60e2ecb593b4add4262ad4e46536b54abe36f11a71724e0"},
@@ -2585,9 +2617,10 @@ typing-extensions = ">=4.12.0"
 name = "urllib3"
 version = "2.7.0"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"llm\" or extra == \"all\" or extra == \"telemetry\""
 files = [
     {file = "urllib3-2.7.0-py3-none-any.whl", hash = "sha256:9fb4c81ebbb1ce9531cce37674bbc6f1360472bc18ca9a553ede278ef7276897"},
     {file = "urllib3-2.7.0.tar.gz", hash = "sha256:231e0ec3b63ceb14667c67be60f2f2c40a518cb38b03af60abc813da26505f4c"},
@@ -2603,10 +2636,10 @@ zstd = ["backports-zstd (>=1.0.0) ; python_version < \"3.14\""]
 name = "uvicorn"
 version = "0.48.0"
 description = "The lightning-fast ASGI server."
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "sys_platform != \"emscripten\""
+markers = "(extra == \"mcp\" or extra == \"all\") and sys_platform != \"emscripten\""
 files = [
     {file = "uvicorn-0.48.0-py3-none-any.whl", hash = "sha256:48097851328b87ec36117d3d575234519eb58c2b22d79666e9bbc6c49a761dad"},
     {file = "uvicorn-0.48.0.tar.gz", hash = "sha256:a5504207195d08c2511bf9125ede5ac4a4b71725d519e758d01dcf0bc2d31c37"},
@@ -2643,9 +2676,10 @@ typing-extensions = {version = ">=4.13.2", markers = "python_version < \"3.11\""
 name = "websockets"
 version = "16.0"
 description = "An implementation of the WebSocket Protocol (RFC 6455 & 7692)"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"llm\" or extra == \"all\""
 files = [
     {file = "websockets-16.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:04cdd5d2d1dacbad0a7bf36ccbcd3ccd5a30ee188f2560b7a62a30d14107b31a"},
     {file = "websockets-16.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:8ff32bb86522a9e5e31439a58addbb0166f0204d64066fb955265c4e214160f0"},
@@ -2732,9 +2766,15 @@ test = ["big-O", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more_it
 type = ["pytest-mypy"]
 
 [extras]
+all = ["google-genai", "h5py", "mcp", "psutil", "pyyaml"]
+hdf5 = ["h5py"]
+llm = ["google-genai"]
+mcp = ["mcp"]
+monitoring = ["psutil"]
 telemetry = ["opentelemetry-api", "opentelemetry-exporter-otlp", "opentelemetry-sdk"]
+yaml = ["pyyaml"]
 
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "f64af212c9a696664960909886a0dd42755c79ef71c502fa9a08ba44fc86d932"
+content-hash = "6f5e3ea5b680b68658e1bf211257eaf295b1df032a6870aa19c0454ce9ce19e8"

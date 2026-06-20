@@ -19,10 +19,21 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-import yaml
-
 from promptmc._typing import PathLike
 from promptmc.openmc_integration import OpenMCRunner
+
+try:
+    import yaml
+
+    _YAML_AVAILABLE = True
+except ImportError:  # pragma: no cover - pyyaml is an optional extra
+    yaml = None  # type: ignore[assignment]
+    _YAML_AVAILABLE = False
+
+_YAML_MISSING_MSG = (
+    "Install promptmc[yaml] for YAML batch spec support "
+    "(JSON batch specs work without it)."
+)
 
 
 class ParallelMode(Enum):
@@ -397,6 +408,8 @@ def load_batch_spec(spec_path: PathLike) -> BatchSpec:
     content = spec_path.read_text()
 
     if spec_path.suffix in [".yaml", ".yml"]:
+        if not _YAML_AVAILABLE:
+            raise ImportError(_YAML_MISSING_MSG)
         data = yaml.safe_load(content)
     elif spec_path.suffix == ".json":
         data = json.loads(content)
@@ -439,6 +452,8 @@ def save_batch_spec(spec: BatchSpec, output_path: PathLike) -> Path:
     }
 
     if output_path.suffix in [".yaml", ".yml"]:
+        if not _YAML_AVAILABLE:
+            raise ImportError(_YAML_MISSING_MSG)
         output_path.write_text(yaml.safe_dump(data, sort_keys=False))
     elif output_path.suffix == ".json":
         output_path.write_text(json.dumps(data, indent=2))
