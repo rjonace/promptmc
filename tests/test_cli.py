@@ -386,7 +386,6 @@ def test_batch_success(mock_load, mock_runner_cls, tmp_path):
     mock_spec.description = "desc"
     mock_spec.base_input = "sim"
     mock_spec.output_root = "out"
-    mock_spec.parameter_sweeps = []
     mock_load.return_value = mock_spec
 
     mock_summary = MagicMock()
@@ -416,7 +415,6 @@ def test_batch_with_failures(mock_load, mock_runner_cls, tmp_path):
     mock_spec.description = "desc"
     mock_spec.base_input = "sim"
     mock_spec.output_root = "out"
-    mock_spec.parameter_sweeps = []
     mock_load.return_value = mock_spec
 
     mock_summary = MagicMock()
