@@ -75,7 +75,7 @@ src/promptmc/
 ├── commands/              # one module per CLI subcommand: plan, run, validate, analyze, batch, templates, info, doctor (+ common.py shared helpers)
 ├── openmc_integration.py  # core OpenMC wrapper — OpenMCInstaller / OpenMCValidator / OpenMCRunner (subprocess + Python API), ExecutionMode, SimulationResult (run outcome)
 ├── schema.py              # SettingsSchema + SchemaValidator/SchemaValidationResult; geometry/materials validation delegates to the geometry/ models via parse_*_xml; uses defusedxml
-├── templates.py           # config templates (Criticality / FixedSource / Shielding / ReactorPin / Depletion) + TemplateRegistry
+├── templates.py           # config templates (Criticality / FixedSource / Shielding / ReactorPin / Depletion) + TemplateRegistry; render() emits a complete input deck dir (settings.xml + geometry.xml + materials.xml)
 ├── assistant.py           # NL planner behind `promptmc plan` (NaturalLanguageAssistant) — deterministic keyword planner (no-key default; keep it) + Gemini `--llm` path; v0.8 rebuilds only the `--llm` path on the generation pipeline
 ├── batch.py               # batch + parallel execution (BatchRunner, ParallelExecutor)
 ├── resources.py           # resource limits / monitoring / cleanup, temp simulation workspaces

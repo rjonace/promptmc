@@ -19,16 +19,16 @@ def plan(
         help="Plain-English OpenMC request, e.g. 'make a shielding run with 1M particles'",
     ),
     output: Path = typer.Option(
-        Path("settings.xml"),
+        Path("openmc_inputs"),
         "--output",
         "-o",
-        help="Output settings.xml path when --write is used",
+        help="Output directory for the input deck when --write is used",
     ),
     write: bool = typer.Option(
         False,
         "--write",
         "-w",
-        help="Write the recommended settings.xml file",
+        help="Write the recommended OpenMC input deck",
     ),
     llm: bool = typer.Option(
         False,
@@ -100,7 +100,7 @@ def plan(
     if write:
         result_path = result.render(output)
         console.print(
-            f"[green]✓[/green] Wrote settings file: [cyan]{result_path}[/cyan]"
+            f"[green]✓[/green] Wrote input deck: [cyan]{result_path}/[/cyan]"
         )
         console.print(
             f"[dim]Next: validate with `promptmc validate {result_path} --schema`[/dim]"

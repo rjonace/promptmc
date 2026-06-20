@@ -282,16 +282,18 @@ def test_template_invalid_type():
 
 
 def test_template_criticality(tmp_path):
-    out = tmp_path / "settings.xml"
+    out = tmp_path / "deck"
     result = runner.invoke(
         app, ["template", "criticality", "--output", str(out)]
     )
     assert result.exit_code == 0
-    assert out.exists()
+    assert (out / "settings.xml").exists()
+    assert (out / "geometry.xml").exists()
+    assert (out / "materials.xml").exists()
 
 
 def test_template_fixed_source(tmp_path):
-    out = tmp_path / "settings.xml"
+    out = tmp_path / "deck"
     result = runner.invoke(
         app,
         [
@@ -304,7 +306,7 @@ def test_template_fixed_source(tmp_path):
         ],
     )
     assert result.exit_code == 0
-    assert out.exists()
+    assert (out / "settings.xml").exists()
 
 
 # ---------------------------------------------------------------------------
@@ -329,7 +331,7 @@ def test_plan_shielding_plan():
 
 
 def test_plan_write_settings(tmp_path):
-    output = tmp_path / "settings.xml"
+    output = tmp_path / "deck"
     result = runner.invoke(
         app,
         [
@@ -341,7 +343,7 @@ def test_plan_write_settings(tmp_path):
         ],
     )
     assert result.exit_code == 0
-    assert output.exists()
+    assert (output / "settings.xml").exists()
 
 
 def test_plan_llm_fails_fast():
@@ -623,7 +625,7 @@ def test_plan_json(tmp_path):
 
 def test_plan_json_write(tmp_path):
     """`plan --json --write` reports the written path and creates the file."""
-    out = tmp_path / "settings.xml"
+    out = tmp_path / "deck"
     result = runner.invoke(
         app,
         ["plan", "criticality run", "--json", "--write", "--output", str(out)],
@@ -631,7 +633,7 @@ def test_plan_json_write(tmp_path):
     assert result.exit_code == 0
     payload = json.loads(result.stdout)
     assert payload["written"] == str(out)
-    assert out.exists()
+    assert (out / "settings.xml").exists()
 
 
 @patch("promptmc.commands.info.OpenMCInstaller")

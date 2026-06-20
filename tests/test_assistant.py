@@ -83,10 +83,10 @@ def test_local_plan_renders_settings_xml(tmp_path):
     plan = plan = assistant.plan(
         "criticality run with 20000 particles and 30 batches"
     )
-    output = tmp_path / "settings.xml"
+    output = tmp_path / "deck"
 
     result = plan.render(output)
-    root = ET.parse(result).getroot()
+    root = ET.parse(result / "settings.xml").getroot()
 
     assert result == output
     assert root.find("particles").text == "20000"

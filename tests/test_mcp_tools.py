@@ -198,15 +198,15 @@ def _fake_metadata():
 
 @patch("promptmc.mcp.tools.get_template")
 def test_render_template_success(mock_get, tmp_path):
-    out_file = tmp_path / "settings.xml"
+    out_dir = tmp_path / "deck"
     template = MagicMock()
-    template.render.return_value = out_file
+    template.render.return_value = out_dir
     template.metadata = _fake_metadata()
     mock_get.return_value = template
     result = tools.render_template(
-        TemplateInput(template="criticality", output_path=str(out_file))
+        TemplateInput(template="criticality", output_path=str(out_dir))
     )
-    assert result.output_path == str(out_file)
+    assert result.output_path == str(out_dir)
     assert result.template_metadata.template_type == "criticality"
     assert result.error is None
 

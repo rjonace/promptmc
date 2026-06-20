@@ -53,7 +53,7 @@ class NaturalLanguagePlan:
     next_steps: list[str] = field(default_factory=list)
     source: str = "local"
 
-    def command(self, output_path: str | Path = "settings.xml") -> str:
+    def command(self, output_path: str | Path = "openmc_inputs") -> str:
         """Generate the CLI command to execute this plan."""
         parts = [
             "promptmc",
@@ -71,7 +71,7 @@ class NaturalLanguagePlan:
         return shlex.join(parts)
 
     def render(self, output_path: str | Path) -> Path:
-        """Render the plan to an XML settings file."""
+        """Render the plan to a complete OpenMC input deck directory."""
         template = get_template(self.template_type)
         return template.render(
             output_path=output_path,

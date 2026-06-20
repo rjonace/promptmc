@@ -19,10 +19,10 @@ def template(
         help="Template type: criticality, fixed_source, shielding, reactor_pin, depletion",
     ),
     output: Path = typer.Option(
-        Path("settings.xml"),
+        Path("openmc_inputs"),
         "--output",
         "-o",
-        help="Output file path",
+        help="Output directory for the generated input deck",
     ),
     particles: int | None = typer.Option(
         None, "--particles", "-p", help="Override particles"
@@ -34,11 +34,11 @@ def template(
         None, "--inactive", "-i", help="Override inactive"
     ),
 ) -> None:
-    """Generate a settings.xml from a named template."""
+    """Generate a complete OpenMC input deck from a named template."""
     tmpl_type = TemplateType(template_type.lower())
 
     tmpl = get_template(tmpl_type)
-    result_path = tmpl.render(
+    result_dir = tmpl.render(
         output_path=output,
         particles=particles,
         batches=batches,
@@ -47,10 +47,11 @@ def template(
 
     console.print(
         Panel(
-            f"[bold]Template Generated[/bold]\n\n"
+            f"[bold]Input Deck Generated[/bold]\n\n"
             f"Type: [cyan]{tmpl.metadata.name}[/cyan]\n"
             f"Description: {tmpl.metadata.description}\n"
-            f"Output: [cyan]{result_path}[/cyan]",
+            f"Output: [cyan]{result_dir}/[/cyan] "
+            f"(settings.xml, geometry.xml, materials.xml)",
             title="Configuration Template",
             border_style="green",
         )
