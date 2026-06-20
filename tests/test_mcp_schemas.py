@@ -69,7 +69,7 @@ def test_template_rejects_unknown_template():
 
 def test_template_input_defaults():
     inp = TemplateInput(template="criticality")
-    assert inp.output_path == "settings.xml"
+    assert inp.output_path == "openmc_inputs"
     assert inp.particles is None
 
 

@@ -1,10 +1,9 @@
 """Tests for configuration templates."""
 
-import tempfile
 import xml.etree.ElementTree as ET
-from pathlib import Path
 
 import pytest
+from promptmc.schema import SchemaValidator
 from promptmc.templates import (
     CriticalityTemplate,
     DepletionTemplate,
@@ -53,86 +52,84 @@ def test_depletion_template_metadata():
     assert tmpl.metadata.name == "Depletion"
 
 
-def test_render_depletion_template():
+def test_render_writes_complete_deck(tmp_path):
+    """render() writes settings/geometry/materials into a directory."""
+    tmpl = CriticalityTemplate()
+    result = tmpl.render(output_path=tmp_path / "deck")
+
+    assert result == tmp_path / "deck"
+    assert result.is_dir()
+    for name in ("settings.xml", "geometry.xml", "materials.xml"):
+        assert (result / name).exists()
+
+
+def test_render_depletion_template(tmp_path):
     """Test rendering depletion template (eigenvalue transport settings)."""
     tmpl = DepletionTemplate()
+    result = tmpl.render(output_path=tmp_path / "deck")
 
-    with tempfile.NamedTemporaryFile(suffix=".xml", delete=False) as f:
-        temp_path = Path(f.name)
-
-    try:
-        tmpl.render(output_path=temp_path)
-        tree = ET.parse(temp_path)
-        root = tree.getroot()
-        assert root.tag == "settings"
-        assert root.find("run_mode").text == "eigenvalue"
-        assert root.find("source") is not None
-    finally:
-        temp_path.unlink()
+    root = ET.parse(result / "settings.xml").getroot()
+    assert root.tag == "settings"
+    assert root.find("run_mode").text == "eigenvalue"
+    assert root.find("source") is not None
 
 
-def test_render_criticality_template():
+def test_render_criticality_template(tmp_path):
     """Test rendering criticality template."""
     tmpl = CriticalityTemplate()
+    result = tmpl.render(output_path=tmp_path / "deck")
 
-    with tempfile.NamedTemporaryFile(suffix=".xml", delete=False) as f:
-        temp_path = Path(f.name)
-
-    try:
-        result = tmpl.render(output_path=temp_path)
-        assert result == temp_path
-        assert temp_path.exists()
-
-        # Parse and verify
-        tree = ET.parse(temp_path)
-        root = tree.getroot()
-        assert root.tag == "settings"
-        run_mode = root.find("run_mode")
-        assert run_mode is not None
-        assert run_mode.text == "eigenvalue"
-    finally:
-        temp_path.unlink()
+    root = ET.parse(result / "settings.xml").getroot()
+    assert root.tag == "settings"
+    run_mode = root.find("run_mode")
+    assert run_mode is not None
+    assert run_mode.text == "eigenvalue"
 
 
-def test_render_with_overrides():
+def test_render_with_overrides(tmp_path):
     """Test rendering with parameter overrides."""
     tmpl = CriticalityTemplate()
+    result = tmpl.render(
+        output_path=tmp_path / "deck",
+        particles=50000,
+        batches=200,
+        inactive=20,
+    )
 
-    with tempfile.NamedTemporaryFile(suffix=".xml", delete=False) as f:
-        temp_path = Path(f.name)
-
-    try:
-        tmpl.render(
-            output_path=temp_path,
-            particles=50000,
-            batches=200,
-            inactive=20,
-        )
-
-        tree = ET.parse(temp_path)
-        root = tree.getroot()
-        assert root.find("particles").text == "50000"
-        assert root.find("batches").text == "200"
-        assert root.find("inactive").text == "20"
-    finally:
-        temp_path.unlink()
+    root = ET.parse(result / "settings.xml").getroot()
+    assert root.find("particles").text == "50000"
+    assert root.find("batches").text == "200"
+    assert root.find("inactive").text == "20"
 
 
-def test_render_fixed_source_template():
+def test_render_fixed_source_template(tmp_path):
     """Test rendering fixed source template."""
     tmpl = FixedSourceTemplate()
+    result = tmpl.render(output_path=tmp_path / "deck")
 
-    with tempfile.NamedTemporaryFile(suffix=".xml", delete=False) as f:
-        temp_path = Path(f.name)
+    root = ET.parse(result / "settings.xml").getroot()
+    run_mode = root.find("run_mode")
+    assert run_mode.text == "fixed source"
 
-    try:
-        tmpl.render(output_path=temp_path)
-        tree = ET.parse(temp_path)
-        root = tree.getroot()
-        run_mode = root.find("run_mode")
-        assert run_mode.text == "fixed source"
-    finally:
-        temp_path.unlink()
+
+@pytest.mark.parametrize(
+    "template_type",
+    [
+        TemplateType.CRITICALITY,
+        TemplateType.FIXED_SOURCE,
+        TemplateType.SHIELDING,
+        TemplateType.REACTOR_PIN,
+        TemplateType.DEPLETION,
+    ],
+)
+def test_rendered_deck_passes_schema_validation(template_type, tmp_path):
+    """Every template renders a deck that passes SchemaValidator."""
+    deck = tmp_path / template_type.value
+    get_template(template_type).render(output_path=deck)
+
+    result = SchemaValidator().validate_directory(deck)
+
+    assert result.is_valid, [issue.message for issue in result.issues]
 
 
 def test_template_registry_initialization():

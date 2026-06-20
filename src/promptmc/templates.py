@@ -9,6 +9,19 @@ from pathlib import Path
 from typing import Any
 
 from promptmc._typing import PathLike
+from promptmc.benchmarks import godiva, pwr_pin
+from promptmc.geometry.materials import Material, MaterialsModel, NuclideSpec
+from promptmc.geometry.primitives import (
+    Cell,
+    GeometryModel,
+    HalfSpace,
+    Sphere,
+    Universe,
+)
+from promptmc.geometry.xml_serializer import (
+    serialize_geometry,
+    serialize_materials,
+)
 from promptmc.provenance import write_xml_with_provenance
 
 
@@ -54,19 +67,25 @@ class ConfigurationTemplate:
         inactive: int | None = None,
         **kwargs: Any,
     ) -> Path:
-        """Render template to output path.
+        """Render a complete OpenMC input deck into a directory.
+
+        Writes ``settings.xml`` (with a provenance header), ``geometry.xml``,
+        and ``materials.xml`` so the result is a runnable deck that passes
+        ``SchemaValidator.validate_directory``.
 
         Args:
-            output_path: Where to write the rendered template
+            output_path: Directory to write the input deck into; created if
+                it does not exist.
             particles: Override default particles
             batches: Override default batches
             inactive: Override default inactive batches
             **kwargs: Additional template parameters
 
         Returns:
-            Path to rendered file
+            Path to the directory containing the rendered deck.
         """
-        output_path = Path(output_path)
+        output_dir = Path(output_path)
+        output_dir.mkdir(parents=True, exist_ok=True)
         particles = particles or self.metadata.default_particles
         batches = batches or self.metadata.default_batches
         inactive = (
@@ -79,8 +98,49 @@ class ConfigurationTemplate:
             inactive=inactive,
             **kwargs,
         )
+        write_xml_with_provenance(root, output_dir / "settings.xml")
+        serialize_geometry(
+            self._build_geometry(**kwargs), output_dir / "geometry.xml"
+        )
+        serialize_materials(
+            self._build_materials(**kwargs), output_dir / "materials.xml"
+        )
 
-        return write_xml_with_provenance(root, output_path)
+        return output_dir
+
+    def _build_geometry(self, **kwargs: Any) -> GeometryModel:
+        """Build the geometry model for this template.
+
+        The base implementation returns a minimal bounded geometry: a single
+        void cell inside a vacuum sphere. Subclasses override this to emit a
+        meaningful geometry.
+
+        Args:
+            **kwargs: Additional template parameters
+
+        Returns:
+            A valid ``GeometryModel``.
+        """
+        sphere = Sphere(id=1, name="boundary", r=10.0, boundary_type="vacuum")
+        cell = Cell(id=1, name="void", region=HalfSpace(surface_id=1, side="-"))
+        return GeometryModel(
+            surfaces=[sphere], root_universe=Universe(id=1, cells=[cell])
+        )
+
+    def _build_materials(self, **kwargs: Any) -> MaterialsModel:
+        """Build the materials model for this template.
+
+        The base implementation returns an empty materials set (the base
+        geometry is void). Subclasses override this to emit materials that
+        match their geometry.
+
+        Args:
+            **kwargs: Additional template parameters
+
+        Returns:
+            A valid ``MaterialsModel``.
+        """
+        return MaterialsModel(materials=[])
 
     def _build_xml(
         self,
@@ -101,6 +161,30 @@ class ConfigurationTemplate:
             Root XML element
         """
         raise NotImplementedError("Subclasses must implement _build_xml")
+
+
+def _shielded_sphere() -> tuple[GeometryModel, MaterialsModel]:
+    """A point source inside a bounded sphere of water shielding."""
+    sphere = Sphere(id=1, name="shield_outer", r=50.0, boundary_type="vacuum")
+    cell = Cell(
+        id=1,
+        name="shield",
+        region=HalfSpace(surface_id=1, side="-"),
+        fill_material_id=1,
+    )
+    geom = GeometryModel(
+        surfaces=[sphere], root_universe=Universe(id=1, cells=[cell])
+    )
+    water = Material(
+        id=1,
+        name="Water",
+        density_g_per_cc=1.0,
+        nuclides=[
+            NuclideSpec(name="H1", fraction=0.1119),
+            NuclideSpec(name="O16", fraction=0.8881),
+        ],
+    )
+    return geom, MaterialsModel(materials=[water])
 
 
 class CriticalityTemplate(ConfigurationTemplate):
@@ -145,6 +229,12 @@ class CriticalityTemplate(ConfigurationTemplate):
         params.text = kwargs.get("source_box", "-10 -10 -10 10 10 10")
 
         return root
+
+    def _build_geometry(self, **kwargs: Any) -> GeometryModel:
+        return godiva.build()[0]
+
+    def _build_materials(self, **kwargs: Any) -> MaterialsModel:
+        return godiva.build()[1]
 
 
 class FixedSourceTemplate(ConfigurationTemplate):
@@ -191,6 +281,12 @@ class FixedSourceTemplate(ConfigurationTemplate):
         energy_params.text = kwargs.get("source_energy", "14.0e6 1.0")
 
         return root
+
+    def _build_geometry(self, **kwargs: Any) -> GeometryModel:
+        return _shielded_sphere()[0]
+
+    def _build_materials(self, **kwargs: Any) -> MaterialsModel:
+        return _shielded_sphere()[1]
 
 
 class ShieldingTemplate(ConfigurationTemplate):
@@ -243,6 +339,12 @@ class ShieldingTemplate(ConfigurationTemplate):
 
         return root
 
+    def _build_geometry(self, **kwargs: Any) -> GeometryModel:
+        return _shielded_sphere()[0]
+
+    def _build_materials(self, **kwargs: Any) -> MaterialsModel:
+        return _shielded_sphere()[1]
+
 
 class ReactorPinTemplate(ConfigurationTemplate):
     """Template for reactor pin cell calculations."""
@@ -291,6 +393,12 @@ class ReactorPinTemplate(ConfigurationTemplate):
         )
 
         return root
+
+    def _build_geometry(self, **kwargs: Any) -> GeometryModel:
+        return pwr_pin.build()[0]
+
+    def _build_materials(self, **kwargs: Any) -> MaterialsModel:
+        return pwr_pin.build()[1]
 
 
 class DepletionTemplate(ConfigurationTemplate):
@@ -343,6 +451,12 @@ class DepletionTemplate(ConfigurationTemplate):
         params.text = kwargs.get("source_box", "-10 -10 -10 10 10 10")
 
         return root
+
+    def _build_geometry(self, **kwargs: Any) -> GeometryModel:
+        return godiva.build()[0]
+
+    def _build_materials(self, **kwargs: Any) -> MaterialsModel:
+        return godiva.build()[1]
 
 
 class TemplateRegistry:

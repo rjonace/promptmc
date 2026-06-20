@@ -91,7 +91,10 @@ class TemplateInput(BaseModel):
     """Input for openmc_template tool."""
 
     template: TemplateName = Field(description="Template type to render")
-    output_path: str = Field(default="settings.xml")
+    output_path: str = Field(
+        default="openmc_inputs",
+        description="Directory to write the input deck into",
+    )
     particles: int | None = None
     batches: int | None = None
     inactive: int | None = None
@@ -111,7 +114,10 @@ class TemplateMetadataResult(BaseModel):
 class TemplateOutput(ToolOutput):
     """Output for openmc_template tool."""
 
-    output_path: str = ""
+    output_path: str = Field(
+        default="",
+        description="Directory containing the rendered input deck",
+    )
     template_metadata: TemplateMetadataResult | None = None
 
 

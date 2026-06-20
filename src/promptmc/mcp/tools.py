@@ -209,13 +209,17 @@ def _run_schema_validation(path: Path) -> InternalSchemaResult | None:
 
 
 def render_template(data: TemplateInput) -> TemplateOutput:
-    """Render a settings.xml file from a named template.
+    """Render a complete OpenMC input deck from a named template.
+
+    Writes ``settings.xml``, ``geometry.xml`` and ``materials.xml`` into the
+    requested output directory.
 
     Args:
-        data: The template name and optional particle/batch overrides.
+        data: The template name, output directory, and optional
+            particle/batch overrides.
 
     Returns:
-        The rendered output path and template metadata, or an ``error`` with
+        The output directory and template metadata, or an ``error`` with
         ``template_metadata`` left as ``None`` on failure.
     """
     try:
