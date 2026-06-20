@@ -74,7 +74,7 @@ src/promptmc/
 ├── cli.py                 # Typer CLI entry point (dispatches into commands/)
 ├── commands/              # one module per CLI subcommand: plan, run, validate, analyze, batch, templates, info, doctor (+ common.py shared helpers)
 ├── openmc_integration.py  # core OpenMC wrapper — OpenMCInstaller / OpenMCValidator / OpenMCRunner (subprocess + Python API), ExecutionMode, SimulationResult (run outcome)
-├── schema.py              # Pydantic validation of OpenMC XML (Settings/Materials/Geometry…) + SchemaValidator; uses defusedxml
+├── schema.py              # SettingsSchema + SchemaValidator/SchemaValidationResult; geometry/materials validation delegates to the geometry/ models via parse_*_xml; uses defusedxml
 ├── templates.py           # config templates (Criticality / FixedSource / Shielding / ReactorPin / Depletion) + TemplateRegistry
 ├── assistant.py           # NL planner behind `promptmc plan` (NaturalLanguageAssistant) — deterministic keyword planner (no-key default; keep it) + Gemini `--llm` path; v0.8 rebuilds only the `--llm` path on the generation pipeline
 ├── batch.py               # batch + parallel execution (BatchRunner, ParallelExecutor)
@@ -83,7 +83,7 @@ src/promptmc/
 ├── visualization.py       # result parsing (ResultParser → StatePoint.keff) + plotting
 ├── errors.py              # PromptMCError hierarchy + configure_logging() + retry logic
 ├── telemetry.py           # optional OpenTelemetry (TelemetryManager; no-ops when absent) — the v0.9 hook
-├── geometry/              # Pydantic CSG models, materials, tallies schemas + XML serializer (v0.3)
+├── geometry/              # Pydantic CSG models, materials, tallies schemas + XML serializer/deserializer (parse_geometry_xml/parse_materials_xml, v0.4)
 ├── benchmarks/            # validated reference geometries library: Godiva, PWR pin (v0.3/v0.4)
 ├── examples/              # bundled UO2 criticality example (package data backing the MCP examples resource)
 └── mcp/                    # the v0.2 MCP server

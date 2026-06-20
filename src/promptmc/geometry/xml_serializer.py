@@ -1,4 +1,4 @@
-"""Dual-mode XML serializer for CSG geometries and materials."""
+"""Dual-mode XML serializer/deserializer for CSG geometries and materials."""
 
 from __future__ import annotations
 
@@ -6,13 +6,24 @@ import xml.etree.ElementTree as ET  # nosec B405
 from pathlib import Path
 from typing import Any
 
+from defusedxml.ElementTree import parse as defused_parse
+from pydantic import TypeAdapter
+
 from promptmc._typing import PathLike
 from promptmc.geometry.materials import Material, MaterialsModel
 from promptmc.geometry.primitives import (
+    Cell,
+    Complement,
     GeometryModel,
+    HalfSpace,
+    Intersection,
     Region,
     Surface,
+    Union_,
+    Universe,
 )
+
+_SURFACE_ADAPTER: TypeAdapter[Surface] = TypeAdapter(Surface)
 
 # Guarded openmc import
 try:
@@ -310,3 +321,271 @@ def serialize_materials(model: MaterialsModel, path: PathLike) -> None:
         tree = ET.ElementTree(root)
         ET.indent(tree, space="  ")
         tree.write(path, encoding="utf-8", xml_declaration=True)
+
+
+# ---------------------------------------------------------------------------
+# Deserialization: OpenMC XML -> promptmc models
+# ---------------------------------------------------------------------------
+
+# Ordered coefficient fields per surface type (reverse of _geometry_model_to_dict).
+_SURFACE_COEFF_FIELDS: dict[str, tuple[str, ...]] = {
+    "x-plane": ("x0",),
+    "y-plane": ("y0",),
+    "z-plane": ("z0",),
+    "plane": ("a", "b", "c", "d"),
+    "sphere": ("x0", "y0", "z0", "r"),
+    "x-cylinder": ("y0", "z0", "r"),
+    "y-cylinder": ("x0", "z0", "r"),
+    "z-cylinder": ("x0", "y0", "r"),
+}
+
+
+def _opt_int(value: str | None) -> int | None:
+    """Parse an optional integer attribute, treating empty as absent."""
+    return int(value) if value else None
+
+
+def _tokenize_region(expr: str) -> list[str]:
+    """Split an OpenMC region expression into tokens.
+
+    Tokens are halfspaces (``-1``, ``+2``, ``3``) and the operators
+    ``(``, ``)``, ``|`` (union) and ``~`` (complement). Whitespace between
+    operands denotes intersection.
+    """
+    tokens: list[str] = []
+    i = 0
+    n = len(expr)
+    while i < n:
+        c = expr[i]
+        if c.isspace():
+            i += 1
+        elif c in "()|~":
+            tokens.append(c)
+            i += 1
+        elif c in "+-" or c.isdigit():
+            j = i + 1 if c in "+-" else i
+            start = j
+            while j < n and expr[j].isdigit():
+                j += 1
+            if j == start:
+                raise ValueError(f"Unsupported region syntax: {expr!r}")
+            tokens.append(expr[i:j])
+            i = j
+        else:
+            raise ValueError(
+                f"Unsupported region syntax near {c!r} in {expr!r}"
+            )
+    return tokens
+
+
+class _RegionParser:
+    """Recursive-descent parser for OpenMC region expressions.
+
+    Grammar (precedence low -> high)::
+
+        union        := intersection ('|' intersection)*
+        intersection := unary (unary)*          # space-separated
+        unary        := '~' unary | '(' union ')' | halfspace
+        halfspace    := ['+'|'-'] integer
+    """
+
+    def __init__(self, tokens: list[str]) -> None:
+        self._tokens = tokens
+        self._pos = 0
+
+    def parse(self) -> Region:
+        if not self._tokens:
+            raise ValueError("Empty region expression")
+        region = self._union()
+        if self._pos != len(self._tokens):
+            raise ValueError(
+                f"Unexpected trailing tokens in region: "
+                f"{self._tokens[self._pos:]!r}"
+            )
+        return region
+
+    def _peek(self) -> str | None:
+        return (
+            self._tokens[self._pos] if self._pos < len(self._tokens) else None
+        )
+
+    def _advance(self) -> str:
+        tok = self._tokens[self._pos]
+        self._pos += 1
+        return tok
+
+    def _union(self) -> Region:
+        nodes = [self._intersection()]
+        while self._peek() == "|":
+            self._advance()
+            nodes.append(self._intersection())
+        if len(nodes) == 1:
+            return nodes[0]
+        return Union_(nodes=nodes)
+
+    def _intersection(self) -> Region:
+        nodes = [self._unary()]
+        while self._peek() is not None and self._peek() not in ("|", ")"):
+            nodes.append(self._unary())
+        if len(nodes) == 1:
+            return nodes[0]
+        return Intersection(nodes=nodes)
+
+    def _unary(self) -> Region:
+        tok = self._peek()
+        if tok is None:
+            raise ValueError("Unexpected end of region expression")
+        if tok == "~":
+            self._advance()
+            return Complement(node=self._unary())
+        if tok == "(":
+            self._advance()
+            region = self._union()
+            if self._peek() != ")":
+                raise ValueError("Unbalanced parentheses in region expression")
+            self._advance()
+            return region
+        if tok in ("|", ")"):
+            raise ValueError(f"Unexpected token {tok!r} in region expression")
+        return self._halfspace(self._advance())
+
+    @staticmethod
+    def _halfspace(token: str) -> HalfSpace:
+        if token[0] in "+-":
+            side = token[0]
+            number = token[1:]
+        else:
+            side = "+"
+            number = token
+        try:
+            surface_id = int(number)
+        except ValueError as exc:
+            raise ValueError(f"Unsupported region syntax: {token!r}") from exc
+        return HalfSpace(surface_id=surface_id, side=side)  # type: ignore[arg-type]
+
+
+def parse_region_string(expr: str) -> Region:
+    """Parse an OpenMC region expression into a Region tree.
+
+    Supports halfspaces, space-separated intersections, ``|`` unions,
+    ``~`` complements and parentheses. Raises ``ValueError`` with a clear
+    message for unsupported syntax.
+    """
+    return _RegionParser(_tokenize_region(expr)).parse()
+
+
+def _surface_from_element(elem: ET.Element) -> Surface:
+    """Build a Surface model from an OpenMC ``<surface>`` element."""
+    stype = elem.get("type")
+    if stype not in _SURFACE_COEFF_FIELDS:
+        raise ValueError(f"Unsupported surface type: {stype!r}")
+
+    fields = _SURFACE_COEFF_FIELDS[stype]
+    raw_coeffs = (elem.get("coeffs") or "").split()
+    if len(raw_coeffs) != len(fields):
+        raise ValueError(
+            f"Surface {elem.get('id')} of type {stype!r} expects "
+            f"{len(fields)} coefficient(s), got {len(raw_coeffs)}"
+        )
+    try:
+        coeffs = {
+            name: float(value)
+            for name, value in zip(fields, raw_coeffs, strict=False)
+        }
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid surface coefficients for surface {elem.get('id')}: "
+            f"{elem.get('coeffs')!r}"
+        ) from exc
+
+    data: dict[str, Any] = {
+        "kind": stype,
+        "id": _opt_int(elem.get("id")),
+        "name": elem.get("name") or "",
+        "boundary_type": elem.get("boundary", "transmission"),
+        **coeffs,
+    }
+    return _SURFACE_ADAPTER.validate_python(data)
+
+
+def _cell_from_element(elem: ET.Element) -> Cell:
+    """Build a Cell model from an OpenMC ``<cell>`` element."""
+    cell_id = _opt_int(elem.get("id"))
+
+    region_str = elem.get("region")
+    if not region_str:
+        raise ValueError(f"Cell {cell_id} is missing a region expression")
+
+    material = elem.get("material")
+    fill_material_id = (
+        int(material) if material is not None and material != "void" else None
+    )
+    fill_universe_id = _opt_int(elem.get("fill"))
+
+    return Cell(
+        id=cell_id,
+        name=elem.get("name") or "",
+        region=parse_region_string(region_str),
+        fill_material_id=fill_material_id,
+        fill_universe_id=fill_universe_id,
+    )
+
+
+def parse_geometry_xml(path: PathLike) -> GeometryModel:
+    """Parse an OpenMC ``geometry.xml`` file into a GeometryModel.
+
+    Uses ``defusedxml`` for parsing. Raises ``ValueError`` for unsupported
+    constructs and ``pydantic.ValidationError`` when the resulting model
+    fails CSG validation (unique IDs, surface references, boundedness).
+    """
+    tree = defused_parse(str(Path(path)))
+    root = tree.getroot()
+    if root is None:
+        raise ValueError("geometry XML has no root element")
+
+    surfaces = [_surface_from_element(e) for e in root.findall("surface")]
+    cells = [_cell_from_element(e) for e in root.findall("cell")]
+    return GeometryModel(
+        surfaces=surfaces,
+        root_universe=Universe(cells=cells),
+    )
+
+
+def parse_materials_xml(path: PathLike) -> MaterialsModel:
+    """Parse an OpenMC ``materials.xml`` file into a MaterialsModel.
+
+    Uses ``defusedxml`` for parsing. Raises ``ValueError`` for malformed
+    numeric fields and ``pydantic.ValidationError`` when materials fail
+    validation (positive density, nuclide names/fractions, unique IDs).
+    """
+    tree = defused_parse(str(Path(path)))
+    root = tree.getroot()
+    if root is None:
+        raise ValueError("materials XML has no root element")
+
+    materials: list[dict[str, Any]] = []
+    for material_elem in root.findall("material"):
+        mat: dict[str, Any] = {
+            "id": _opt_int(material_elem.get("id")),
+            "name": material_elem.get("name") or "",
+        }
+
+        density_elem = material_elem.find("density")
+        if density_elem is not None and density_elem.get("value"):
+            mat["density_g_per_cc"] = float(density_elem.get("value", ""))
+
+        nuclides: list[dict[str, Any]] = []
+        for nuclide_elem in material_elem.findall("nuclide"):
+            nuclide: dict[str, Any] = {"name": nuclide_elem.get("name") or ""}
+            fraction = (
+                nuclide_elem.get("wo")
+                or nuclide_elem.get("ao")
+                or nuclide_elem.get("fraction")
+            )
+            if fraction is not None:
+                nuclide["fraction"] = float(fraction)
+            nuclides.append(nuclide)
+        mat["nuclides"] = nuclides
+        materials.append(mat)
+
+    return MaterialsModel.model_validate({"materials": materials})
