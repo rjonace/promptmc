@@ -33,13 +33,12 @@ Plot rendering and geometry-debug import OpenMC's Python API, so PromptMC must l
 # Install uv: https://docs.astral.sh/uv/getting-started/installation/
 # e.g. on macOS: brew install uv
 
-uv tool install promptmc                    # core: CLI, schema validation, local planner
-uv tool install 'promptmc[mcp]'             # + MCP server (promptmc-mcp)
+uv tool install promptmc                    # core: CLI, schema validation, local planner, MCP server
 uv tool install 'promptmc[all]'             # all integrations except telemetry
 uv tool install 'promptmc[telemetry]'       # + OpenTelemetry tracing
 ```
 
-The core install depends only on `typer`, `rich`, `pydantic`, `defusedxml`, and `tenacity`. Heavier integrations ship as extras — `mcp` (MCP server), `llm` (Gemini `plan --llm`), `hdf5` (HDF5 statepoint parsing), `yaml` (YAML batch specs), `monitoring` (psutil resource/perf monitoring), `telemetry` (OpenTelemetry), and `all` (everything except telemetry). Features behind a missing extra degrade gracefully or raise a clear `install promptmc[…]` error.
+The core install — CLI, schema validation, the local planner, statepoint parsing, and the `promptmc-mcp` server — depends on `typer`, `rich`, `pydantic`, `defusedxml`, `tenacity`, `mcp`, and `h5py`. The remaining integrations ship as extras — `llm` (Gemini `plan --llm`), `yaml` (YAML batch specs), `monitoring` (psutil resource/perf monitoring), `telemetry` (OpenTelemetry), and `all` (everything except telemetry). Features behind a missing extra degrade gracefully or raise a clear `install promptmc[…]` error.
 
 To try PromptMC without installing it:
 
@@ -53,7 +52,6 @@ uvx promptmc plan "pin cell criticality with 50k particles"
 
 ```bash
 pipx install promptmc
-pipx install 'promptmc[mcp]'         # + MCP server (promptmc-mcp)
 pipx install 'promptmc[all]'         # all integrations except telemetry
 pipx install 'promptmc[telemetry]'   # instead, for OpenTelemetry tracing
 pipx ensurepath                      # then open a new terminal
@@ -66,7 +64,6 @@ Use this when PromptMC must share an environment with OpenMC's Python API (requi
 ```bash
 conda activate openmc-env   # or your virtualenv
 pip install promptmc
-pip install 'promptmc[mcp]'         # + MCP server (promptmc-mcp)
 pip install 'promptmc[all]'         # all integrations except telemetry
 pip install 'promptmc[telemetry]'   # optional OpenTelemetry support
 ```
@@ -81,7 +78,7 @@ cd promptmc
 poetry install --with dev --all-extras
 ```
 
-The MCP server (`promptmc-mcp`) ships in the `mcp` extra (and `all`). To connect an AI assistant — Claude Desktop/Code, Cursor, Google Antigravity, or VS Code — see the [MCP server configuration guide](mcp.md).
+The MCP server (`promptmc-mcp`) ships with every install. To connect an AI assistant — Claude Desktop/Code, Cursor, Google Antigravity, or VS Code — see the [MCP server configuration guide](mcp.md).
 
 ## Install OpenMC
 

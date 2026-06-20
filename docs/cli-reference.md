@@ -248,8 +248,11 @@ promptmc optimize --threads 4 --particles 10000 --batches 100
 # Enable verbose output
 promptmc --verbose <command>
 
-# Enable debug output
-promptmc --debug <command>
+# Use a configuration file
+promptmc --config path/to/config <command>
+
+# Show version
+promptmc --version
 
 # Show help
 promptmc --help
