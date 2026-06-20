@@ -196,9 +196,10 @@ class ConfigurationTemplate:
         Returns:
             The :class:`SimulationResult` describing the run outcome.
         """
+        geometry, materials = self._build_models(**kwargs)
         return OpenMCRunner().run_from_models(
-            geometry=self._build_geometry(**kwargs),
-            materials=self._build_materials(**kwargs),
+            geometry=geometry,
+            materials=materials,
             settings=self._build_settings(particles, batches, inactive),
             threads=threads,
             cwd=cwd,

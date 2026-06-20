@@ -63,6 +63,7 @@ class SimulationResult:
     stdout: str = ""
     stderr: str = ""
     error: str | None = None
+    output_dir: str | None = None
 
 
 class OpenMCInstaller:
@@ -225,11 +226,18 @@ class OpenMCRunner:
             settings: The run settings.
             threads: Number of OpenMP threads to use.
             cwd: Working directory for the run. When omitted, a temporary
-                directory is created for the subprocess fallback.
+                directory is created so output files are not written into the
+                caller's current working directory.
 
         Returns:
-            The :class:`SimulationResult` describing the run outcome.
+            The :class:`SimulationResult` describing the run outcome. Its
+            ``output_dir`` is the directory the run wrote its results into.
         """
+        work = (
+            Path(cwd) if cwd else Path(tempfile.mkdtemp(prefix="promptmc_run_"))
+        )
+        work.mkdir(parents=True, exist_ok=True)
+
         mode = self._determine_execution_mode()
 
         if (
@@ -237,10 +245,10 @@ class OpenMCRunner:
             and self.installer._openmc_module is not None
         ):
             return self._run_models_via_api(
-                geometry, materials, settings, threads, cwd
+                geometry, materials, settings, threads, work
             )
         return self._run_models_via_subprocess(
-            geometry, materials, settings, threads, cwd
+            geometry, materials, settings, threads, work
         )
 
     def _determine_execution_mode(self) -> ExecutionMode:
@@ -336,16 +344,13 @@ class OpenMCRunner:
         materials: MaterialsModel,
         settings: SettingsSchema,
         threads: int,
-        cwd: PathLike | None,
+        work: Path,
     ) -> SimulationResult:
         from promptmc.geometry.xml_serializer import (
             to_openmc_geometry,
             to_openmc_materials,
             to_openmc_settings,
         )
-
-        work = Path(cwd) if cwd else Path.cwd()
-        work.mkdir(parents=True, exist_ok=True)
 
         original_threads = os.environ.get("OMP_NUM_THREADS")
         os.environ["OMP_NUM_THREADS"] = str(threads)
@@ -364,6 +369,7 @@ class OpenMCRunner:
                 success=True,
                 return_code=0,
                 stdout="Simulation completed successfully via API",
+                output_dir=str(work),
             )
         except Exception as e:
             return SimulationResult(
@@ -371,6 +377,7 @@ class OpenMCRunner:
                 return_code=1,
                 stderr=str(e),
                 error=str(e),
+                output_dir=str(work),
             )
         finally:
             if original_threads is None:
@@ -384,23 +391,20 @@ class OpenMCRunner:
         materials: MaterialsModel,
         settings: SettingsSchema,
         threads: int,
-        cwd: PathLike | None,
+        work: Path,
     ) -> SimulationResult:
         from promptmc.geometry.xml_serializer import (
             serialize_geometry,
             serialize_materials,
         )
 
-        work = (
-            Path(cwd) if cwd else Path(tempfile.mkdtemp(prefix="promptmc_run_"))
-        )
-        work.mkdir(parents=True, exist_ok=True)
-
         serialize_geometry(geometry, work / "geometry.xml")
         serialize_materials(materials, work / "materials.xml")
         self._write_settings_xml(settings, work / "settings.xml")
 
-        return self._run_via_subprocess(work, threads, work, work)
+        result = self._run_via_subprocess(work, threads, work, work)
+        result.output_dir = str(work)
+        return result
 
     @staticmethod
     def _write_settings_xml(settings: SettingsSchema, path: Path) -> None:
