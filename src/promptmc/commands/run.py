@@ -82,7 +82,7 @@ def run(
             output_path=output,
         )
 
-    if result.returncode == 0:
+    if result.success:
         console.print("[green]✓[/green] Simulation completed successfully")
         if result.stdout:
             console.print(f"[dim]{result.stdout}[/dim]")
@@ -92,7 +92,7 @@ def run(
         )
     else:
         console.print(
-            f"[red]✗[/red] Simulation failed with return code {result.returncode}"
+            f"[red]✗[/red] Simulation failed with return code {result.return_code}"
         )
         if result.stderr:
             console.print(f"[red]{result.stderr}[/red]")

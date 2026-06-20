@@ -1,5 +1,6 @@
 import tempfile
 from pathlib import Path
+from subprocess import CompletedProcess
 from unittest.mock import patch
 
 import pytest
@@ -15,7 +16,32 @@ from promptmc.openmc_integration import (
     OpenMCInstaller,
     OpenMCRunner,
     OpenMCValidator,
+    SimulationResult,
 )
+
+
+def test_simulation_result_defaults():
+    """SimulationResult fills sensible defaults for the optional fields."""
+    result = SimulationResult(success=True, return_code=0)
+    assert result.stdout == ""
+    assert result.stderr == ""
+    assert result.error is None
+
+
+def test_run_via_subprocess_converts_completed_process(tmp_path):
+    """The subprocess path returns a SimulationResult, not CompletedProcess."""
+    runner = OpenMCRunner(ExecutionMode.SUBPROCESS)
+    completed = CompletedProcess(
+        args=["openmc"], returncode=0, stdout="ok", stderr=""
+    )
+    with patch(
+        "promptmc.openmc_integration.subprocess.run", return_value=completed
+    ):
+        result = runner._run_via_subprocess(tmp_path, 1, tmp_path, tmp_path)
+    assert isinstance(result, SimulationResult)
+    assert result.success is True
+    assert result.return_code == 0
+    assert result.stdout == "ok"
 
 
 def test_run_simulation_without_openmc():

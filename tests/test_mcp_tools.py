@@ -30,7 +30,11 @@ from promptmc.mcp.schemas import (
     ValidateInput,
     ValidationResult,
 )
-from promptmc.openmc_integration import ExecutionMode, OpenMCInfo
+from promptmc.openmc_integration import (
+    ExecutionMode,
+    OpenMCInfo,
+    SimulationResult,
+)
 from promptmc.schema import (
     SchemaIssue,
     SchemaSeverity,
@@ -249,8 +253,8 @@ def test_list_templates_promptmc_error(mock_list):
 
 @patch("promptmc.mcp.tools.OpenMCRunner")
 def test_run_simulation_success(mock_cls):
-    mock_cls.return_value.run_simulation.return_value = CompletedProcess(
-        args=["openmc"], returncode=0, stdout="done", stderr=""
+    mock_cls.return_value.run_simulation.return_value = SimulationResult(
+        success=True, return_code=0, stdout="done", stderr=""
     )
     result = tools.run_simulation(
         RunSimulationInput(input_path="/tmp/case", mode="api", threads=4)

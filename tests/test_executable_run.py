@@ -37,7 +37,7 @@ def test_subprocess_run_bundled_example(tmp_path: Path) -> None:
     result = runner.run_simulation(
         input_path=tmp_path, threads=2, output_path=tmp_path
     )
-    assert result.returncode == 0, result.stderr
+    assert result.success, result.stderr
 
     statepoints = list(tmp_path.glob("statepoint.*.h5"))
     assert statepoints, "run produced no statepoint file"

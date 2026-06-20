@@ -72,9 +72,12 @@ result = runner.run_simulation(
     output_path="results",
 )
 
-print(f"Simulation completed: {result.returncode == 0}")
+print(f"Simulation completed: {result.success}")
 print(result.stdout or result.stderr)
 ```
+
+`run_simulation()` returns a `promptmc.SimulationResult` with `success: bool`,
+`return_code: int`, `stdout`, `stderr`, and an optional `error` message.
 
 ### ResultParser
 
@@ -292,7 +295,7 @@ def run_simulation(
         threads=threads,
         output_path=output_path,
     )
-    return result.returncode == 0
+    return result.success
 ```
 
 ## Complete Example

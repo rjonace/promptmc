@@ -8,6 +8,7 @@ from promptmc.openmc_integration import (
     OpenMCInstaller,
     OpenMCRunner,
     OpenMCValidator,
+    SimulationResult,
 )
 from promptmc.schema import (
     SchemaValidationResult,
@@ -35,5 +36,6 @@ __all__ = [
     "SchemaValidationResult",
     "SchemaValidator",
     "SettingsSchema",
+    "SimulationResult",
     "Surface",
 ]
