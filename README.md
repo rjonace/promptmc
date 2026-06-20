@@ -60,10 +60,6 @@ pip install 'promptmc[telemetry]' # + OpenTelemetry tracing
 pip install 'promptmc[all]'       # everything above except telemetry
 ```
 
-The core install depends only on `typer`, `rich`, `pydantic`, `defusedxml`, and `tenacity`; heavier integrations live behind the extras above and degrade gracefully (or raise a clear "install promptmc[…]" error) when absent.
-
-Plot rendering and geometry-debug import OpenMC's Python API, so for those install PromptMC with pip into the same environment as OpenMC (e.g. your conda env). Everything else — planning, validation, MCP server (`[mcp]`), and simulation runs via the `openmc` executable — works from an isolated install.
-
 **OpenMC** (required for simulation execution, geometry-debug checks, and plot rendering) can be installed via Conda, Spack, Docker, or build from source per [docs.openmc.org](https://docs.openmc.org/en/stable/quickinstall.html). Planning and XML/schema validation work without it.
 
 **[Cross-section data](https://www.nndc.bnl.gov/endf/)** (for running simulations):
@@ -97,17 +93,6 @@ The gate's job is catching malformed inputs before a run consumes them. Hand it 
 
 The error is structured, so an assistant can read it and self-correct.
 
-### From settings.xml to a full run
-
-`plan` writes the `settings.xml`. A complete OpenMC model also needs `geometry.xml` and `materials.xml` in the same directory (plus an optional `tallies.xml`). With all of them in one directory, and OpenMC and cross-section data installed:
-
-```bash
-promptmc run ./model        # runs the simulation
-promptmc analyze ./model    # k-effective and tallies, parsed from the statepoint
-```
-
-Runnable reference geometries (PWR pin, Godiva, and more) are the [v0.4 deliverable](https://github.com/rjonace/promptmc/blob/main/ROADMAP.md); until then, bring `geometry.xml` and `materials.xml` from your own model.
-
 ## MCP server
 
 PromptMC exposes a [Model Context Protocol](https://modelcontextprotocol.io) server so AI assistants can run OpenMC workflows natively — validation, plotting, execution, and result parsing from inside your LLM chat client, such as Claude Desktop, Cursor, and Google Antigravity.
@@ -125,22 +110,16 @@ The point of routing these through MCP is that an assistant can validate its own
 By default, `plan` uses a deterministic local planner, needing no API key, no network, no generative AI. The optional `--llm` flag calls Google Gemini (set GEMINI_API_KEY), which can interpret more open-ended natural-language requests. Customize the model name with GEMINI_MODEL (defaults to gemini-3.5-flash).
 
 ```bash
-promptmc doctor                                                 # one-shot environment check with fix hints
+promptmc plan "pin cell criticality with 50k particles" --write
 promptmc validate settings.xml --schema                         # structure + schema, no OpenMC needed
 promptmc template criticality --particles 10000                 # generate settings.xml
 promptmc run ./model --threads 4                                # needs OpenMC (geometry + materials + settings)
 promptmc batch batch_spec.yaml --parallel threads --workers 4
 promptmc analyze ./model --json > results.json                  # parse statepoint + tallies
-promptmc plan "pin cell criticality with 50k particles" --write
 promptmc plan --llm "concrete shielding calculation with 1 million particles"
 promptmc info                                                   # OpenMC installation details
+promptmc doctor                                                 # one-shot environment check with fix hints
 ```
-
-`promptmc doctor` runs every setup check (OpenMC executable, Python API, `cross_sections.xml`, downloaded data, telemetry extra) and prints a single status report with a fix hint for each missing piece — start here when setup misbehaves.
-
-`validate`, `plan`, `info`, `analyze`, and `doctor` all accept `--json` for plain, parseable output on stdout, so agents and CI can consume results instead of Rich tables.
-
-Generated `settings.xml` files carry a provenance header — a leading XML comment recording the PromptMC version, a UTC timestamp, and the exact command that produced the file — so any emitted input is self-describing and reproducible.
 
 Full options in the [CLI reference](https://github.com/rjonace/promptmc/blob/main/docs/cli-reference.md).
 
