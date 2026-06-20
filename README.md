@@ -149,15 +149,6 @@ promptmc info                                                   # OpenMC install
 promptmc doctor                                                 # one-shot environment check with fix hints
 ```
 
-<<<<<<< HEAD
-=======
-`promptmc doctor` runs every setup check (OpenMC executable, Python API, `cross_sections.xml`, downloaded data, telemetry extra) and prints a single status report with a fix hint for each missing piece — start here when setup misbehaves.
-
-`validate`, `plan`, `info`, `analyze`, and `doctor` all accept `--json` for plain, parseable output on stdout, so agents and CI can consume results instead of Rich tables.
-
-Generated `settings.xml` files carry a provenance header — a leading XML comment recording the PromptMC version, a UTC timestamp, and the exact command that produced the file — so any emitted deck is self-describing and reproducible.
-
->>>>>>> devin/1781955416-task8-run-from-models
 Full options in the [CLI reference](https://github.com/rjonace/promptmc/blob/main/docs/cli-reference.md).
 
 ## Safety
