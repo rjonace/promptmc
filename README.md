@@ -132,15 +132,9 @@ The point of routing these through MCP is that an assistant can validate its own
 By default, `plan` uses a deterministic local planner, needing no API key, no network, no generative AI. The optional `--llm` flag calls Google Gemini (set GEMINI_API_KEY), which can interpret more open-ended natural-language requests. Customize the model name with GEMINI_MODEL (defaults to gemini-3.5-flash).
 
 ```bash
-<<<<<<< HEAD
 promptmc plan "pin cell criticality with 50k particles" --write
 promptmc validate settings.xml --schema                         # structure + schema, no OpenMC needed
 promptmc template criticality --particles 10000                 # generate settings.xml
-=======
-promptmc doctor                                                 # one-shot environment check with fix hints
-promptmc validate openmc_inputs --schema                        # structure + schema, no OpenMC needed
-promptmc template criticality --particles 10000                 # generate a complete input deck dir
->>>>>>> devin/1781955416-task8-run-from-models
 promptmc run ./model --threads 4                                # needs OpenMC (geometry + materials + settings)
 promptmc batch batch_spec.yaml --parallel threads --workers 4
 promptmc analyze ./model --json > results.json                  # parse statepoint + tallies
