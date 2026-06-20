@@ -282,10 +282,10 @@ def run_simulation(data: RunSimulationInput) -> SimulationRunResult:
         logger.exception("openmc_run failed unexpectedly")
         return _run_failure(data, exc)
     return SimulationRunResult(
-        success=completed.returncode == 0,
-        return_code=completed.returncode,
-        stdout=completed.stdout or "",
-        stderr=completed.stderr or "",
+        success=completed.success,
+        return_code=completed.return_code,
+        stdout=completed.stdout,
+        stderr=completed.stderr,
         input_path=data.input_path,
         mode=data.mode,
     )

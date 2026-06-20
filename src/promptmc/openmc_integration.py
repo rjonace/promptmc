@@ -43,6 +43,22 @@ class OpenMCInfo:
     subprocess_available: bool
 
 
+@dataclass
+class SimulationResult:
+    """Outcome of an OpenMC simulation run.
+
+    This is the execution result (did the run succeed, what did it print).
+    For parsed physics outputs (k-eff, tallies) see
+    ``promptmc.visualization.SimulationResult``.
+    """
+
+    success: bool
+    return_code: int
+    stdout: str = ""
+    stderr: str = ""
+    error: str | None = None
+
+
 class OpenMCInstaller:
     """Manages OpenMC installation detection."""
 
@@ -164,7 +180,7 @@ class OpenMCRunner:
         threads: int = 1,
         output_path: PathLike | None = None,
         cwd: PathLike | None = None,
-    ) -> subprocess.CompletedProcess[str]:
+    ) -> SimulationResult:
         """Run an OpenMC simulation."""
         input_path = Path(input_path)
         resolved_input_dir = (
@@ -202,7 +218,7 @@ class OpenMCRunner:
         threads: int,
         output_path: Path,
         cwd: Path,
-    ) -> subprocess.CompletedProcess[str]:
+    ) -> SimulationResult:
         original_threads = os.environ.get("OMP_NUM_THREADS")
         os.environ["OMP_NUM_THREADS"] = str(threads)
         try:
@@ -211,18 +227,17 @@ class OpenMCRunner:
             import openmc
 
             cast(Any, openmc).run(cwd=str(cwd), threads=threads)
-            return subprocess.CompletedProcess[str](
-                args=["openmc", str(input_path)],
-                returncode=0,
+            return SimulationResult(
+                success=True,
+                return_code=0,
                 stdout="Simulation completed successfully via API",
-                stderr="",
             )
         except Exception as e:
-            return subprocess.CompletedProcess[str](
-                args=["openmc", str(input_path)],
-                returncode=1,
-                stdout="",
+            return SimulationResult(
+                success=False,
+                return_code=1,
                 stderr=str(e),
+                error=str(e),
             )
         finally:
             if original_threads is None:
@@ -236,7 +251,7 @@ class OpenMCRunner:
         threads: int,
         output_path: Path,
         cwd: Path,
-    ) -> subprocess.CompletedProcess[str]:
+    ) -> SimulationResult:
         cmd = ["openmc"]
         if output_path.resolve() != cwd.resolve():
             cmd.extend(["-s", str(output_path)])
@@ -247,13 +262,19 @@ class OpenMCRunner:
         output_path.mkdir(parents=True, exist_ok=True)
 
         try:
-            return subprocess.run(  # nosec B603
+            completed = subprocess.run(  # nosec B603
                 cmd,
                 cwd=cwd,
                 capture_output=True,
                 text=True,
                 env=env,
                 check=False,
+            )
+            return SimulationResult(
+                success=completed.returncode == 0,
+                return_code=completed.returncode,
+                stdout=completed.stdout or "",
+                stderr=completed.stderr or "",
             )
         except FileNotFoundError as e:
             raise OpenMCNotFoundError(

@@ -114,7 +114,7 @@ def test_benchmarks_simulation() -> None:
 
             # Run OpenMC
             result = runner.run_simulation(run_dir, threads=1)
-            assert result.returncode == 0
+            assert result.success
 
             # Parse statepoint
             statepoints = list(run_dir.glob("statepoint.*.h5"))

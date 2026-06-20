@@ -95,11 +95,11 @@ def _run_job_in_process(job: SimulationJob) -> JobResult:
         duration = time.time() - start_time
         return JobResult(
             job_id=job.job_id,
-            success=result.returncode == 0,
+            success=result.success,
             duration_seconds=duration,
-            return_code=result.returncode,
-            stdout=result.stdout or "",
-            stderr=result.stderr or "",
+            return_code=result.return_code,
+            stdout=result.stdout,
+            stderr=result.stderr,
         )
     except Exception as e:
         return JobResult(
