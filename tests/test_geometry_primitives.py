@@ -5,7 +5,9 @@ from __future__ import annotations
 import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from unittest.mock import MagicMock
 
+import promptmc.geometry.xml_serializer as xs
 import pytest
 from promptmc.geometry.materials import Material, MaterialsModel, NuclideSpec
 from promptmc.geometry.primitives import (
@@ -20,7 +22,10 @@ from promptmc.geometry.tallies import TalliesModel, Tally
 from promptmc.geometry.xml_serializer import (
     serialize_geometry,
     serialize_materials,
+    to_openmc_materials,
+    to_openmc_settings,
 )
+from promptmc.schema import RunMode, SettingsSchema
 from pydantic import ValidationError
 
 # Optional imports for test config
@@ -293,3 +298,72 @@ def test_openmc_roundtrip() -> None:
         c_id = list(cells.keys())[0]
         c_obj = cells[c_id]
         assert c_obj.name == "sphere_cell"
+
+
+def test_to_openmc_materials_requires_openmc(monkeypatch) -> None:
+    """The materials bridge raises clearly when OpenMC is absent."""
+    monkeypatch.setattr(xs, "_OPENMC_AVAILABLE", False)
+    with pytest.raises(RuntimeError):
+        to_openmc_materials(MaterialsModel(materials=[]))
+
+
+def test_to_openmc_settings_requires_openmc(monkeypatch) -> None:
+    """The settings bridge raises clearly when OpenMC is absent."""
+    monkeypatch.setattr(xs, "_OPENMC_AVAILABLE", False)
+    with pytest.raises(RuntimeError):
+        to_openmc_settings(SettingsSchema())
+
+
+def test_to_openmc_materials_appends_each_material(monkeypatch) -> None:
+    """Each model material is mapped and appended to an openmc.Materials."""
+    fake = MagicMock()
+    monkeypatch.setattr(xs, "openmc", fake, raising=False)
+    monkeypatch.setattr(xs, "_OPENMC_AVAILABLE", True)
+
+    model = MaterialsModel(
+        materials=[
+            Material(
+                id=1,
+                name="water",
+                density_g_per_cc=1.0,
+                nuclides=[NuclideSpec(name="H1", fraction=1.0)],
+            ),
+            Material(
+                id=2,
+                name="iron",
+                density_g_per_cc=7.9,
+                nuclides=[NuclideSpec(name="Fe56", fraction=1.0)],
+            ),
+        ]
+    )
+
+    result = to_openmc_materials(model)
+
+    assert result is fake.Materials.return_value
+    assert fake.Materials.return_value.append.call_count == 2
+
+
+def test_to_openmc_settings_maps_fields(monkeypatch) -> None:
+    """SettingsSchema fields map onto the openmc.Settings object."""
+    fake = MagicMock()
+    monkeypatch.setattr(xs, "openmc", fake, raising=False)
+    monkeypatch.setattr(xs, "_OPENMC_AVAILABLE", True)
+
+    settings = SettingsSchema(
+        run_mode=RunMode.FIXED_SOURCE,
+        particles=200,
+        batches=5,
+        inactive=0,
+        seed=7,
+        weight_cutoff=0.3,
+    )
+
+    result = to_openmc_settings(settings)
+    s = fake.Settings.return_value
+
+    assert result is s
+    assert s.run_mode == "fixed source"
+    assert s.batches == 5
+    assert s.particles == 200
+    assert s.seed == 7
+    assert s.cutoff == {"weight": 0.3}

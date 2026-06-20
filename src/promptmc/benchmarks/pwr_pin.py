@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from promptmc._typing import PathLike
 from promptmc.geometry.materials import Material, MaterialsModel, NuclideSpec
 from promptmc.geometry.primitives import (
     Cell,
@@ -13,6 +14,8 @@ from promptmc.geometry.primitives import (
     YPlane,
     ZCylinder,
 )
+from promptmc.openmc_integration import OpenMCRunner, SimulationResult
+from promptmc.schema import RunMode, SettingsSchema
 
 NAME = "PWR Pin"
 SOURCE = "Mosteller PWR pin cell benchmark"
@@ -115,3 +118,38 @@ def build() -> tuple[GeometryModel, MaterialsModel]:
     mats = MaterialsModel(materials=[fuel_mat, clad_mat, mod_mat])
 
     return geom, mats
+
+
+def run(
+    particles: int | None = None,
+    batches: int | None = None,
+    inactive: int | None = None,
+    threads: int = 1,
+    cwd: PathLike | None = None,
+) -> SimulationResult:
+    """Build and run the PWR pin cell benchmark through OpenMC.
+
+    Args:
+        particles: Particles per batch (default 10000).
+        batches: Total batches (default 150).
+        inactive: Inactive batches (default 50).
+        threads: Number of OpenMP threads to use.
+        cwd: Working directory for the run.
+
+    Returns:
+        The :class:`SimulationResult` describing the run outcome.
+    """
+    geom, mats = build()
+    settings = SettingsSchema(
+        run_mode=RunMode.EIGENVALUE,
+        particles=particles or 10000,
+        batches=batches or 150,
+        inactive=inactive if inactive is not None else 50,
+    )
+    return OpenMCRunner().run_from_models(
+        geometry=geom,
+        materials=mats,
+        settings=settings,
+        threads=threads,
+        cwd=cwd,
+    )

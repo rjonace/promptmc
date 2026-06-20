@@ -1,9 +1,10 @@
 """Tests for configuration templates."""
 
 import xml.etree.ElementTree as ET
+from unittest.mock import MagicMock, patch
 
 import pytest
-from promptmc.schema import SchemaValidator
+from promptmc.schema import RunMode, SchemaValidator
 from promptmc.templates import (
     CriticalityTemplate,
     DepletionTemplate,
@@ -179,3 +180,35 @@ def test_global_list_templates():
     assert TemplateType.FIXED_SOURCE in template_types
     assert TemplateType.SHIELDING in template_types
     assert TemplateType.REACTOR_PIN in template_types
+
+
+def test_build_settings_run_mode_by_template():
+    """Eigenvalue templates use eigenvalue mode; shielding uses fixed source."""
+    assert (
+        CriticalityTemplate()._build_settings().run_mode == RunMode.EIGENVALUE
+    )
+    assert (
+        FixedSourceTemplate()._build_settings().run_mode == RunMode.FIXED_SOURCE
+    )
+    assert (
+        ShieldingTemplate()._build_settings().run_mode == RunMode.FIXED_SOURCE
+    )
+
+
+def test_template_run_delegates_to_runner():
+    """ConfigurationTemplate.run builds models and forwards to the runner."""
+    template = CriticalityTemplate()
+    sentinel = object()
+    with patch("promptmc.templates.OpenMCRunner") as runner_cls:
+        runner = MagicMock()
+        runner.run_from_models.return_value = sentinel
+        runner_cls.return_value = runner
+
+        result = template.run(particles=500, batches=20, inactive=5, threads=4)
+
+    assert result is sentinel
+    _, kwargs = runner.run_from_models.call_args
+    assert kwargs["threads"] == 4
+    assert kwargs["settings"].particles == 500
+    assert kwargs["settings"].batches == 20
+    assert kwargs["settings"].run_mode == RunMode.EIGENVALUE
