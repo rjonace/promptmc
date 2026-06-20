@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from promptmc.cli import app
+from promptmc.openmc_integration import SimulationResult
 from typer.testing import CliRunner
 
 runner = CliRunner()
@@ -86,11 +87,9 @@ def test_run_success(mock_runner_cls, mock_validator_cls):
     mock_validator_cls.return_value = mock_validator
 
     mock_runner = MagicMock()
-    proc = MagicMock()
-    proc.returncode = 0
-    proc.stdout = "Simulation complete"
-    proc.stderr = ""
-    mock_runner.run_simulation.return_value = proc
+    mock_runner.run_simulation.return_value = SimulationResult(
+        success=True, return_code=0, stdout="Simulation complete"
+    )
     mock_runner_cls.return_value = mock_runner
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -108,11 +107,9 @@ def test_run_simulation_failure(mock_runner_cls, mock_validator_cls):
     mock_validator_cls.return_value = mock_validator
 
     mock_runner = MagicMock()
-    proc = MagicMock()
-    proc.returncode = 1
-    proc.stdout = ""
-    proc.stderr = "Segfault"
-    mock_runner.run_simulation.return_value = proc
+    mock_runner.run_simulation.return_value = SimulationResult(
+        success=False, return_code=1, stderr="Segfault"
+    )
     mock_runner_cls.return_value = mock_runner
 
     with tempfile.TemporaryDirectory() as tmp:

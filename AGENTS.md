@@ -69,11 +69,11 @@ section orients you to what already exists and the invariants to preserve.
 
 ```
 src/promptmc/
-├── __init__.py            # public API: OpenMCInstaller/OpenMCValidator/OpenMCRunner, ExecutionMode, BatchRunner, ParallelConfig/ParallelMode; validation + geometry/material models (SchemaValidator, SchemaValidationResult, SettingsSchema, GeometryModel, Cell, Surface, Region, Material, MaterialsModel, NuclideSpec)
+├── __init__.py            # public API: OpenMCInstaller/OpenMCValidator/OpenMCRunner, ExecutionMode, SimulationResult, BatchRunner, ParallelConfig/ParallelMode; validation + geometry/material models (SchemaValidator, SchemaValidationResult, SettingsSchema, GeometryModel, Cell, Surface, Region, Material, MaterialsModel, NuclideSpec)
 ├── _typing.py             # shared type aliases (PathLike)
 ├── cli.py                 # Typer CLI entry point (dispatches into commands/)
 ├── commands/              # one module per CLI subcommand: plan, run, validate, analyze, batch, templates, info, doctor (+ common.py shared helpers)
-├── openmc_integration.py  # core OpenMC wrapper — OpenMCInstaller / OpenMCValidator / OpenMCRunner (subprocess + Python API), ExecutionMode
+├── openmc_integration.py  # core OpenMC wrapper — OpenMCInstaller / OpenMCValidator / OpenMCRunner (subprocess + Python API), ExecutionMode, SimulationResult (run outcome)
 ├── schema.py              # Pydantic validation of OpenMC XML (Settings/Materials/Geometry…) + SchemaValidator; uses defusedxml
 ├── templates.py           # config templates (Criticality / FixedSource / Shielding / ReactorPin / Depletion) + TemplateRegistry
 ├── assistant.py           # NL planner behind `promptmc plan` (NaturalLanguageAssistant) — deterministic keyword planner (no-key default; keep it) + Gemini `--llm` path; v0.8 rebuilds only the `--llm` path on the generation pipeline
