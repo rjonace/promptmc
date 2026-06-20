@@ -12,9 +12,6 @@ from pydantic import TypeAdapter
 if TYPE_CHECKING:
     from promptmc.schema import SettingsSchema
 
-from defusedxml.ElementTree import parse as defused_parse
-from pydantic import TypeAdapter
-
 from promptmc._typing import PathLike
 from promptmc.geometry.materials import Material, MaterialsModel
 from promptmc.geometry.primitives import (
