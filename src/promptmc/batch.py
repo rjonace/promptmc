@@ -17,7 +17,6 @@ from concurrent.futures import (
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any
 
 from promptmc._typing import PathLike
 from promptmc.openmc_integration import OpenMCRunner
@@ -68,7 +67,6 @@ class SimulationJob:
     input_path: Path
     output_path: Path | None = None
     threads: int = 1
-    extra_args: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -246,10 +244,10 @@ class ParallelExecutor:
 class BatchSpec:
     """Specification for a batch of simulations."""
 
+    # Parameter sweeps: deferred to v0.5 (requires input-file materializer)
     name: str
     base_input: Path
     output_root: Path
-    parameter_sweeps: list[dict[str, Any]] = field(default_factory=list)
     threads_per_job: int = 1
     description: str = ""
 
@@ -342,32 +340,13 @@ class BatchRunner:
         Returns:
             List of simulation jobs
         """
-        jobs = []
-
-        if not spec.parameter_sweeps:
-            # Single job with no parameter sweep
-            job = SimulationJob(
-                job_id=f"{batch_id}-001",
-                input_path=spec.base_input,
-                output_path=spec.output_root / "run-001",
-                threads=spec.threads_per_job,
-            )
-            jobs.append(job)
-        else:
-            for i, params in enumerate(spec.parameter_sweeps, 1):
-                job_id = f"{batch_id}-{i:03d}"
-                output_path = spec.output_root / f"run-{i:03d}"
-
-                job = SimulationJob(
-                    job_id=job_id,
-                    input_path=spec.base_input,
-                    output_path=output_path,
-                    threads=spec.threads_per_job,
-                    extra_args=params,
-                )
-                jobs.append(job)
-
-        return jobs
+        job = SimulationJob(
+            job_id=f"{batch_id}-001",
+            input_path=spec.base_input,
+            output_path=spec.output_root / "run-001",
+            threads=spec.threads_per_job,
+        )
+        return [job]
 
     def _save_summary(self, summary: BatchSummary, output_root: Path) -> None:
         """Save batch summary to JSON file.
@@ -448,7 +427,6 @@ def save_batch_spec(spec: BatchSpec, output_path: PathLike) -> Path:
         "base_input": str(spec.base_input),
         "output_root": str(spec.output_root),
         "threads_per_job": spec.threads_per_job,
-        "parameter_sweeps": spec.parameter_sweeps,
     }
 
     if output_path.suffix in [".yaml", ".yml"]:

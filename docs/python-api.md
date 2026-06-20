@@ -134,7 +134,9 @@ with telemetry.trace_operation("simulation_run", simulation_id="sim-001"):
 
 ### BatchRunner
 
-Run parameter sweeps from YAML/JSON specifications.
+Run a simulation from a YAML/JSON batch specification with configurable
+parallel execution. (Parameter sweeps are deferred to v0.5, which adds an
+input-file materializer.)
 
 ```python
 from promptmc import BatchRunner, ParallelConfig, ParallelMode
