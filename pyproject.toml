@@ -8,7 +8,7 @@ readme = "README.md"
 repository = "https://github.com/rjonace/promptmc"
 keywords = ["openmc", "monte-carlo", "nuclear-engineering", "simulation", "mcp", "particle-transport", "neutronics", "ai-validation", "mcp-server"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 3 - Alpha",
     "Framework :: Pydantic",
     "Framework :: Pydantic :: 2",
     "Intended Audience :: Science/Research",
