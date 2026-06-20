@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.4] - 2026-06-20
+
+### Added
+- **Complete input deck emission**: Templates now produce a complete runnable OpenMC input deck (settings.xml + geometry.xml + materials.xml) instead of just settings.xml, so `promptmc template` output passes `SchemaValidator.validate_directory` and can be handed straight to OpenMC.
+- **In-memory model execution**: `OpenMCRunner.run_from_models()` executes simulations straight from validated Pydantic models. When OpenMC's Python API is importable, it maps models to `openmc` objects and runs them without writing an input deck to disk; otherwise it serializes to a working directory and runs the `openmc` executable as a subprocess.
+- **Template run methods**: `ConfigurationTemplate.run()` builds geometry/materials/settings and dispatches through `OpenMCRunner.run_from_models` for one-step template execution.
+- **Benchmark run methods**: `godiva.run()` and `pwr_pin.run()` convenience methods execute benchmarks with sensible eigenvalue defaults.
+- **OpenMC bridges**: `to_openmc_geometry()`, `to_openmc_materials()`, and `to_openmc_settings()` functions in the geometry module for mapping Pydantic models to OpenMC objects.
+- **SimulationResult.output_dir**: New field reporting the directory used for the run (useful when `cwd=None` defaults to a temp directory).
+
+### Changed
+- **Breaking**: `ConfigurationTemplate.render()` now treats `output_path` as a directory (created if absent) and returns it, instead of writing/returning a single file. The default `-o` for CLI commands is now `openmc_inputs/`.
+- Updated all template call sites: CLI `template` and `plan` commands, `NaturalLanguagePlan.render`, MCP `render_template` tool, and `TemplateInput`/`TemplateOutput` schemas.
+- Updated documentation: README.md, docs/cli-reference.md, docs/python-api.md, and AGENTS.md §4.1 repository map.
+
+### Fixed
+- Removed duplicate imports in `xml_serializer.py` that caused ruff F811 errors.
+
 ## [Unreleased]
 
 ### Added
