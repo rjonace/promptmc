@@ -63,13 +63,6 @@ types-PyYAML = "^6.0.0"
 types-psutil = "^6.0.0"
 types-defusedxml = "^0.7.0"
 hypothesis = "^6.100.0"
-# Optional extras' runtime packages, installed in dev so the full test
-# suite exercises every guarded import path (they stay optional for users).
-h5py = "^3.11.0"
-pyyaml = "^6.0.0"
-psutil = "^6.0.0"
-mcp = ">=1.0.0"
-google-genai = ">=0.1.0"
 
 [tool.poetry.scripts]
 promptmc = "promptmc.cli:app"
