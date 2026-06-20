@@ -73,7 +73,6 @@ src/promptmc/
 ├── _typing.py             # shared type aliases (PathLike)
 ├── cli.py                 # Typer CLI entry point (dispatches into commands/)
 ├── commands/              # one module per CLI subcommand: plan, run, validate, analyze, batch, templates, info, doctor (+ common.py shared helpers)
-<<<<<<< HEAD
 ├── openmc_integration.py  # core OpenMC wrapper — OpenMCInstaller / OpenMCValidator / OpenMCRunner (run_simulation from XML + run_from_models straight from Pydantic models; Python API when openmc is importable, else XML+subprocess fallback), ExecutionMode, SimulationResult (run outcome)
 ├── schema.py              # SettingsSchema + SchemaValidator/SchemaValidationResult; geometry/materials validation delegates to the geometry/ models via parse_*_xml; uses defusedxml
 ├── templates.py           # config templates (Criticality / FixedSource / Shielding / ReactorPin / Depletion) + TemplateRegistry; render() emits a complete input deck dir (settings.xml + geometry.xml + materials.xml); run() executes the deck straight through OpenMCRunner.run_from_models
