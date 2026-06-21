@@ -170,6 +170,8 @@ Each release has a design document under `docs/design/` with the architecture, k
 **v0.4 — Reference geometry library**
 - ~6 reference geometries (Godiva, Jezebel, PWR pin, BWR pin, + selected ICSBEP) build as typed models and round-trip: Pydantic → XML → parsed by OpenMC → simulated → match expected k-eff within 3σ. Each benchmark module includes the expected k-eff and bounds.
 - Each geometry is runnable, documented, and independently checked against published results.
+- `promptmc compare <benchmark> <statepoint>` reports computed vs expected k-eff (absolute and σ deviation) with a pass/fail and `--json`, exiting non-zero on failure. It reads an existing statepoint (does not run OpenMC) and shares the headline test's tolerance policy.
+- Every entry in `ALL_BENCHMARKS` is exposed as a read-only MCP resource (`promptmc://benchmarks/<name>`) returning serialized geometry, materials, citation, and expected k-eff, alongside the existing example resource.
 - Schema public surface stabilized (experimental flag removed).
 
 **v0.5 — Geometry composition + inspection**
