@@ -80,7 +80,6 @@ Each release has a design document — architecture, key decisions, testing stra
 
 ### v0.8 — Constrained Generation
 
-- **Framing:** the validated foundation (reference library, schema, physics gate) is the headline; generation builds on top of it and is safe only because every model it emits must first pass the same v0.6 gate. Lead with the validation and physics story; the AI generation is the capstone, not the pitch.
 - **Deliverable:** Gemini-based constrained-generation pipeline with a validate-and-repair loop, behind a thin internal model interface.
 - **Deliverable:** `openmc_design` MCP tool: natural language → validated OpenMC input package.
 - **Deliverable:** Repair loop bounded by the v0.6 physics gate; either it passes the gate or exits with a structured failure.
