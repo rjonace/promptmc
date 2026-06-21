@@ -20,6 +20,8 @@ PromptMC is infrastructure and tooling that lets AI LLM assistants and humans dr
 
 Because AI [hallucination](https://link.springer.com/article/10.1007/s10676-024-09775-5) is a valid concern in reactor physics, the system is designed with deterministic blast walls. Every configuration (from a human, the deterministic local planner, or AI) is validated against the same typed [Pydantic](https://docs.pydantic.dev/) schemas before it reaches the simulator.
 
+The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
+
 ## What you can do
 
 **Without OpenMC installed:**
@@ -137,8 +139,6 @@ Full options in the [CLI reference](https://github.com/rjonace/promptmc/blob/mai
 ## Safety
 
 PromptMC is an engineering-assist tool that keeps a human in the loop. It is not a substitute for professional engineering judgment, independent verification and validation, or regulatory review, and is not for safety, licensing, or other regulated decisions. Reproducing a published benchmark is not qualification for safety analysis. Provided as-is (see [LICENSE](https://github.com/rjonace/promptmc/blob/main/LICENSE)).
-
-The goal is not autonomous reactor design; the goal is safer, faster OpenMC iteration.
 
 ## Documentation
 
